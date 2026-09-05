@@ -5395,7 +5395,7 @@ import {
   FaUsers,
 } from "react-icons/fa";
 
-import { getClassById } from "../../services/classes.js";
+import { getClassById } from "../../services/Classes.js";
 import { getClassSessions } from "../../services/session.service";
 
 import WebsiteBooking from "./WebsiteBooking";
