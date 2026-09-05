@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "finearts-32f6b"
+  },
+  "targets": {
+    "finearts-32f6b": {
+      "hosting": {
+        "admin": [
+          "finearts-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

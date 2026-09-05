@@ -26,23 +26,33 @@ export default function FormInput({
       )}
 
       {type === "select" ? (
-        <select
-          id={name}
-          name={name}
-          value={value}
-          onChange={onChange}
-          required={required}
-          disabled={disabled}
-          className={`${baseClasses} appearance-none cursor-pointer`}
-          {...props}
-        >
-          <option value="">Select an option</option>
-          {options?.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+
+<select
+  id={name}
+  name={name}
+  value={value}
+  onChange={onChange}
+  required={required}
+  disabled={disabled}
+  className={`${baseClasses} appearance-none cursor-pointer`}
+  {...props}
+>
+  <option value="" className="text-gray-400 bg-[#0f0f1a]">
+    Select an option
+  </option>
+
+  {options?.map((option) => (
+    <option
+      key={option.value}
+      value={option.value}
+      className="bg-[#0f0f1a] text-white"
+    >
+      {option.label}
+    </option>
+  ))}
+</select>
+
+ 
       ) : type === "textarea" ? (
         <textarea
           id={name}

@@ -1,53 +1,117 @@
+
+// import { useEffect } from "react";
+// import { HiX } from "react-icons/hi";
+
+// export default function Modal({
+//   isOpen,
+//   onClose,
+//   title,
+//   children,
+// }) {
+
+//   /* ─────────────────────────────────────────────
+//      DISABLE BODY SCROLL
+//   ───────────────────────────────────────────── */
+//   useEffect(() => {
+
+//     if (isOpen) {
+//       document.body.style.overflow = "hidden";
+//     } else {
+//       document.body.style.overflow = "auto";
+//     }
+
+//     return () => {
+//       document.body.style.overflow = "auto";
+//     };
+
+//   }, [isOpen]);
+
+//   if (!isOpen) return null;
+
+//  return (
+//   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    
+//     {/* MODAL BOX */}
+//     <div
+//       className="relative w-full  max-w-lg rounded-2xl bg-[#1f1b2e] border border-white/10 shadow-2xl"
+//       onClick={(e) => e.stopPropagation()}
+//     >
+
+//       {/* HEADER */}
+//       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+//         <h2 className="text-xl font-semibold text-white">
+//           {title}
+//         </h2>
+
+//         <button
+//           onClick={onClose}
+//           className="text-gray-400 hover:text-white text-xl"
+//         >
+//           ✕
+//         </button>
+//       </div>
+
+//       {/* BODY */}
+//       <div className="p-4 max-h-[55vh] overflow-y-auto">
+//         {children}
+//       </div>
+
+//     </div>
+
+//   </div>
+// );
+// }
+
 import { useEffect } from "react";
-import { HiX } from "react-icons/hi";
+import { createPortal } from "react-dom";
 
 export default function Modal({
   isOpen,
   onClose,
   title,
   children,
-  size = "md",
 }) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    document.body.style.overflow = isOpen
+      ? "hidden"
+      : "auto";
+
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "auto";
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const sizeClasses = {
-    sm: "max-w-md",
-    md: "max-w-lg",
-    lg: "max-w-2xl",
-    xl: "max-w-4xl",
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
+      onClick={onClose}
+    >
       <div
-        className={`relative w-full ${sizeClasses[size]} glass-effect rounded-2xl border border-white/10 shadow-2xl animate-slide-up`}
+        className="relative w-full max-w-xl mx-4 rounded-2xl bg-[#1f1b2e] border border-white/10 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h2 className="text-xl font-bold gradient-text">{title}</h2>
+          <h2 className="text-xl font-semibold text-white">
+            {title}
+          </h2>
+
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-gray-400 hover:text-white text-xl"
           >
-            <HiX className="w-5 h-5" />
+            ✕
           </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">{children}</div>
+        {/* Body */}
+        <div className="p-6 max-h-[80vh] overflow-y-auto">
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
