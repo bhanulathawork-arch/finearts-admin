@@ -40,7 +40,7 @@
 //     try {
 
 //       const res = await fetch(
-//         "http://localhost:5000/api/institutes/profile",
+//         "https://finearts-backend.onrender.com/api/institutes/profile",
 //         {
 //           headers: {
 //             Authorization: `Bearer ${firebaseToken}`,

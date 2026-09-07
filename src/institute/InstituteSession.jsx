@@ -19,7 +19,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // // =============================================
 // // INSTITUTE AUTH CONFIG
@@ -815,7 +815,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // const getConfig = () => {
 //   const token =
@@ -2074,7 +2074,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // const getConfig = () => {
 //   const token =
@@ -3299,7 +3299,7 @@ import {
 /* ── Timezone Utility ── */
 import { useTimezone, getTimezone } from "../utils/timezone";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://finearts-backend.onrender.com/api";
 
 // const authHeader = () => ({
 //   headers: {

@@ -3,8 +3,8 @@
 // import { Edit, Trash2 } from "lucide-react";
 // import { FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 
-// const SUB_API = "http://localhost:5000/api/subcategories";
-// const CAT_API = "http://localhost:5000/api/categories";
+// const SUB_API = "https://finearts-backend.onrender.com/api/subcategories";
+// const CAT_API = "https://finearts-backend.onrender.com/api/categories";
 
 // function Subcategories() {
 //   const [subcategories, setSubcategories] = useState([]);
@@ -198,7 +198,7 @@
 //   const getImage = (item) => {
 //     if (!item.image) return null;
 //     if (item.image.startsWith("http")) return item.image;
-//     return `http://localhost:5000${item.image}`;
+//     return `https://finearts-backend.onrender.com${item.image}`;
 //   };
 
 //   return (
@@ -517,8 +517,8 @@ import toast from "react-hot-toast";
 import { Edit, Trash2, Search } from "lucide-react";
 import { FaTrash, FaTimes } from "react-icons/fa";
 
-const SUB_API = "http://localhost:5000/api/subcategories";
-const CAT_API = "http://localhost:5000/api/categories";
+const SUB_API = "https://finearts-backend.onrender.com/api/subcategories";
+const CAT_API = "https://finearts-backend.onrender.com/api/categories";
 
 function Subcategories() {
   const [subcategories, setSubcategories] = useState([]);
@@ -714,7 +714,7 @@ function Subcategories() {
   const getImage = (item) => {
     if (!item.image) return null;
     if (item.image.startsWith("http")) return item.image;
-    return `http://localhost:5000${item.image}`;
+    return `https://finearts-backend.onrender.com${item.image}`;
   };
 
   return (

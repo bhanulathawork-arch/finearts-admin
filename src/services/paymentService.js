@@ -9,7 +9,7 @@
 
 
 
-// const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// const API_BASE = import.meta.env.VITE_API_URL || "https://finearts-backend.onrender.com/api";
 
 // // ✅ STEP 1: Create order on backend
 // export const createRazorpayOrder = async (amount, booking_id, class_id, token) => {
@@ -112,7 +112,7 @@ export const createRazorpayOrder = async (
 ) => {
   const API_BASE =
     import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api";
+    "https://finearts-backend.onrender.com/api";
 
   const res = await fetch(
     `${API_BASE}/payments/create-order`,
@@ -154,7 +154,7 @@ export const verifyRazorpayPayment = async (
 ) => {
   const API_BASE =
     import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api";
+    "https://finearts-backend.onrender.com/api";
 
   const res = await fetch(
     `${API_BASE}/payments/verify`,

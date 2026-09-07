@@ -1094,7 +1094,7 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   // --- Status badge ---
@@ -2054,7 +2054,7 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   // --- Status badge ---
@@ -2889,7 +2889,7 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   // --- Status badge ---
@@ -3398,6 +3398,818 @@
 // }
 
 
+// import { useLocation } from "react-router-dom";
+// import { useEffect, useState } from "react";
+// import toast from "react-hot-toast";
+// import { Edit, Trash2, Search } from "lucide-react";
+// import { FaTrash, FaTimes, FaCheck, FaBan } from "react-icons/fa";
+
+// import API from "../services/api";
+// import {
+//   getAllInstitutes,
+//   getPendingInstitutes,
+//   getRejectedInstitutes,
+//   adminCreateInstitute,
+//   updateInstitute,
+//   updateInstituteApproval,
+//   deleteInstitute,
+// } from "../services/instituteService";
+
+// const inputClass =
+//   "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
+// const selectClass =
+//   "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
+// const labelClass = "block text-sm text-white mb-1";
+
+// const defaultForm = {
+//   name: "",
+//   description: "",
+//   email: "",
+//   phone_number: "",
+//   city: "",
+//   state: "",
+ 
+//   start_time: "",
+//   end_time: "",
+//   timezone: "Asia/Kolkata",
+//   rating: "",
+//   reviews: "",
+//   distance: "",
+//   courses: "",
+//   category_id: "",
+//   subcategory_id: "",
+//   image: null,
+//   logo: null,
+// };
+
+// // --- Shared form fields component ---
+// const FormFields = ({
+//   formData,
+//   setFormData,
+//   categories,
+//   subcategories,
+//   editingInstitute,
+//   getImageUrl,
+// }) => (
+//   <>
+//     <div>
+//       <label className={labelClass}>Institute Name</label>
+//       <input
+//         value={formData.name}
+//         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+//         className={inputClass}
+//         placeholder="Enter institute name"
+//         required
+//       />
+//     </div>
+
+//     <div>
+//       <label className={labelClass}>Description</label>
+//       <textarea
+//         value={formData.description}
+//         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+//         rows="3"
+//         className={inputClass}
+//         placeholder="Enter description"
+//       />
+//     </div>
+
+//     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//       <div>
+//         <label className={labelClass}>Email</label>
+//         <input
+//           type="email"
+//           value={formData.email}
+//           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+//           className={inputClass}
+//           placeholder="Enter email"
+//         />
+//       </div>
+//       <div>
+//         <label className={labelClass}>Phone</label>
+//         <input
+//           value={formData.phone_number}
+//           onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+//           className={inputClass}
+//           placeholder="Enter phone number"
+//         />
+//       </div>
+//     </div>
+
+   
+
+//     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+//       <div>
+//         <label className={labelClass}>Rating</label>
+//         <input
+//           type="number"
+//           step="1"
+//           value={formData.rating}
+//           onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+//           className={inputClass}
+//           placeholder="0"
+//         />
+//       </div>
+//       <div>
+//         <label className={labelClass}>Reviews</label>
+//         <input
+//           type="number"
+//           value={formData.reviews}
+//           onChange={(e) => setFormData({ ...formData, reviews: e.target.value })}
+//           className={inputClass}
+//           placeholder="0"
+//         />
+//       </div>
+//       <div>
+//         <label className={labelClass}>Distance</label>
+//         <input
+//           value={formData.distance}
+//           onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+//           className={inputClass}
+//           placeholder="e.g. 5 km"
+//         />
+//       </div>
+//       <div>
+//         <label className={labelClass}>Courses</label>
+//         <input
+//           type="number"
+//           value={formData.courses}
+//           onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
+//           className={inputClass}
+//           placeholder="0"
+//         />
+//       </div>
+//     </div>
+
+//     {/* Category & Subcategory */}
+//     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//       <div>
+//         <label className={labelClass}>Category</label>
+//         <select
+//           value={formData.category_id || ""}
+//           onChange={(e) =>
+//             setFormData({ ...formData, category_id: e.target.value, subcategory_id: "" })
+//           }
+//           className={selectClass}
+//         >
+//           <option value="">Select Category</option>
+//           {categories.map((cat) => (
+//             <option key={cat.id} value={cat.id}>{cat.name}</option>
+//           ))}
+//         </select>
+//       </div>
+//       <div>
+//         <label className={labelClass}>Subcategory</label>
+//         <select
+//           value={formData.subcategory_id || ""}
+//           onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
+//           disabled={!formData.category_id}
+//           className={`${selectClass} disabled:opacity-50`}
+//         >
+//           <option value="">Select Subcategory</option>
+//           {subcategories
+//             .filter((sub) => String(sub.category_id) === String(formData.category_id))
+//             .map((sub) => (
+//               <option key={sub.id} value={sub.id}>{sub.name}</option>
+//             ))}
+//         </select>
+//       </div>
+//     </div>
+
+//     {/* Logo */}
+//     <div>
+//       <label className={labelClass}>Institute Logo</label>
+//       {editingInstitute?.logo && !formData.logo && (
+//         <img
+//           src={getImageUrl(editingInstitute.logo)}
+//           alt="Current Logo"
+//           className="w-24 h-24 object-contain rounded-xl mb-2 border border-[#333] bg-[#1a1a20] p-1"
+//         />
+//       )}
+//       {formData.logo && (
+//         <img
+//           src={URL.createObjectURL(formData.logo)}
+//           alt="Logo Preview"
+//           className="w-24 h-24 object-contain rounded-xl mb-2 border border-[#333] bg-[#1a1a20] p-1"
+//         />
+//       )}
+//       <input
+//         type="file"
+//         accept="image/*"
+//         onChange={(e) => setFormData({ ...formData, logo: e.target.files?.[0] })}
+//         className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+//       />
+//     </div>
+
+//     {/* Image */}
+//     <div>
+//       <label className={labelClass}>Institute Image</label>
+//       {editingInstitute?.image_url && !formData.image && (
+//         <img
+//           src={getImageUrl(editingInstitute.image_url)}
+//           alt="Current"
+//           className="w-full h-48 object-cover rounded-xl mb-2 border border-[#333]"
+//         />
+//       )}
+//       {formData.image && (
+//         <img
+//           src={URL.createObjectURL(formData.image)}
+//           alt="Preview"
+//           className="w-full h-48 object-cover rounded-xl mb-2 border border-[#333]"
+//         />
+//       )}
+//       <input
+//         type="file"
+//         accept="image/*"
+//         onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] })}
+//         className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+//       />
+//     </div>
+//   </>
+// );
+
+// export default function Institutes() {
+//   const [institutes, setInstitutes] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const location = useLocation();
+
+//   const [showCreateModal, setShowCreateModal] = useState(false);
+//   const [showEditModal, setShowEditModal] = useState(false);
+//   const [editingInstitute, setEditingInstitute] = useState(null);
+//   const [showDeleteModal, setShowDeleteModal] = useState(false);
+//   const [instituteToDelete, setInstituteToDelete] = useState(null);
+
+//   const [categories, setCategories] = useState([]);
+//   const [subcategories, setSubcategories] = useState([]);
+//   const [formData, setFormData] = useState(defaultForm);
+
+//   const token = localStorage.getItem("adminToken");
+
+//   // --- Route-aware status filter ---
+//   const routeFiltered = (institutes || []).filter((inst) => {
+//     const status = inst?.approval_status?.toUpperCase();
+//     if (location.pathname === "/institutes/pending") return status === "PENDING";
+//     if (location.pathname === "/institutes/rejected") return status === "REJECTED";
+//     return true;
+//   });
+
+//   // --- Search filter ---
+//   const filteredInstitutes = routeFiltered.filter((inst) => {
+//     const query = searchQuery.toLowerCase();
+//     return (
+//       inst.name?.toLowerCase().includes(query) ||
+//       inst.description?.toLowerCase().includes(query) ||
+//       inst.email?.toLowerCase().includes(query) ||
+//       inst.phone_number?.includes(query) ||
+//       inst.city?.toLowerCase().includes(query) ||
+//       inst.state?.toLowerCase().includes(query) ||
+      
+//       String(inst.id).includes(query) ||
+//       String(inst.rating).includes(query) ||
+//       String(inst.reviews).includes(query) ||
+//       String(inst.distance).includes(query) ||
+//       String(inst.courses).includes(query) ||
+//       inst.categories?.some(
+//         (c) =>
+//           c.category_name?.toLowerCase().includes(query) ||
+//           c.subcategory_name?.toLowerCase().includes(query)
+//       )
+//     );
+//   });
+
+//   // --- Image helper ---
+//   const getImageUrl = (img) => {
+//     if (!img) return "";
+//     if (img.startsWith("http")) return img;
+//     return `https://finearts-backend.onrender.com${img}`;
+//   };
+
+//   // --- Status badge ---
+//   const StatusBadge = ({ status }) => {
+//     const s = status?.toLowerCase();
+//     let bg = "bg-gray-500/20";
+//     let text = "text-gray-400";
+//     if (s === "approved") {
+//       bg = "bg-green-500/20";
+//       text = "text-green-400";
+//     } else if (s === "pending") {
+//       bg = "bg-yellow-500/20";
+//       text = "text-yellow-400";
+//     } else if (s === "rejected") {
+//       bg = "bg-red-500/20";
+//       text = "text-red-400";
+//     }
+//     return (
+//       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${bg} ${text}`}>
+//         {status || "Pending"}
+//       </span>
+//     );
+//   };
+
+//   // --- Page title ---
+//   const getPageTitle = () => {
+//     if (location.pathname === "/institutes/pending") return "Pending Institutes";
+//     if (location.pathname === "/institutes/rejected") return "Rejected Institutes";
+//     return "Institutes";
+//   };
+
+//   const getPageSubtitle = () => {
+//     if (location.pathname === "/institutes/pending") return "Review and approve institute applications";
+//     if (location.pathname === "/institutes/rejected") return "Institutes rejected by admin";
+//     return "Manage all institutes";
+//   };
+
+//   // --- Fetch ---
+//   const fetchInstitutes = async () => {
+//     try {
+//       setLoading(true);
+//       let response;
+//       if (location.pathname === "/institutes/pending") {
+//         response = await getPendingInstitutes(token);
+//       } else if (location.pathname === "/institutes/rejected") {
+//         response = await getRejectedInstitutes(token);
+//       } else {
+//         response = await getAllInstitutes();
+//       }
+//       setInstitutes(response?.data || []);
+//     } catch (e) {
+//       console.error(e);
+//       toast.error(e?.response?.data?.message || "Failed to fetch institutes");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchDropdowns = async () => {
+//     try {
+//       const [catRes, subRes] = await Promise.all([
+//         API.get("/categories"),
+//         API.get("/subcategories"),
+//       ]);
+//       setCategories(catRes.data.data || []);
+//       setSubcategories(subRes.data.data || []);
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchInstitutes();
+//     fetchDropdowns();
+//   }, [location.pathname]);
+
+//   // --- Approve ---
+//   const handleApprove = async (institute) => {
+//     try {
+//       await updateInstituteApproval(institute.id, "APPROVED", token);
+//       toast.success("Institute approved successfully");
+//       fetchInstitutes();
+//     } catch (e) {
+//       console.error(e);
+//       toast.error(e?.response?.data?.message || "Approval failed");
+//     }
+//   };
+
+//   // --- Reject ---
+//   const handleReject = async (institute) => {
+//     try {
+//       await updateInstituteApproval(institute.id, "REJECTED", token);
+//       toast.success("Institute rejected");
+//       fetchInstitutes();
+//     } catch (e) {
+//       toast.error(e?.response?.data?.message || "Reject failed");
+//     }
+//   };
+
+//   // --- Delete ---
+//   const handleDeleteClick = (institute) => {
+//     setInstituteToDelete(institute);
+//     setShowDeleteModal(true);
+//   };
+
+//   const confirmDelete = async () => {
+//     if (!instituteToDelete) return;
+//     try {
+//       await deleteInstitute(instituteToDelete.id, token);
+//       toast.success("Institute deleted");
+//       setShowDeleteModal(false);
+//       setInstituteToDelete(null);
+//       fetchInstitutes();
+//     } catch (e) {
+//       toast.error(e?.response?.data?.message || "Delete failed");
+//     }
+//   };
+
+//   // --- Create ---
+//   const handleCreate = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const payload = new FormData();
+//       Object.entries(formData).forEach(([key, val]) => {
+//         if (val !== null && val !== undefined && val !== "") {
+//           payload.append(key, val);
+//         }
+//       });
+
+//       await adminCreateInstitute(payload, token);
+//       toast.success("Institute created successfully");
+//       setShowCreateModal(false);
+//       setFormData(defaultForm);
+//       fetchInstitutes();
+//     } catch (e) {
+//       toast.error(e?.response?.data?.message || "Create failed");
+//     }
+//   };
+
+//   // --- Edit ---
+//   const handleEdit = (institute) => {
+//     setEditingInstitute(institute);
+//     setFormData({
+//       name: institute.name || "",
+//       description: institute.description || "",
+//       email: institute.email || "",
+//       phone_number: institute.phone_number || "",
+//       city: institute.city || "",
+//       state: institute.state || "",
+     
+//       start_time: institute.start_time || "",
+//       end_time: institute.end_time || "",
+//       timezone: institute.timezone || "Asia/Kolkata",
+//       rating: institute.rating || "",
+//       reviews: institute.reviews || "",
+//       distance: institute.distance || "",
+//       courses: institute.courses || "",
+//       category_id: institute.category_id || "",
+//       subcategory_id: institute.subcategory_id || "",
+//       image: null,
+//       logo: null,
+//     });
+//     setShowEditModal(true);
+//   };
+
+//   // --- Update ---
+//   const handleUpdate = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const payload = new FormData();
+//       Object.keys(formData).forEach((key) => {
+//         if (formData[key] !== null && formData[key] !== "") {
+//           payload.append(key, formData[key]);
+//         }
+//       });
+
+//       await updateInstitute(editingInstitute.id, payload, token);
+//       toast.success("Institute updated successfully");
+//       setShowEditModal(false);
+//       setEditingInstitute(null);
+//       fetchInstitutes();
+//     } catch (e) {
+//       toast.error(e?.response?.data?.message || "Update failed");
+//     }
+//   };
+
+//   const isPendingPage = location.pathname === "/institutes/pending";
+//   const isRejectedPage = location.pathname === "/institutes/rejected";
+
+//   return (
+//     <div className="p-8 text-white">
+//       {/* Header */}
+//       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+//         <div>
+//           <h1 className="text-4xl font-bold text-purple-400">{getPageTitle()}</h1>
+//           <p className="text-gray-400 mt-2">{getPageSubtitle()}</p>
+//         </div>
+
+//         {!isPendingPage && !isRejectedPage && (
+//           <button
+//             onClick={() => {
+//               setFormData(defaultForm);
+//               setShowCreateModal(true);
+//             }}
+//             className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+//           >
+//             + Add Institute
+//           </button>
+//         )}
+//       </div>
+
+//       {/* Full-width Search Bar */}
+//       <div className="mb-6">
+//         <div className="relative w-full">
+//           <Search
+//             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+//             size={18}
+//           />
+//           <input
+//             type="text"
+//             placeholder="Search institutes..."
+//             value={searchQuery}
+//             onChange={(e) => setSearchQuery(e.target.value)}
+//             className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
+//           />
+//           {searchQuery && (
+//             <button
+//               onClick={() => setSearchQuery("")}
+//               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+//             >
+//               <FaTimes size={14} />
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Table */}
+//       <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
+//         <div className="overflow-x-auto">
+//           <table className="w-full">
+//             <thead className="bg-[#202027] text-white">
+//               <tr>
+//                 <th className="p-4 text-left whitespace-nowrap">Logo</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Image</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Name</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Description</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Email</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Phone</th>
+//                 <th className="p-4 text-left whitespace-nowrap">City</th>
+//                 <th className="p-4 text-left whitespace-nowrap">State</th>
+                
+//                 <th className="p-4 text-left whitespace-nowrap">Rating</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Reviews</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Courses</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Category</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Subcategory</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Status</th>
+//                 <th className="p-4 text-left whitespace-nowrap">Actions</th>
+//               </tr>
+//             </thead>
+
+//             <tbody>
+//               {loading ? (
+//                 <tr>
+//                   <td colSpan={16} className="p-12 text-center">
+//                     <div className="flex flex-col items-center gap-3">
+//                       <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+//                       <p className="text-white">Loading institutes...</p>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ) : filteredInstitutes.length === 0 ? (
+//                 <tr>
+//                   <td colSpan={16} className="p-12 text-center">
+//                     <div className="flex flex-col items-center gap-3">
+//                       <Search size={40} className="text-white" />
+//                       <p className="text-white text-lg">
+//                         {searchQuery
+//                           ? "No institutes found matching your search"
+//                           : "No institutes available"}
+//                       </p>
+//                       {searchQuery && (
+//                         <button
+//                           onClick={() => setSearchQuery("")}
+//                           className="text-purple-400 hover:text-purple-300 text-sm mt-1 transition-colors"
+//                         >
+//                           Clear search
+//                         </button>
+//                       )}
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ) : (
+//                 filteredInstitutes.map((inst) => (
+//                   <tr
+//                     key={inst.id}
+//                     className="border-t border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
+//                   >
+//                     {/* Logo Column */}
+//                     <td className="p-4">
+//                       {inst.logo ? (
+//                         <img
+//                           src={getImageUrl(inst.logo)}
+//                           alt={`${inst.name} logo`}
+//                           className="w-11 h-11 rounded-xl object-contain border border-[#333] bg-[#1a1a20] p-0.5"
+//                           onError={(e) => { e.currentTarget.style.display = "none"; }}
+//                         />
+//                       ) : (
+//                         <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-[10px] leading-tight text-center">
+//                           No<br />Logo
+//                         </div>
+//                       )}
+//                     </td>
+
+//                     {/* Image Column */}
+//                     <td className="p-4">
+//                       {inst.image_url ? (
+//                         <img
+//                           src={getImageUrl(inst.image_url)}
+//                           alt={inst.name}
+//                           className="w-11 h-11 rounded-xl object-cover border border-[#333]"
+//                           onError={(e) => { e.currentTarget.style.display = "none"; }}
+//                         />
+//                       ) : (
+//                         <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-xs">
+//                           N/A
+//                         </div>
+//                       )}
+//                     </td>
+
+//                     <td className="p-4 font-medium whitespace-nowrap">{inst.name}</td>
+//                     <td className="p-4 text-white max-w-[180px] truncate">{inst.description || "-"}</td>
+//                     <td className="p-4 text-white whitespace-nowrap">{inst.email || "-"}</td>
+//                     <td className="p-4 text-white whitespace-nowrap">{inst.phone_number || "-"}</td>
+//                     <td className="p-4 text-white whitespace-nowrap">{inst.city || "-"}</td>
+//                     <td className="p-4 text-white whitespace-nowrap">{inst.state || "-"}</td>
+                  
+
+//                     <td className="p-4 font-semibold whitespace-nowrap">
+//                       {inst.rating ? Math.round(Number(inst.rating)) : "-"}
+//                     </td>
+
+//                     <td className="p-4 font-semibold whitespace-nowrap">{inst.reviews ?? "-"}</td>
+//                     <td className="p-4 font-semibold whitespace-nowrap">{inst.courses ?? "-"}</td>
+//                     <td className="p-4 text-white max-w-[130px] truncate">
+//                       {inst.categories?.length
+//                         ? inst.categories.map((c) => c.category_name).filter(Boolean).join(", ")
+//                         : "-"}
+//                     </td>
+//                     <td className="p-4 text-white max-w-[130px] truncate">
+//                       {inst.categories?.length
+//                         ? inst.categories.map((c) => c.subcategory_name).filter(Boolean).join(", ")
+//                         : "-"}
+//                     </td>
+//                     <td className="p-4 whitespace-nowrap">
+//                       <StatusBadge status={inst.approval_status} />
+//                     </td>
+
+//                     <td className="p-4">
+//                       <div className="flex items-center gap-2">
+//                         {inst.approval_status === "PENDING" && (
+//                           <>
+//                             <button
+//                               onClick={() => handleApprove(inst)}
+//                               className="p-2 rounded-lg hover:bg-green-500/10 transition-colors group"
+//                               title="Approve"
+//                             >
+//                               <FaCheck size={14} className="text-green-500/70 group-hover:text-green-400 transition-colors" />
+//                             </button>
+//                             <button
+//                               onClick={() => handleReject(inst)}
+//                               className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
+//                               title="Reject"
+//                             >
+//                               <FaBan size={14} className="text-red-500/70 group-hover:text-red-400 transition-colors" />
+//                             </button>
+//                           </>
+//                         )}
+
+//                         {inst.approval_status !== "PENDING" && (
+//                           <>
+//                             <button
+//                               onClick={() => handleEdit(inst)}
+//                               className="p-2 rounded-lg hover:bg-[#2a2a35] transition-colors group"
+//                               title="Edit"
+//                             >
+//                               <Edit size={16} className="text-white group-hover:text-white transition-colors" />
+//                             </button>
+//                             <button
+//                               onClick={() => handleDeleteClick(inst)}
+//                               className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
+//                               title="Delete"
+//                             >
+//                               <Trash2 size={16} className="text-red-500/70 group-hover:text-red-400 transition-colors" />
+//                             </button>
+//                           </>
+//                         )}
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ))
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+
+//       {/* ==================== Create Institute Modal ==================== */}
+//       {showCreateModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+//           <div className="w-full max-w-[700px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+//             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
+//               <h2 className="text-2xl font-bold text-white">Create Institute</h2>
+//               <button onClick={() => setShowCreateModal(false)} className="text-white hover:text-white transition-colors">
+//                 <FaTimes size={20} />
+//               </button>
+//             </div>
+//             <div className="overflow-y-auto max-h-[75vh] p-6">
+//               <form onSubmit={handleCreate}>
+//                 <FormFields
+//                   formData={formData}
+//                   setFormData={setFormData}
+//                   categories={categories}
+//                   subcategories={subcategories}
+//                   editingInstitute={editingInstitute}
+//                   getImageUrl={getImageUrl}
+//                 />
+//                 <div className="flex justify-end gap-3 pt-4 border-t border-[#3a3448]">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowCreateModal(false)}
+//                     className="px-5 py-3 rounded-xl border border-gray-600 text-white hover:bg-[#2b2638] transition-colors"
+//                   >
+//                     Cancel
+//                   </button>
+//                   <button
+//                     type="submit"
+//                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+//                   >
+//                     Create Institute
+//                   </button>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ==================== Edit Institute Modal ==================== */}
+//       {showEditModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+//           <div className="w-full max-w-[700px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+//             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
+//               <h2 className="text-2xl font-bold text-white">Edit Institute</h2>
+//               <button
+//                 onClick={() => { setShowEditModal(false); setEditingInstitute(null); }}
+//                 className="text-gray-400 hover:text-white transition-colors"
+//               >
+//                 <FaTimes size={20} />
+//               </button>
+//             </div>
+//             <div className="overflow-y-auto max-h-[75vh] p-6">
+//               <form onSubmit={handleUpdate}>
+//                 <FormFields
+//                   formData={formData}
+//                   setFormData={setFormData}
+//                   categories={categories}
+//                   subcategories={subcategories}
+//                   editingInstitute={editingInstitute}
+//                   getImageUrl={getImageUrl}
+//                 />
+//                 <div className="flex justify-end gap-3 pt-4 border-t border-[#3a3448]">
+//                   <button
+//                     type="button"
+//                     onClick={() => { setShowEditModal(false); setEditingInstitute(null); }}
+//                     className="px-5 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-[#2b2638] transition-colors"
+//                   >
+//                     Cancel
+//                   </button>
+//                   <button
+//                     type="submit"
+//                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+//                   >
+//                     Update Institute
+//                   </button>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ==================== Delete Confirmation Modal ==================== */}
+//       {showDeleteModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
+//           <div className="w-full max-w-[400px] bg-[#1e1b2e] border border-[#2e2a42] rounded-2xl shadow-2xl overflow-hidden">
+//             <div className="p-8 flex flex-col items-center">
+//               <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mb-5">
+//                 <FaTrash className="text-red-400 text-lg" />
+//               </div>
+//               <h2 className="text-xl font-bold text-white mb-3 text-center">Delete Institute</h2>
+//               <p className="text-gray-400 text-center text-sm leading-relaxed mb-8">
+//                 Are you sure you want to delete this institute?
+//               </p>
+//               <div className="flex gap-3 w-full">
+//                 <button
+//                   onClick={() => { setShowDeleteModal(false); setInstituteToDelete(null); }}
+//                   className="flex-1 px-5 py-3 rounded-xl border border-[#3a3650] text-gray-300 hover:bg-[#2a2640] transition-colors font-medium text-sm"
+//                 >
+//                   Cancel
+//                 </button>
+//                 <button
+//                   onClick={confirmDelete}
+//                   className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold hover:opacity-90 transition-opacity text-sm"
+//                 >
+//                   Delete
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -3417,8 +4229,10 @@ import {
 
 const inputClass =
   "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
+
 const selectClass =
   "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
+
 const labelClass = "block text-sm text-white mb-1";
 
 const defaultForm = {
@@ -3428,7 +4242,6 @@ const defaultForm = {
   phone_number: "",
   city: "",
   state: "",
-  timing: "",
   start_time: "",
   end_time: "",
   timezone: "Asia/Kolkata",
@@ -3442,78 +4255,129 @@ const defaultForm = {
   logo: null,
 };
 
-// --- Shared form fields component ---
-const FormFields = ({
+// ============================================================
+// CREATE FORM
+// ============================================================
+
+const CreateFormFields = ({
   formData,
   setFormData,
   categories,
   subcategories,
-  editingInstitute,
-  getImageUrl,
 }) => (
   <>
+    {/* Institute Name */}
     <div>
       <label className={labelClass}>Institute Name</label>
+
       <input
         value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            name: e.target.value,
+          })
+        }
         className={inputClass}
         placeholder="Enter institute name"
         required
       />
     </div>
 
+    {/* Description */}
     <div>
       <label className={labelClass}>Description</label>
+
       <textarea
         value={formData.description}
-        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            description: e.target.value,
+          })
+        }
         rows="3"
         className={inputClass}
         placeholder="Enter description"
       />
     </div>
 
+    {/* Email / Phone */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className={labelClass}>Email</label>
+
         <input
           type="email"
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              email: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="Enter email"
         />
       </div>
+
       <div>
         <label className={labelClass}>Phone</label>
+
         <input
           value={formData.phone_number}
-          onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              phone_number: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="Enter phone number"
         />
       </div>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    {/* City / State */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label className={labelClass}>Timing</label>
+        <label className={labelClass}>City</label>
+
         <input
-          value={formData.timing}
+          value={formData.city}
           onChange={(e) =>
             setFormData({
               ...formData,
-              timing: e.target.value,
+              city: e.target.value,
             })
           }
           className={inputClass}
-          placeholder="9 AM - 6 PM"
+          placeholder="Enter city"
         />
       </div>
 
       <div>
+        <label className={labelClass}>State</label>
+
+        <input
+          value={formData.state}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              state: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="Enter state"
+        />
+      </div>
+    </div>
+
+    {/* Start Time / End Time */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
         <label className={labelClass}>Start Time</label>
+
         <input
           type="time"
           value={formData.start_time}
@@ -3529,6 +4393,326 @@ const FormFields = ({
 
       <div>
         <label className={labelClass}>End Time</label>
+
+        <input
+          type="time"
+          value={formData.end_time}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              end_time: e.target.value,
+            })
+          }
+          className={inputClass}
+        />
+      </div>
+    </div>
+
+    {/* Rating / Reviews / Distance / Courses */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <label className={labelClass}>Rating</label>
+
+        <input
+          type="number"
+          step="1"
+          value={formData.rating}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              rating: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="0"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>Reviews</label>
+
+        <input
+          type="number"
+          value={formData.reviews}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              reviews: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="0"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>Distance</label>
+
+        <input
+          value={formData.distance}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              distance: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="e.g. 5 km"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>Courses</label>
+
+        <input
+          type="number"
+          value={formData.courses}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              courses: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="0"
+        />
+      </div>
+    </div>
+
+    {/* Category / Subcategory */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className={labelClass}>Category</label>
+
+        <select
+          value={formData.category_id || ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              category_id: e.target.value,
+              subcategory_id: "",
+            })
+          }
+          className={selectClass}
+        >
+          <option value="">Select Category</option>
+
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className={labelClass}>Subcategory</label>
+
+        <select
+          value={formData.subcategory_id || ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              subcategory_id: e.target.value,
+            })
+          }
+          disabled={!formData.category_id}
+          className={`${selectClass} disabled:opacity-50`}
+        >
+          <option value="">Select Subcategory</option>
+
+          {subcategories
+            .filter(
+              (sub) =>
+                String(sub.category_id) ===
+                String(formData.category_id)
+            )
+            .map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
+            ))}
+        </select>
+      </div>
+    </div>
+
+    {/* Logo */}
+    <div>
+      <label className={labelClass}>Institute Logo</label>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            logo: e.target.files?.[0] || null,
+          })
+        }
+        className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+      />
+    </div>
+
+    {/* Institute Image */}
+    <div>
+      <label className={labelClass}>Institute Image</label>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            image: e.target.files?.[0] || null,
+          })
+        }
+        className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+      />
+    </div>
+  </>
+);
+
+// ============================================================
+// EDIT FORM
+// ============================================================
+
+const EditFormFields = ({
+  formData,
+  setFormData,
+  categories,
+  subcategories,
+  editingInstitute,
+  getImageUrl,
+}) => (
+  <>
+    {/* Institute Name */}
+    <div>
+      <label className={labelClass}>Institute Name</label>
+
+      <input
+        value={formData.name}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            name: e.target.value,
+          })
+        }
+        className={inputClass}
+        placeholder="Enter institute name"
+        required
+      />
+    </div>
+
+    {/* Description */}
+    <div>
+      <label className={labelClass}>Description</label>
+
+      <textarea
+        value={formData.description}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            description: e.target.value,
+          })
+        }
+        rows="3"
+        className={inputClass}
+        placeholder="Enter description"
+      />
+    </div>
+
+    {/* Email / Phone */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className={labelClass}>Email</label>
+
+        <input
+          type="email"
+          value={formData.email}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              email: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="Enter email"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>Phone</label>
+
+        <input
+          value={formData.phone_number}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              phone_number: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="Enter phone number"
+        />
+      </div>
+    </div>
+
+    {/* City / State */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className={labelClass}>City</label>
+
+        <input
+          value={formData.city}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              city: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="Enter city"
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>State</label>
+
+        <input
+          value={formData.state}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              state: e.target.value,
+            })
+          }
+          className={inputClass}
+          placeholder="Enter state"
+        />
+      </div>
+    </div>
+
+    {/* Start Time / End Time / Timezone */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label className={labelClass}>Start Time</label>
+
+        <input
+          type="time"
+          value={formData.start_time}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              start_time: e.target.value,
+            })
+          }
+          className={inputClass}
+        />
+      </div>
+
+      <div>
+        <label className={labelClass}>End Time</label>
+
         <input
           type="time"
           value={formData.end_time}
@@ -3544,6 +4728,7 @@ const FormFields = ({
 
       <div>
         <label className={labelClass}>Timezone</label>
+
         <select
           value={formData.timezone}
           onChange={(e) =>
@@ -3554,95 +4739,169 @@ const FormFields = ({
           }
           className={selectClass}
         >
-          <option value="Asia/Kolkata">India (IST)</option>
-          <option value="America/New_York">USA (New York)</option>
-          <option value="America/Chicago">USA (Chicago)</option>
-          <option value="America/Denver">USA (Denver)</option>
-          <option value="America/Los_Angeles">USA (Los Angeles)</option>
-          <option value="Europe/London">United Kingdom</option>
-          <option value="Europe/Paris">France</option>
-          <option value="Europe/Berlin">Germany</option>
-          <option value="Asia/Dubai">UAE</option>
-          <option value="Asia/Singapore">Singapore</option>
-          <option value="Asia/Tokyo">Japan</option>
-          <option value="Australia/Sydney">Australia</option>
+          <option value="Asia/Kolkata">
+            India (IST)
+          </option>
+          <option value="America/New_York">
+            USA (New York)
+          </option>
+          <option value="America/Chicago">
+            USA (Chicago)
+          </option>
+          <option value="America/Denver">
+            USA (Denver)
+          </option>
+          <option value="America/Los_Angeles">
+            USA (Los Angeles)
+          </option>
+          <option value="Europe/London">
+            United Kingdom
+          </option>
+          <option value="Europe/Paris">
+            France
+          </option>
+          <option value="Europe/Berlin">
+            Germany
+          </option>
+          <option value="Asia/Dubai">
+            UAE
+          </option>
+          <option value="Asia/Singapore">
+            Singapore
+          </option>
+          <option value="Asia/Tokyo">
+            Japan
+          </option>
+          <option value="Australia/Sydney">
+            Australia
+          </option>
         </select>
       </div>
     </div>
 
+    {/* Rating / Reviews / Distance / Courses */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div>
         <label className={labelClass}>Rating</label>
+
         <input
           type="number"
           step="1"
           value={formData.rating}
-          onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              rating: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="0"
         />
       </div>
+
       <div>
         <label className={labelClass}>Reviews</label>
+
         <input
           type="number"
           value={formData.reviews}
-          onChange={(e) => setFormData({ ...formData, reviews: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              reviews: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="0"
         />
       </div>
+
       <div>
         <label className={labelClass}>Distance</label>
+
         <input
           value={formData.distance}
-          onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              distance: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="e.g. 5 km"
         />
       </div>
+
       <div>
         <label className={labelClass}>Courses</label>
+
         <input
           type="number"
           value={formData.courses}
-          onChange={(e) => setFormData({ ...formData, courses: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              courses: e.target.value,
+            })
+          }
           className={inputClass}
           placeholder="0"
         />
       </div>
     </div>
 
-    {/* Category & Subcategory */}
+    {/* Category / Subcategory */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className={labelClass}>Category</label>
+
         <select
           value={formData.category_id || ""}
           onChange={(e) =>
-            setFormData({ ...formData, category_id: e.target.value, subcategory_id: "" })
+            setFormData({
+              ...formData,
+              category_id: e.target.value,
+              subcategory_id: "",
+            })
           }
           className={selectClass}
         >
           <option value="">Select Category</option>
+
           {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
           ))}
         </select>
       </div>
+
       <div>
         <label className={labelClass}>Subcategory</label>
+
         <select
           value={formData.subcategory_id || ""}
-          onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              subcategory_id: e.target.value,
+            })
+          }
           disabled={!formData.category_id}
           className={`${selectClass} disabled:opacity-50`}
         >
           <option value="">Select Subcategory</option>
+
           {subcategories
-            .filter((sub) => String(sub.category_id) === String(formData.category_id))
+            .filter(
+              (sub) =>
+                String(sub.category_id) ===
+                String(formData.category_id)
+            )
             .map((sub) => (
-              <option key={sub.id} value={sub.id}>{sub.name}</option>
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
             ))}
         </select>
       </div>
@@ -3650,50 +4909,82 @@ const FormFields = ({
 
     {/* Logo */}
     <div>
-      <label className={labelClass}>Institute Logo</label>
-      {editingInstitute?.logo && !formData.logo && (
-        <img
-          src={getImageUrl(editingInstitute.logo)}
-          alt="Current Logo"
-          className="w-24 h-24 object-contain rounded-xl mb-2 border border-[#333] bg-[#1a1a20] p-1"
-        />
-      )}
+      <label className={labelClass}>
+        Institute Logo
+      </label>
+
+      {editingInstitute?.logo &&
+        !formData.logo && (
+          <img
+            src={getImageUrl(
+              editingInstitute.logo
+            )}
+            alt="Current Logo"
+            className="w-24 h-24 object-contain rounded-xl mb-2 border border-[#333] bg-[#1a1a20] p-1"
+          />
+        )}
+
       {formData.logo && (
         <img
-          src={URL.createObjectURL(formData.logo)}
+          src={URL.createObjectURL(
+            formData.logo
+          )}
           alt="Logo Preview"
           className="w-24 h-24 object-contain rounded-xl mb-2 border border-[#333] bg-[#1a1a20] p-1"
         />
       )}
+
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => setFormData({ ...formData, logo: e.target.files?.[0] })}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            logo:
+              e.target.files?.[0] || null,
+          })
+        }
         className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
       />
     </div>
 
-    {/* Image */}
+    {/* Institute Image */}
     <div>
-      <label className={labelClass}>Institute Image</label>
-      {editingInstitute?.image_url && !formData.image && (
-        <img
-          src={getImageUrl(editingInstitute.image_url)}
-          alt="Current"
-          className="w-full h-48 object-cover rounded-xl mb-2 border border-[#333]"
-        />
-      )}
+      <label className={labelClass}>
+        Institute Image
+      </label>
+
+      {editingInstitute?.image_url &&
+        !formData.image && (
+          <img
+            src={getImageUrl(
+              editingInstitute.image_url
+            )}
+            alt="Current"
+            className="w-full h-48 object-cover rounded-xl mb-2 border border-[#333]"
+          />
+        )}
+
       {formData.image && (
         <img
-          src={URL.createObjectURL(formData.image)}
+          src={URL.createObjectURL(
+            formData.image
+          )}
           alt="Preview"
           className="w-full h-48 object-cover rounded-xl mb-2 border border-[#333]"
         />
       )}
+
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] })}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            image:
+              e.target.files?.[0] || null,
+          })
+        }
         className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
       />
     </div>
@@ -3701,128 +4992,306 @@ const FormFields = ({
 );
 
 export default function Institutes() {
-  const [institutes, setInstitutes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [institutes, setInstitutes] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [searchQuery, setSearchQuery] =
+    useState("");
+
   const location = useLocation();
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingInstitute, setEditingInstitute] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [instituteToDelete, setInstituteToDelete] = useState(null);
+  const [showCreateModal, setShowCreateModal] =
+    useState(false);
 
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
-  const [formData, setFormData] = useState(defaultForm);
+  const [showEditModal, setShowEditModal] =
+    useState(false);
 
-  const token = localStorage.getItem("adminToken");
+  const [editingInstitute, setEditingInstitute] =
+    useState(null);
 
-  // --- Route-aware status filter ---
-  const routeFiltered = (institutes || []).filter((inst) => {
-    const status = inst?.approval_status?.toUpperCase();
-    if (location.pathname === "/institutes/pending") return status === "PENDING";
-    if (location.pathname === "/institutes/rejected") return status === "REJECTED";
+  const [showDeleteModal, setShowDeleteModal] =
+    useState(false);
+
+  const [instituteToDelete, setInstituteToDelete] =
+    useState(null);
+
+  const [categories, setCategories] =
+    useState([]);
+
+  const [subcategories, setSubcategories] =
+    useState([]);
+
+  const [formData, setFormData] =
+    useState(defaultForm);
+
+  const token =
+    localStorage.getItem("adminToken");
+
+  // ============================================================
+  // FILTER BY ROUTE
+  // ============================================================
+
+  const routeFiltered = (
+    institutes || []
+  ).filter((inst) => {
+    const status =
+      inst?.approval_status?.toUpperCase();
+
+    if (
+      location.pathname ===
+      "/institutes/pending"
+    ) {
+      return status === "PENDING";
+    }
+
+    if (
+      location.pathname ===
+      "/institutes/rejected"
+    ) {
+      return status === "REJECTED";
+    }
+
     return true;
   });
 
-  // --- Search filter ---
-  const filteredInstitutes = routeFiltered.filter((inst) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      inst.name?.toLowerCase().includes(query) ||
-      inst.description?.toLowerCase().includes(query) ||
-      inst.email?.toLowerCase().includes(query) ||
-      inst.phone_number?.includes(query) ||
-      inst.city?.toLowerCase().includes(query) ||
-      inst.state?.toLowerCase().includes(query) ||
-      inst.timing?.toLowerCase().includes(query) ||
-      String(inst.id).includes(query) ||
-      String(inst.rating).includes(query) ||
-      String(inst.reviews).includes(query) ||
-      String(inst.distance).includes(query) ||
-      String(inst.courses).includes(query) ||
-      inst.categories?.some(
-        (c) =>
-          c.category_name?.toLowerCase().includes(query) ||
-          c.subcategory_name?.toLowerCase().includes(query)
-      )
-    );
-  });
+  // ============================================================
+  // SEARCH
+  // ============================================================
 
-  // --- Image helper ---
+  const filteredInstitutes =
+    routeFiltered.filter((inst) => {
+      const query =
+        searchQuery.toLowerCase();
+
+      return (
+        inst.name
+          ?.toLowerCase()
+          .includes(query) ||
+
+        inst.description
+          ?.toLowerCase()
+          .includes(query) ||
+
+        inst.email
+          ?.toLowerCase()
+          .includes(query) ||
+
+        inst.phone_number
+          ?.includes(query) ||
+
+        inst.city
+          ?.toLowerCase()
+          .includes(query) ||
+
+        inst.state
+          ?.toLowerCase()
+          .includes(query) ||
+
+        String(inst.start_time || "")
+          .toLowerCase()
+          .includes(query) ||
+
+        String(inst.end_time || "")
+          .toLowerCase()
+          .includes(query) ||
+
+        String(inst.id)
+          .includes(query) ||
+
+        String(inst.rating)
+          .includes(query) ||
+
+        String(inst.reviews)
+          .includes(query) ||
+
+        String(inst.distance)
+          .includes(query) ||
+
+        String(inst.courses)
+          .includes(query) ||
+
+        inst.categories?.some(
+          (c) =>
+            c.category_name
+              ?.toLowerCase()
+              .includes(query) ||
+
+            c.subcategory_name
+              ?.toLowerCase()
+              .includes(query)
+        )
+      );
+    });
+
+  // ============================================================
+  // IMAGE URL
+  // ============================================================
+
   const getImageUrl = (img) => {
     if (!img) return "";
-    if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+
+    if (img.startsWith("http")) {
+      return img;
+    }
+
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
-  // --- Status badge ---
+  // ============================================================
+  // STATUS BADGE
+  // ============================================================
+
   const StatusBadge = ({ status }) => {
-    const s = status?.toLowerCase();
-    let bg = "bg-gray-500/20";
-    let text = "text-gray-400";
+    const s =
+      status?.toLowerCase();
+
+    let bg =
+      "bg-gray-500/20";
+
+    let text =
+      "text-gray-400";
+
     if (s === "approved") {
-      bg = "bg-green-500/20";
-      text = "text-green-400";
+      bg =
+        "bg-green-500/20";
+      text =
+        "text-green-400";
     } else if (s === "pending") {
-      bg = "bg-yellow-500/20";
-      text = "text-yellow-400";
+      bg =
+        "bg-yellow-500/20";
+      text =
+        "text-yellow-400";
     } else if (s === "rejected") {
-      bg = "bg-red-500/20";
-      text = "text-red-400";
+      bg =
+        "bg-red-500/20";
+      text =
+        "text-red-400";
     }
+
     return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${bg} ${text}`}>
+      <span
+        className={`px-2.5 py-1 rounded-full text-xs font-semibold ${bg} ${text}`}
+      >
         {status || "Pending"}
       </span>
     );
   };
 
-  // --- Page title ---
+  // ============================================================
+  // PAGE TITLE
+  // ============================================================
+
   const getPageTitle = () => {
-    if (location.pathname === "/institutes/pending") return "Pending Institutes";
-    if (location.pathname === "/institutes/rejected") return "Rejected Institutes";
+    if (
+      location.pathname ===
+      "/institutes/pending"
+    ) {
+      return "Pending Institutes";
+    }
+
+    if (
+      location.pathname ===
+      "/institutes/rejected"
+    ) {
+      return "Rejected Institutes";
+    }
+
     return "Institutes";
   };
 
   const getPageSubtitle = () => {
-    if (location.pathname === "/institutes/pending") return "Review and approve institute applications";
-    if (location.pathname === "/institutes/rejected") return "Institutes rejected by admin";
+    if (
+      location.pathname ===
+      "/institutes/pending"
+    ) {
+      return "Review and approve institute applications";
+    }
+
+    if (
+      location.pathname ===
+      "/institutes/rejected"
+    ) {
+      return "Institutes rejected by admin";
+    }
+
     return "Manage all institutes";
   };
 
-  // --- Fetch ---
+  // ============================================================
+  // FETCH INSTITUTES
+  // ============================================================
+
   const fetchInstitutes = async () => {
     try {
       setLoading(true);
+
       let response;
-      if (location.pathname === "/institutes/pending") {
-        response = await getPendingInstitutes(token);
-      } else if (location.pathname === "/institutes/rejected") {
-        response = await getRejectedInstitutes(token);
+
+      if (
+        location.pathname ===
+        "/institutes/pending"
+      ) {
+        response =
+          await getPendingInstitutes(
+            token
+          );
+      } else if (
+        location.pathname ===
+        "/institutes/rejected"
+      ) {
+        response =
+          await getRejectedInstitutes(
+            token
+          );
       } else {
-        response = await getAllInstitutes();
+        response =
+          await getAllInstitutes();
       }
-      setInstitutes(response?.data || []);
+
+      setInstitutes(
+        response?.data || []
+      );
     } catch (e) {
       console.error(e);
-      toast.error(e?.response?.data?.message || "Failed to fetch institutes");
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Failed to fetch institutes"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ============================================================
+  // FETCH CATEGORIES
+  // ============================================================
+
   const fetchDropdowns = async () => {
     try {
-      const [catRes, subRes] = await Promise.all([
+      const [
+        catRes,
+        subRes,
+      ] = await Promise.all([
         API.get("/categories"),
         API.get("/subcategories"),
       ]);
-      setCategories(catRes.data.data || []);
-      setSubcategories(subRes.data.data || []);
+
+      setCategories(
+        catRes.data.data || []
+      );
+
+      setSubcategories(
+        subRes.data.data || []
+      );
     } catch (err) {
-      console.log(err);
+      console.error(
+        "Failed to fetch categories:",
+        err
+      );
     }
   };
 
@@ -3831,452 +5300,1019 @@ export default function Institutes() {
     fetchDropdowns();
   }, [location.pathname]);
 
-  // --- Approve ---
-  const handleApprove = async (institute) => {
+  // ============================================================
+  // APPROVE
+  // ============================================================
+
+  const handleApprove = async (
+    institute
+  ) => {
     try {
-      await updateInstituteApproval(institute.id, "APPROVED", token);
-      toast.success("Institute approved successfully");
+      await updateInstituteApproval(
+        institute.id,
+        "APPROVED",
+        token
+      );
+
+      toast.success(
+        "Institute approved successfully"
+      );
+
       fetchInstitutes();
     } catch (e) {
       console.error(e);
-      toast.error(e?.response?.data?.message || "Approval failed");
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Approval failed"
+      );
     }
   };
 
-  // --- Reject ---
-  const handleReject = async (institute) => {
+  // ============================================================
+  // REJECT
+  // ============================================================
+
+  const handleReject = async (
+    institute
+  ) => {
     try {
-      await updateInstituteApproval(institute.id, "REJECTED", token);
-      toast.success("Institute rejected");
+      await updateInstituteApproval(
+        institute.id,
+        "REJECTED",
+        token
+      );
+
+      toast.success(
+        "Institute rejected"
+      );
+
       fetchInstitutes();
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Reject failed");
+      console.error(e);
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Reject failed"
+      );
     }
   };
 
-  // --- Delete ---
-  const handleDeleteClick = (institute) => {
-    setInstituteToDelete(institute);
+  // ============================================================
+  // DELETE
+  // ============================================================
+
+  const handleDeleteClick = (
+    institute
+  ) => {
+    setInstituteToDelete(
+      institute
+    );
+
     setShowDeleteModal(true);
   };
 
   const confirmDelete = async () => {
     if (!instituteToDelete) return;
+
     try {
-      await deleteInstitute(instituteToDelete.id, token);
-      toast.success("Institute deleted");
+      await deleteInstitute(
+        instituteToDelete.id,
+        token
+      );
+
+      toast.success(
+        "Institute deleted"
+      );
+
       setShowDeleteModal(false);
       setInstituteToDelete(null);
+
       fetchInstitutes();
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Delete failed");
+      console.error(e);
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Delete failed"
+      );
     }
   };
 
-  // --- Create ---
+  // ============================================================
+  // CREATE
+  // ============================================================
+
   const handleCreate = async (e) => {
     e.preventDefault();
-    try {
-      const payload = new FormData();
-      Object.entries(formData).forEach(([key, val]) => {
-        if (val !== null && val !== undefined && val !== "") {
-          payload.append(key, val);
-        }
-      });
 
-      await adminCreateInstitute(payload, token);
-      toast.success("Institute created successfully");
+    try {
+      const payload =
+        new FormData();
+
+      Object.entries(formData).forEach(
+        ([key, val]) => {
+          if (
+            val !== null &&
+            val !== undefined &&
+            val !== ""
+          ) {
+            payload.append(
+              key,
+              val
+            );
+          }
+        }
+      );
+
+      await adminCreateInstitute(
+        payload,
+        token
+      );
+
+      toast.success(
+        "Institute created successfully"
+      );
+
       setShowCreateModal(false);
       setFormData(defaultForm);
+
       fetchInstitutes();
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Create failed");
+      console.error(e);
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Create failed"
+      );
     }
   };
 
-  // --- Edit ---
-  const handleEdit = (institute) => {
-    setEditingInstitute(institute);
+  // ============================================================
+  // EDIT
+  // ============================================================
+
+  const handleEdit = (
+    institute
+  ) => {
+    setEditingInstitute(
+      institute
+    );
+
+    const firstCategory =
+      institute?.categories?.[0] ||
+      {};
+
     setFormData({
-      name: institute.name || "",
-      description: institute.description || "",
-      email: institute.email || "",
-      phone_number: institute.phone_number || "",
-      city: institute.city || "",
-      state: institute.state || "",
-      timing: institute.timing || "",
-      start_time: institute.start_time || "",
-      end_time: institute.end_time || "",
-      timezone: institute.timezone || "Asia/Kolkata",
-      rating: institute.rating || "",
-      reviews: institute.reviews || "",
-      distance: institute.distance || "",
-      courses: institute.courses || "",
-      category_id: institute.category_id || "",
-      subcategory_id: institute.subcategory_id || "",
+      name:
+        institute.name || "",
+
+      description:
+        institute.description || "",
+
+      email:
+        institute.email || "",
+
+      phone_number:
+        institute.phone_number || "",
+
+      city:
+        institute.city || "",
+
+      state:
+        institute.state || "",
+
+      start_time:
+        institute.start_time
+          ? String(
+              institute.start_time
+            ).slice(0, 5)
+          : "",
+
+      end_time:
+        institute.end_time
+          ? String(
+              institute.end_time
+            ).slice(0, 5)
+          : "",
+
+      timezone:
+        institute.timezone ||
+        "Asia/Kolkata",
+
+      rating:
+        institute.rating || "",
+
+      reviews:
+        institute.reviews || "",
+
+      distance:
+        institute.distance || "",
+
+      courses:
+        institute.courses || "",
+
+      category_id:
+        institute.category_id ||
+        firstCategory.category_id ||
+        "",
+
+      subcategory_id:
+        institute.subcategory_id ||
+        firstCategory.subcategory_id ||
+        "",
+
       image: null,
       logo: null,
     });
+
     setShowEditModal(true);
   };
 
-  // --- Update ---
+  // ============================================================
+  // UPDATE
+  // ============================================================
+
   const handleUpdate = async (e) => {
     e.preventDefault();
-    try {
-      const payload = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null && formData[key] !== "") {
-          payload.append(key, formData[key]);
-        }
-      });
 
-      await updateInstitute(editingInstitute.id, payload, token);
-      toast.success("Institute updated successfully");
+    try {
+      const payload =
+        new FormData();
+
+      Object.keys(formData).forEach(
+        (key) => {
+          const value =
+            formData[key];
+
+          if (
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+          ) {
+            payload.append(
+              key,
+              value
+            );
+          }
+        }
+      );
+
+      await updateInstitute(
+        editingInstitute.id,
+        payload,
+        token
+      );
+
+      toast.success(
+        "Institute updated successfully"
+      );
+
       setShowEditModal(false);
       setEditingInstitute(null);
+
       fetchInstitutes();
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Update failed");
+      console.error(e);
+
+      toast.error(
+        e?.response?.data?.message ||
+          "Update failed"
+      );
     }
   };
 
-  const isPendingPage = location.pathname === "/institutes/pending";
-  const isRejectedPage = location.pathname === "/institutes/rejected";
+  const isPendingPage =
+    location.pathname ===
+    "/institutes/pending";
+
+  const isRejectedPage =
+    location.pathname ===
+    "/institutes/rejected";
+
+  // ============================================================
+  // RETURN UI
+  // ============================================================
 
   return (
     <div className="p-8 text-white">
-      {/* Header */}
+
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+
         <div>
-          <h1 className="text-4xl font-bold text-purple-400">{getPageTitle()}</h1>
-          <p className="text-gray-400 mt-2">{getPageSubtitle()}</p>
+          <h1 className="text-4xl font-bold text-purple-400">
+            {getPageTitle()}
+          </h1>
+
+          <p className="text-gray-400 mt-2">
+            {getPageSubtitle()}
+          </p>
         </div>
 
-        {!isPendingPage && !isRejectedPage && (
-          <button
-            onClick={() => {
-              setFormData(defaultForm);
-              setShowCreateModal(true);
-            }}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
-          >
-            + Add Institute
-          </button>
-        )}
+        {!isPendingPage &&
+          !isRejectedPage && (
+            <button
+              onClick={() => {
+                setFormData(
+                  defaultForm
+                );
+                setEditingInstitute(
+                  null
+                );
+                setShowCreateModal(
+                  true
+                );
+              }}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+            >
+              + Add Institute
+            </button>
+          )}
+
       </div>
 
-      {/* Full-width Search Bar */}
+      {/* SEARCH */}
       <div className="mb-6">
+
         <div className="relative w-full">
+
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
             size={18}
           />
+
           <input
             type="text"
             placeholder="Search institutes..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) =>
+              setSearchQuery(
+                e.target.value
+              )
+            }
             className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
           />
+
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() =>
+                setSearchQuery("")
+              }
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
             >
               <FaTimes size={14} />
             </button>
           )}
+
         </div>
+
       </div>
 
-      {/* Table */}
+      {/* TABLE */}
       <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
+
         <div className="overflow-x-auto">
+
           <table className="w-full">
+
             <thead className="bg-[#202027] text-white">
+
               <tr>
-                <th className="p-4 text-left whitespace-nowrap">Logo</th>
-                <th className="p-4 text-left whitespace-nowrap">Image</th>
-                <th className="p-4 text-left whitespace-nowrap">Name</th>
-                <th className="p-4 text-left whitespace-nowrap">Description</th>
-                <th className="p-4 text-left whitespace-nowrap">Email</th>
-                <th className="p-4 text-left whitespace-nowrap">Phone</th>
-                <th className="p-4 text-left whitespace-nowrap">City</th>
-                <th className="p-4 text-left whitespace-nowrap">State</th>
-                <th className="p-4 text-left whitespace-nowrap">Timing</th>
-                <th className="p-4 text-left whitespace-nowrap">Rating</th>
-                <th className="p-4 text-left whitespace-nowrap">Reviews</th>
-                <th className="p-4 text-left whitespace-nowrap">Courses</th>
-                <th className="p-4 text-left whitespace-nowrap">Category</th>
-                <th className="p-4 text-left whitespace-nowrap">Subcategory</th>
-                <th className="p-4 text-left whitespace-nowrap">Status</th>
-                <th className="p-4 text-left whitespace-nowrap">Actions</th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Logo
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Image
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Name
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Description
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Email
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Phone
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  City
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  State
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Start Time
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  End Time
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Rating
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Reviews
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Courses
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Category
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Subcategory
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Status
+                </th>
+
+                <th className="p-4 text-left whitespace-nowrap">
+                  Actions
+                </th>
+
               </tr>
+
             </thead>
 
             <tbody>
+
               {loading ? (
+
                 <tr>
-                  <td colSpan={16} className="p-12 text-center">
+
+                  <td
+                    colSpan={17}
+                    className="p-12 text-center"
+                  >
+
                     <div className="flex flex-col items-center gap-3">
+
                       <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                      <p className="text-white">Loading institutes...</p>
+
+                      <p className="text-white">
+                        Loading institutes...
+                      </p>
+
                     </div>
+
                   </td>
+
                 </tr>
+
               ) : filteredInstitutes.length === 0 ? (
+
                 <tr>
-                  <td colSpan={16} className="p-12 text-center">
+
+                  <td
+                    colSpan={17}
+                    className="p-12 text-center"
+                  >
+
                     <div className="flex flex-col items-center gap-3">
-                      <Search size={40} className="text-white" />
+
+                      <Search
+                        size={40}
+                        className="text-white"
+                      />
+
                       <p className="text-white text-lg">
                         {searchQuery
                           ? "No institutes found matching your search"
                           : "No institutes available"}
                       </p>
+
                       {searchQuery && (
                         <button
-                          onClick={() => setSearchQuery("")}
+                          onClick={() =>
+                            setSearchQuery(
+                              ""
+                            )
+                          }
                           className="text-purple-400 hover:text-purple-300 text-sm mt-1 transition-colors"
                         >
                           Clear search
                         </button>
                       )}
+
                     </div>
+
                   </td>
+
                 </tr>
+
               ) : (
-                filteredInstitutes.map((inst) => (
-                  <tr
-                    key={inst.id}
-                    className="border-t border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
-                  >
-                    {/* Logo Column */}
-                    <td className="p-4">
-                      {inst.logo ? (
-                        <img
-                          src={getImageUrl(inst.logo)}
-                          alt={`${inst.name} logo`}
-                          className="w-11 h-11 rounded-xl object-contain border border-[#333] bg-[#1a1a20] p-0.5"
-                          onError={(e) => { e.currentTarget.style.display = "none"; }}
-                        />
-                      ) : (
-                        <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-[10px] leading-tight text-center">
-                          No<br />Logo
-                        </div>
-                      )}
-                    </td>
 
-                    {/* Image Column */}
-                    <td className="p-4">
-                      {inst.image_url ? (
-                        <img
-                          src={getImageUrl(inst.image_url)}
-                          alt={inst.name}
-                          className="w-11 h-11 rounded-xl object-cover border border-[#333]"
-                          onError={(e) => { e.currentTarget.style.display = "none"; }}
-                        />
-                      ) : (
-                        <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-xs">
-                          N/A
-                        </div>
-                      )}
-                    </td>
+                filteredInstitutes.map(
+                  (inst) => (
 
-                    <td className="p-4 font-medium whitespace-nowrap">{inst.name}</td>
-                    <td className="p-4 text-white max-w-[180px] truncate">{inst.description || "-"}</td>
-                    <td className="p-4 text-white whitespace-nowrap">{inst.email || "-"}</td>
-                    <td className="p-4 text-white whitespace-nowrap">{inst.phone_number || "-"}</td>
-                    <td className="p-4 text-white whitespace-nowrap">{inst.city || "-"}</td>
-                    <td className="p-4 text-white whitespace-nowrap">{inst.state || "-"}</td>
-                    <td className="p-4 text-white whitespace-nowrap">{inst.timing || "-"}</td>
+                    <tr
+                      key={inst.id}
+                      className="border-t border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
+                    >
 
-                    <td className="p-4 font-semibold whitespace-nowrap">
-                      {inst.rating ? Math.round(Number(inst.rating)) : "-"}
-                    </td>
+                      {/* Logo */}
+                      <td className="p-4">
 
-                    <td className="p-4 font-semibold whitespace-nowrap">{inst.reviews ?? "-"}</td>
-                    <td className="p-4 font-semibold whitespace-nowrap">{inst.courses ?? "-"}</td>
-                    <td className="p-4 text-white max-w-[130px] truncate">
-                      {inst.categories?.length
-                        ? inst.categories.map((c) => c.category_name).filter(Boolean).join(", ")
-                        : "-"}
-                    </td>
-                    <td className="p-4 text-white max-w-[130px] truncate">
-                      {inst.categories?.length
-                        ? inst.categories.map((c) => c.subcategory_name).filter(Boolean).join(", ")
-                        : "-"}
-                    </td>
-                    <td className="p-4 whitespace-nowrap">
-                      <StatusBadge status={inst.approval_status} />
-                    </td>
+                        {inst.logo ? (
 
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        {inst.approval_status === "PENDING" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(inst)}
-                              className="p-2 rounded-lg hover:bg-green-500/10 transition-colors group"
-                              title="Approve"
-                            >
-                              <FaCheck size={14} className="text-green-500/70 group-hover:text-green-400 transition-colors" />
-                            </button>
-                            <button
-                              onClick={() => handleReject(inst)}
-                              className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
-                              title="Reject"
-                            >
-                              <FaBan size={14} className="text-red-500/70 group-hover:text-red-400 transition-colors" />
-                            </button>
-                          </>
+                          <img
+                            src={getImageUrl(
+                              inst.logo
+                            )}
+                            alt={`${inst.name} logo`}
+                            className="w-11 h-11 rounded-xl object-contain border border-[#333] bg-[#1a1a20] p-0.5"
+                            onError={(e) => {
+                              e.currentTarget.style.display =
+                                "none";
+                            }}
+                          />
+
+                        ) : (
+
+                          <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-[10px] leading-tight text-center">
+                            No
+                            <br />
+                            Logo
+                          </div>
+
                         )}
 
-                        {inst.approval_status !== "PENDING" && (
-                          <>
-                            <button
-                              onClick={() => handleEdit(inst)}
-                              className="p-2 rounded-lg hover:bg-[#2a2a35] transition-colors group"
-                              title="Edit"
-                            >
-                              <Edit size={16} className="text-white group-hover:text-white transition-colors" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(inst)}
-                              className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
-                              title="Delete"
-                            >
-                              <Trash2 size={16} className="text-red-500/70 group-hover:text-red-400 transition-colors" />
-                            </button>
-                          </>
+                      </td>
+
+                      {/* Image */}
+                      <td className="p-4">
+
+                        {inst.image_url ? (
+
+                          <img
+                            src={getImageUrl(
+                              inst.image_url
+                            )}
+                            alt={inst.name}
+                            className="w-11 h-11 rounded-xl object-cover border border-[#333]"
+                            onError={(e) => {
+                              e.currentTarget.style.display =
+                                "none";
+                            }}
+                          />
+
+                        ) : (
+
+                          <div className="w-11 h-11 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-xs">
+                            N/A
+                          </div>
+
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+
+                      </td>
+
+                      {/* Name */}
+                      <td className="p-4 font-medium whitespace-nowrap">
+                        {inst.name}
+                      </td>
+
+                      {/* Description */}
+                      <td className="p-4 text-white max-w-[180px] truncate">
+                        {inst.description || "-"}
+                      </td>
+
+                      {/* Email */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.email || "-"}
+                      </td>
+
+                      {/* Phone */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.phone_number || "-"}
+                      </td>
+
+                      {/* City */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.city || "-"}
+                      </td>
+
+                      {/* State */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.state || "-"}
+                      </td>
+
+                      {/* Start Time */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.start_time
+                          ? String(
+                              inst.start_time
+                            ).slice(0, 5)
+                          : "-"}
+                      </td>
+
+                      {/* End Time */}
+                      <td className="p-4 text-white whitespace-nowrap">
+                        {inst.end_time
+                          ? String(
+                              inst.end_time
+                            ).slice(0, 5)
+                          : "-"}
+                      </td>
+
+                      {/* Rating */}
+                      <td className="p-4 font-semibold whitespace-nowrap">
+                        {inst.rating
+                          ? Math.round(
+                              Number(
+                                inst.rating
+                              )
+                            )
+                          : "-"}
+                      </td>
+
+                      {/* Reviews */}
+                      <td className="p-4 font-semibold whitespace-nowrap">
+                        {inst.reviews ??
+                          "-"}
+                      </td>
+
+                      {/* Courses */}
+                      <td className="p-4 font-semibold whitespace-nowrap">
+                        {inst.courses ??
+                          "-"}
+                      </td>
+
+                      {/* Category */}
+                      <td className="p-4 text-white max-w-[130px] truncate">
+
+                        {inst.categories
+                          ?.length
+                          ? inst.categories
+                              .map(
+                                (c) =>
+                                  c.category_name
+                              )
+                              .filter(Boolean)
+                              .join(", ")
+                          : "-"}
+
+                      </td>
+
+                      {/* Subcategory */}
+                      <td className="p-4 text-white max-w-[130px] truncate">
+
+                        {inst.categories
+                          ?.length
+                          ? inst.categories
+                              .map(
+                                (c) =>
+                                  c.subcategory_name
+                              )
+                              .filter(Boolean)
+                              .join(", ")
+                          : "-"}
+
+                      </td>
+
+                      {/* Status */}
+                      <td className="p-4 whitespace-nowrap">
+                        <StatusBadge
+                          status={
+                            inst.approval_status
+                          }
+                        />
+                      </td>
+
+                      {/* Actions */}
+                      <td className="p-4">
+
+                        <div className="flex items-center gap-2">
+
+                          {inst.approval_status ===
+                            "PENDING" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleApprove(
+                                    inst
+                                  )
+                                }
+                                className="p-2 rounded-lg hover:bg-green-500/10 transition-colors group"
+                                title="Approve"
+                              >
+                                <FaCheck
+                                  size={14}
+                                  className="text-green-500/70 group-hover:text-green-400 transition-colors"
+                                />
+                              </button>
+
+                              <button
+                                onClick={() =>
+                                  handleReject(
+                                    inst
+                                  )
+                                }
+                                className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
+                                title="Reject"
+                              >
+                                <FaBan
+                                  size={14}
+                                  className="text-red-500/70 group-hover:text-red-400 transition-colors"
+                                />
+                              </button>
+                            </>
+                          )}
+
+                          {inst.approval_status !==
+                            "PENDING" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleEdit(
+                                    inst
+                                  )
+                                }
+                                className="p-2 rounded-lg hover:bg-[#2a2a35] transition-colors group"
+                                title="Edit"
+                              >
+                                <Edit
+                                  size={16}
+                                  className="text-white"
+                                />
+                              </button>
+
+                              <button
+                                onClick={() =>
+                                  handleDeleteClick(
+                                    inst
+                                  )
+                                }
+                                className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
+                                title="Delete"
+                              >
+                                <Trash2
+                                  size={16}
+                                  className="text-red-500/70 group-hover:text-red-400 transition-colors"
+                                />
+                              </button>
+                            </>
+                          )}
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )
+
               )}
+
             </tbody>
+
           </table>
+
         </div>
+
       </div>
 
-      {/* ==================== Create Institute Modal ==================== */}
+      {/* ======================================================
+          CREATE MODAL
+      ====================================================== */}
+
       {showCreateModal && (
+
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+
           <div className="w-full max-w-[700px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+
             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
-              <h2 className="text-2xl font-bold text-white">Create Institute</h2>
-              <button onClick={() => setShowCreateModal(false)} className="text-white hover:text-white transition-colors">
+
+              <h2 className="text-2xl font-bold text-white">
+                Create Institute
+              </h2>
+
+              <button
+                onClick={() =>
+                  setShowCreateModal(
+                    false
+                  )
+                }
+                className="text-white"
+              >
                 <FaTimes size={20} />
               </button>
+
             </div>
+
             <div className="overflow-y-auto max-h-[75vh] p-6">
-              <form onSubmit={handleCreate}>
-                <FormFields
+
+              <form
+                onSubmit={handleCreate}
+              >
+
+                <CreateFormFields
                   formData={formData}
                   setFormData={setFormData}
                   categories={categories}
                   subcategories={subcategories}
-                  editingInstitute={editingInstitute}
-                  getImageUrl={getImageUrl}
                 />
+
                 <div className="flex justify-end gap-3 pt-4 border-t border-[#3a3448]">
+
                   <button
                     type="button"
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() =>
+                      setShowCreateModal(
+                        false
+                      )
+                    }
                     className="px-5 py-3 rounded-xl border border-gray-600 text-white hover:bg-[#2b2638] transition-colors"
                   >
                     Cancel
                   </button>
+
                   <button
                     type="submit"
                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
                   >
                     Create Institute
                   </button>
+
                 </div>
+
               </form>
+
             </div>
+
           </div>
+
         </div>
+
       )}
 
-      {/* ==================== Edit Institute Modal ==================== */}
+      {/* ======================================================
+          EDIT MODAL
+      ====================================================== */}
+
       {showEditModal && (
+
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+
           <div className="w-full max-w-[700px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+
             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
-              <h2 className="text-2xl font-bold text-white">Edit Institute</h2>
+
+              <h2 className="text-2xl font-bold text-white">
+                Edit Institute
+              </h2>
+
               <button
-                onClick={() => { setShowEditModal(false); setEditingInstitute(null); }}
+                onClick={() => {
+                  setShowEditModal(
+                    false
+                  );
+                  setEditingInstitute(
+                    null
+                  );
+                }}
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaTimes size={20} />
               </button>
+
             </div>
+
             <div className="overflow-y-auto max-h-[75vh] p-6">
-              <form onSubmit={handleUpdate}>
-                <FormFields
+
+              <form
+                onSubmit={handleUpdate}
+              >
+
+                <EditFormFields
                   formData={formData}
                   setFormData={setFormData}
                   categories={categories}
                   subcategories={subcategories}
-                  editingInstitute={editingInstitute}
-                  getImageUrl={getImageUrl}
+                  editingInstitute={
+                    editingInstitute
+                  }
+                  getImageUrl={
+                    getImageUrl
+                  }
                 />
+
                 <div className="flex justify-end gap-3 pt-4 border-t border-[#3a3448]">
+
                   <button
                     type="button"
-                    onClick={() => { setShowEditModal(false); setEditingInstitute(null); }}
+                    onClick={() => {
+                      setShowEditModal(
+                        false
+                      );
+                      setEditingInstitute(
+                        null
+                      );
+                    }}
                     className="px-5 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-[#2b2638] transition-colors"
                   >
                     Cancel
                   </button>
+
                   <button
                     type="submit"
                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
                   >
                     Update Institute
                   </button>
+
                 </div>
+
               </form>
+
             </div>
+
           </div>
+
         </div>
+
       )}
 
-      {/* ==================== Delete Confirmation Modal ==================== */}
+      {/* ======================================================
+          DELETE MODAL
+      ====================================================== */}
+
       {showDeleteModal && (
+
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
+
           <div className="w-full max-w-[400px] bg-[#1e1b2e] border border-[#2e2a42] rounded-2xl shadow-2xl overflow-hidden">
+
             <div className="p-8 flex flex-col items-center">
+
               <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mb-5">
+
                 <FaTrash className="text-red-400 text-lg" />
+
               </div>
-              <h2 className="text-xl font-bold text-white mb-3 text-center">Delete Institute</h2>
+
+              <h2 className="text-xl font-bold text-white mb-3 text-center">
+                Delete Institute
+              </h2>
+
               <p className="text-gray-400 text-center text-sm leading-relaxed mb-8">
                 Are you sure you want to delete this institute?
               </p>
+
               <div className="flex gap-3 w-full">
+
                 <button
-                  onClick={() => { setShowDeleteModal(false); setInstituteToDelete(null); }}
+                  onClick={() => {
+                    setShowDeleteModal(
+                      false
+                    );
+                    setInstituteToDelete(
+                      null
+                    );
+                  }}
                   className="flex-1 px-5 py-3 rounded-xl border border-[#3a3650] text-gray-300 hover:bg-[#2a2640] transition-colors font-medium text-sm"
                 >
                   Cancel
                 </button>
+
                 <button
-                  onClick={confirmDelete}
+                  onClick={
+                    confirmDelete
+                  }
                   className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold hover:opacity-90 transition-opacity text-sm"
                 >
                   Delete
                 </button>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 }

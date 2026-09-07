@@ -205,7 +205,7 @@ const BannerManagement = () => {
     const img = item?.image;
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   // --- Filtered Banners ---

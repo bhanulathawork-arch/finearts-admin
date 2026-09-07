@@ -17,7 +17,7 @@
 //       const token = localStorage.getItem("adminToken");
 
 //       const res = await axios.get(
-//          "http://localhost:5000/api/trainers/admin/rejected",
+//          "https://finearts-backend.onrender.com/api/trainers/admin/rejected",
 //         {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -190,7 +190,7 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   const fetchRejectedTrainers = async () => {
@@ -198,7 +198,7 @@
 //       setLoading(true);
 //       const token = localStorage.getItem("adminToken");
 //       const res = await axios.get(
-//          "http://localhost:5000/api/trainers/admin/rejected",
+//          "https://finearts-backend.onrender.com/api/trainers/admin/rejected",
 //         {
 //           headers: { Authorization: `Bearer ${token}` },
 //         }
@@ -431,14 +431,14 @@ export default function RejectedTrainersAdmin() {
   const getImageUrl = (img) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   const fetchRejectedTrainers = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:5000/api/trainers/admin/rejected",
+        "https://finearts-backend.onrender.com/api/trainers/admin/rejected",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -464,7 +464,7 @@ export default function RejectedTrainersAdmin() {
     if (!trainerToDelete) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/trainers/admin/${trainerToDelete.id}`,
+        `https://finearts-backend.onrender.com/api/trainers/admin/${trainerToDelete.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

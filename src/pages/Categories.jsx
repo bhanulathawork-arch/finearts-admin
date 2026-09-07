@@ -4,7 +4,7 @@
 // import { Edit, Trash2 } from "lucide-react";
 // import { FaEdit, FaTrash, FaTimes } from "react-icons/fa"; // Added FaTimes
 
-// const API_URL = "http://localhost:5000/api/categories";
+// const API_URL = "https://finearts-backend.onrender.com/api/categories";
 
 // function Categories() {
 //   const [categories, setCategories] = useState([]);
@@ -37,7 +37,7 @@
 //     const img = item?.image || item?.image_url;
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   const fetchCategories = async () => {
@@ -473,7 +473,7 @@ import toast from "react-hot-toast";
 import { Edit, Trash2, Search } from "lucide-react";
 import { FaTrash, FaTimes } from "react-icons/fa";
 
-const API_URL = "http://localhost:5000/api/categories";
+const API_URL = "https://finearts-backend.onrender.com/api/categories";
 
 function Categories() {
   const [categories, setCategories] = useState([]);
@@ -518,7 +518,7 @@ function Categories() {
     const img = item?.image || item?.image_url;
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   const fetchCategories = async () => {

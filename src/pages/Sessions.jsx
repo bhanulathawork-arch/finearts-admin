@@ -18,7 +18,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // const authHeader = () => ({
 //   headers: {
@@ -786,7 +786,7 @@
 // /* ── Timezone Utility ── */
 // import { useTimezone, getTimezone } from "../utils/timezone";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // /**
 //  * Auth headers — now includes X-Timezone automatically.
@@ -2025,7 +2025,7 @@
 // /* ── Timezone Utility ── */
 // import { useTimezone, getTimezone } from "../utils/timezone";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // /**
 //  * Auth headers — now includes X-Timezone automatically.
@@ -3173,7 +3173,7 @@
 // /* ── Timezone Utility ── */
 // import { useTimezone, getTimezone } from "../utils/timezone";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // const authHeader = () => ({
 //   headers: {
@@ -4291,7 +4291,7 @@ import {
 /* ── Timezone Utility ── */
 import { useTimezone, getTimezone } from "../utils/timezone";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://finearts-backend.onrender.com/api";
 
 const authHeader = () => ({
   headers: {

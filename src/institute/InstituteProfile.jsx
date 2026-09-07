@@ -393,7 +393,7 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   if (loading) {
@@ -674,7 +674,7 @@
 //       return img;
 //     }
 
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   /* =========================================================
@@ -1532,7 +1532,7 @@
 //       return img;
 //     }
 
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   /* =========================================================
@@ -3165,7 +3165,7 @@ const getImageUrl = (img) => {
   }
 
   // Backend relative path
-  return `http://localhost:5000${value.startsWith("/") ? "" : "/"}${value}`;
+  return `https://finearts-backend.onrender.com${value.startsWith("/") ? "" : "/"}${value}`;
 };
 
 /* =========================================================

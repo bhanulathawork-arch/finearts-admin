@@ -3,7 +3,7 @@
 // import { getAuth } from "firebase/auth";
 
 // const API = axios.create({
-// baseURL: "http://localhost:5000/api",
+// baseURL: "https://finearts-backend.onrender.com/api",
 // });
 
 // API.interceptors.request.use(
@@ -72,7 +72,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "http://localhost:5000/api",
+//   baseURL: "https://finearts-backend.onrender.com/api",
 // });
 
 // API.interceptors.request.use(
@@ -131,7 +131,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "http://localhost:5000/api",
+//   baseURL: "https://finearts-backend.onrender.com/api",
 // });
 
 // /* =========================
@@ -215,7 +215,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "http://localhost:5000/api",
+//   baseURL: "https://finearts-backend.onrender.com/api",
 //   timeout: 30000,
 // });
 
@@ -346,7 +346,7 @@
 // } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "http://localhost:5000/api",
+//   baseURL: "https://finearts-backend.onrender.com/api",
 //   timeout: 30000,
 // });
 
@@ -727,7 +727,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "http://localhost:5000/api",
+//     "https://finearts-backend.onrender.com/api",
 
 //   timeout: 30000,
 // });
@@ -1174,7 +1174,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "http://localhost:5000/api",
+//     "https://finearts-backend.onrender.com/api",
 
 //   timeout: 30000,
 // });
@@ -1972,7 +1972,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "http://localhost:5000/api",
+//     "https://finearts-backend.onrender.com/api",
 
 //   timeout: 30000,
 // });
@@ -2858,7 +2858,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "http://localhost:5000/api",
+//     "https://finearts-backend.onrender.com/api",
 
 //   timeout: 30000,
 // });
@@ -3845,8 +3845,1133 @@
 // export default API;
 
 
+// import axios from "axios";
+// import { getAuth, signOut } from "firebase/auth";
+
+// /* =========================================================
+//    API CONFIG
+// ========================================================= */
+
+// const API = axios.create({
+//   baseURL:
+//     import.meta.env.VITE_API_URL ||
+//     "https://finearts-backend.onrender.com/api",
+
+//   timeout: 30000,
+// });
+
+// /* =========================================================
+//    PATH HELPERS
+// ========================================================= */
+
+// const getPath = () => {
+//   return window.location.pathname || "/";
+// };
+
+// const getRequestUrl = (config = {}) => {
+//   return String(config.url || "")
+//     .split("?")[0]
+//     .replace(/\/+$/, "")
+//     .toLowerCase();
+// };
+
+// /* =========================================================
+//    PAGE TYPES
+// ========================================================= */
+
+// /* ---------------------------------------------------------
+//    ADMIN PAGE
+// --------------------------------------------------------- */
+
+// const isAdminPage = () => {
+//   const path = getPath();
+
+//   return (
+//     path === "/admin-login" ||
+//     path === "/admin" ||
+//     path.startsWith("/admin/") ||
+//     path === "/dashboard" ||
+//     path.startsWith("/dashboard/")
+//   );
+// };
+
+// /* ---------------------------------------------------------
+//    INSTITUTE PAGE
+
+//    IMPORTANT:
+//    /institute     = Firebase
+//    /institutes    = Admin
+// --------------------------------------------------------- */
+
+// const isInstituteRoute = () => {
+//   const path = getPath();
+
+//   return (
+//     path === "/institute" ||
+//     path.startsWith("/institute/")
+//   );
+// };
+
+// /* ---------------------------------------------------------
+//    WEBSITE PREVIEW PAGE
+// --------------------------------------------------------- */
+
+// const isWebsitePreviewRoute = () => {
+//   const path = getPath();
+
+//   return (
+//     path === "/institute/website/preview" ||
+//     path.startsWith("/institute/website/preview/")
+//   );
+// };
+
+// /* ---------------------------------------------------------
+//    TRAINER PAGE
+// --------------------------------------------------------- */
+
+// const isTrainerPage = () => {
+//   const path = getPath();
+
+//   return (
+//     path === "/trainer-login" ||
+//     path === "/trainer" ||
+//     path.startsWith("/trainer/")
+//   );
+// };
+
+// /* =========================================================
+//    PUBLIC WEBSITE API
+// ========================================================= */
+
+// /*
+//  * IMPORTANT
+//  *
+//  * These endpoints are PUBLIC even when the browser is
+//  * currently inside:
+//  *
+//  *     /institute/website/preview
+//  *
+//  * Example:
+//  *
+//  *     GET /websites/public/14
+//  *
+//  * MUST NOT become a Firebase request.
+//  */
+
+// const isPublicWebsiteApiRoute = (config = {}) => {
+//   const url = getRequestUrl(config);
+
+//   return (
+//     url === "/websites/public" ||
+//     url.startsWith("/websites/public/")
+//   );
+// };
+
+// /* =========================================================
+//    ADMIN LOGIN REQUEST
+// ========================================================= */
+
+// const isAdminLoginRequest = (config = {}) => {
+//   const url = getRequestUrl(config);
+
+//   return (
+//     url === "/admin-auth/login" ||
+//     url === "/admin/login" ||
+//     url === "/admin/signin" ||
+//     url === "/auth/admin/login" ||
+//     url === "/auth/admin/signin"
+//   );
+// };
+
+// /* =========================================================
+//    FIREBASE LOGIN REQUESTS
+// ========================================================= */
+
+// const isFirebaseLoginRequest = (config = {}) => {
+//   const url = getRequestUrl(config);
+
+//   return (
+//     url === "/institutes/login" ||
+//     url === "/trainers/login" ||
+//     url === "/students/login"
+//   );
+// };
+
+// /* =========================================================
+//    FIREBASE API ROUTES
+// ========================================================= */
+
+// const isFirebaseApiRoute = (config = {}) => {
+//   const url = getRequestUrl(config);
+
+//   /* -------------------------------------------------------
+//      PUBLIC WEBSITE MUST NEVER BE FIREBASE
+//   ------------------------------------------------------- */
+
+//   if (isPublicWebsiteApiRoute(config)) {
+//     return false;
+//   }
+
+//   /* -------------------------------------------------------
+//      Firebase login endpoints
+//   ------------------------------------------------------- */
+
+//   if (isFirebaseLoginRequest(config)) {
+//     return true;
+//   }
+
+//   /* -------------------------------------------------------
+//      Explicit Firebase institute/trainer endpoints
+//   ------------------------------------------------------- */
+
+//   const firebaseExactRoutes = [
+//     "/trainers/institute",
+//     "/testimonials/institute",
+//   ];
+
+//   const firebasePrefixes = [
+//     "/trainers/institute/",
+//     "/testimonials/institute/",
+//   ];
+
+//   if (
+//     firebaseExactRoutes.includes(url) ||
+//     firebasePrefixes.some((prefix) =>
+//       url.startsWith(prefix)
+//     )
+//   ) {
+//     return true;
+//   }
+
+//   /* -------------------------------------------------------
+//      Institute application
+     
+//      /institute = Firebase
+//      /institutes = Admin
+//   ------------------------------------------------------- */
+
+//   if (isInstituteRoute()) {
+//     return true;
+//   }
+
+//   /* -------------------------------------------------------
+//      Trainer application
+//   ------------------------------------------------------- */
+
+//   if (isTrainerPage()) {
+//     return true;
+//   }
+
+//   return false;
+// };
+
+// /* =========================================================
+//    ADMIN API ROUTES
+// ========================================================= */
+
+// const isAdminApiRoute = (config = {}) => {
+//   const url = getRequestUrl(config);
+
+//   /* -------------------------------------------------------
+//      Public website is NOT Admin
+//   ------------------------------------------------------- */
+
+//   if (isPublicWebsiteApiRoute(config)) {
+//     return false;
+//   }
+
+//   /* -------------------------------------------------------
+//      Admin login is public
+//   ------------------------------------------------------- */
+
+//   if (isAdminLoginRequest(config)) {
+//     return false;
+//   }
+
+//   /* -------------------------------------------------------
+//      Firebase login is NOT Admin
+//   ------------------------------------------------------- */
+
+//   if (isFirebaseLoginRequest(config)) {
+//     return false;
+//   }
+
+//   /* -------------------------------------------------------
+//      Users Admin APIs
+//   ------------------------------------------------------- */
+
+//   /*
+//    * GET /users/admin/all
+//    * DELETE /users/admin/:id
+//    */
+
+//   if (
+//     url === "/users/admin" ||
+//     url.startsWith("/users/admin/")
+//   ) {
+//     return true;
+//   }
+
+//   /*
+//    * PATCH /users/:id/status
+//    */
+
+//   if (
+//     /^\/users\/\d+\/status$/.test(url)
+//   ) {
+//     return true;
+//   }
+
+//   /* -------------------------------------------------------
+//      Firebase routes are NOT Admin
+//   ------------------------------------------------------- */
+
+//   if (isFirebaseApiRoute(config)) {
+//     return false;
+//   }
+
+//   /* -------------------------------------------------------
+//      Explicit Admin namespace
+//   ------------------------------------------------------- */
+
+//   if (
+//     url === "/admin" ||
+//     url.startsWith("/admin/")
+//   ) {
+//     return true;
+//   }
+
+//   /* -------------------------------------------------------
+//      Admin API prefixes
+//   ------------------------------------------------------- */
+
+//   const adminApiPrefixes = [
+//     "/dashboard",
+//     "/categories",
+//     "/subcategories",
+//     "/banners",
+//     "/classes",
+//     "/sessions",
+//     "/trainers",
+//     "/institutes",
+//     "/students",
+//     "/bookings",
+//     "/testimonials",
+//   ];
+
+//   const matchesAdminPrefix =
+//     adminApiPrefixes.some((prefix) => {
+//       return (
+//         url === prefix ||
+//         url.startsWith(`${prefix}/`)
+//       );
+//     });
+
+//   /* -------------------------------------------------------
+//      Safety:
+     
+//      /institute/... = Firebase
+//      /trainer/...   = Firebase
+//   ------------------------------------------------------- */
+
+//   if (
+//     isInstituteRoute() ||
+//     isTrainerPage()
+//   ) {
+//     return false;
+//   }
+
+//   return matchesAdminPrefix;
+// };
+
+// /* =========================================================
+//    GET FIREBASE TOKEN
+// ========================================================= */
+
+// const getFirebaseToken = async () => {
+//   const auth = getAuth();
+
+//   /* -------------------------------------------------------
+//      Current Firebase user
+//   ------------------------------------------------------- */
+
+//   if (auth.currentUser) {
+//     try {
+//       const token =
+//         await auth.currentUser.getIdToken(true);
+
+//       if (!token) {
+//         return null;
+//       }
+
+//       /* Normal Firebase token */
+
+//       localStorage.setItem(
+//         "token",
+//         token
+//       );
+
+//       /* Website Preview / Student session */
+
+//       if (
+//         isWebsitePreviewRoute() ||
+//         localStorage.getItem("studentToken")
+//       ) {
+//         localStorage.setItem(
+//           "studentToken",
+//           token
+//         );
+//       }
+
+//       return token;
+//     } catch (error) {
+//       console.error(
+//         "Firebase token refresh failed:",
+//         error
+//       );
+//     }
+//   }
+
+//   /* -------------------------------------------------------
+//      Student token fallback
+//   ------------------------------------------------------- */
+
+//   const studentToken =
+//     localStorage.getItem(
+//       "studentToken"
+//     );
+
+//   if (studentToken) {
+//     return studentToken;
+//   }
+
+//   /* -------------------------------------------------------
+//      Normal Firebase token fallback
+//   ------------------------------------------------------- */
+
+//   const storedToken =
+//     localStorage.getItem(
+//       "token"
+//     );
+
+//   if (storedToken) {
+//     return storedToken;
+//   }
+
+//   return null;
+// };
+
+// /* =========================================================
+//    GET ADMIN TOKEN
+// ========================================================= */
+
+// const getAdminToken = () => {
+//   const token =
+//     localStorage.getItem(
+//       "adminToken"
+//     );
+
+//   if (
+//     !token ||
+//     typeof token !== "string" ||
+//     token === "undefined" ||
+//     token === "null"
+//   ) {
+//     return null;
+//   }
+
+//   return token.trim();
+// };
+
+// /* =========================================================
+//    REQUEST INTERCEPTOR
+// ========================================================= */
+
+// API.interceptors.request.use(
+//   async (config) => {
+//     config.headers =
+//       config.headers || {};
+
+//     const method =
+//       config.method?.toUpperCase() ||
+//       "GET";
+
+//     const url =
+//       config.url || "";
+
+//     /* =====================================================
+//        1. ADMIN LOGIN
+//     ===================================================== */
+
+//     if (
+//       isAdminLoginRequest(config)
+//     ) {
+//       console.log(
+//         "================================="
+//       );
+
+//       console.log(
+//         "ADMIN LOGIN REQUEST"
+//       );
+
+//       console.log(
+//         "Page:",
+//         getPath()
+//       );
+
+//       console.log(
+//         "Request:",
+//         method,
+//         url
+//       );
+
+//       console.log(
+//         "Authentication:",
+//         "NO ADMIN TOKEN REQUIRED"
+//       );
+
+//       console.log(
+//         "================================="
+//       );
+
+//       delete config.headers.Authorization;
+//       delete config.headers.authorization;
+
+//       return config;
+//     }
+
+//     /* =====================================================
+//        2. FIREBASE LOGIN
+//     ===================================================== */
+
+//     if (
+//       isFirebaseLoginRequest(config)
+//     ) {
+//       console.log(
+//         "================================="
+//       );
+
+//       console.log(
+//         "FIREBASE LOGIN REQUEST"
+//       );
+
+//       console.log(
+//         "Page:",
+//         getPath()
+//       );
+
+//       console.log(
+//         "Request:",
+//         method,
+//         url
+//       );
+
+//       console.log(
+//         "================================="
+//       );
+
+//       const existingAuthorization =
+//         config.headers.Authorization ||
+//         config.headers.authorization;
+
+//       if (
+//         existingAuthorization
+//       ) {
+//         console.log(
+//           "Firebase Authorization:",
+//           "PROVIDED"
+//         );
+
+//         return config;
+//       }
+
+//       const firebaseToken =
+//         await getFirebaseToken();
+
+//       console.log(
+//         "Firebase Token:",
+//         firebaseToken
+//           ? "FOUND"
+//           : "NOT FOUND"
+//       );
+
+//       if (!firebaseToken) {
+//         return Promise.reject(
+//           new Error(
+//             "Firebase authentication token not found"
+//           )
+//         );
+//       }
+
+//       config.headers.Authorization =
+//         `Bearer ${firebaseToken}`;
+
+//       return config;
+//     }
+
+//     /* =====================================================
+//        3. PUBLIC WEBSITE API
+       
+//        THIS MUST COME BEFORE FIREBASE.
+
+//        Example:
+       
+//        GET /websites/public/14
+       
+//        Authentication:
+//        NONE
+//     ===================================================== */
+
+//     if (
+//       isPublicWebsiteApiRoute(config)
+//     ) {
+//       console.log(
+//         "================================="
+//       );
+
+//       console.log(
+//         "PUBLIC WEBSITE API REQUEST"
+//       );
+
+//       console.log(
+//         "Page:",
+//         getPath()
+//       );
+
+//       console.log(
+//         "Request:",
+//         method,
+//         url
+//       );
+
+//       console.log(
+//         "Authentication:",
+//         "NOT REQUIRED"
+//       );
+
+//       console.log(
+//         "Website Preview:",
+//         isWebsitePreviewRoute()
+//           ? "YES"
+//           : "NO"
+//       );
+
+//       console.log(
+//         "================================="
+//       );
+
+//       /*
+//        * VERY IMPORTANT:
+//        *
+//        * Remove any Firebase/Admin token that
+//        * may already exist on the Axios config.
+//        */
+
+//       delete config.headers.Authorization;
+//       delete config.headers.authorization;
+
+//       return config;
+//     }
+
+//     /* =====================================================
+//        4. ADMIN PROTECTED API
+       
+//        IMPORTANT:
+//        Admin is checked before Firebase.
+//     ===================================================== */
+
+//     if (
+//       isAdminApiRoute(config)
+//     ) {
+//       const adminToken =
+//         getAdminToken();
+
+//       console.log(
+//         "================================="
+//       );
+
+//       console.log(
+//         "ADMIN API REQUEST"
+//       );
+
+//       console.log(
+//         "Page:",
+//         getPath()
+//       );
+
+//       console.log(
+//         "Request:",
+//         method,
+//         url
+//       );
+
+//       console.log(
+//         "Admin Token:",
+//         adminToken
+//           ? "FOUND"
+//           : "NOT FOUND"
+//       );
+
+//       console.log(
+//         "================================="
+//       );
+
+//       if (!adminToken) {
+//         return Promise.reject(
+//           new Error(
+//             "Admin token missing"
+//           )
+//         );
+//       }
+
+//       /*
+//        * ALWAYS send Admin token.
+//        */
+
+//       config.headers.Authorization =
+//         `Bearer ${adminToken}`;
+
+//       return config;
+//     }
+
+//     /* =====================================================
+//        5. FIREBASE PROTECTED API
+//     ===================================================== */
+
+//     if (
+//       isFirebaseApiRoute(config)
+//     ) {
+//       console.log(
+//         "================================="
+//       );
+
+//       console.log(
+//         "FIREBASE PROTECTED API REQUEST"
+//       );
+
+//       console.log(
+//         "Page:",
+//         getPath()
+//       );
+
+//       console.log(
+//         "Request:",
+//         method,
+//         url
+//       );
+
+//       console.log(
+//         "Authentication:",
+//         "FIREBASE"
+//       );
+
+//       if (
+//         isWebsitePreviewRoute()
+//       ) {
+//         console.log(
+//           "Website Preview:",
+//           "YES"
+//         );
+
+//         console.log(
+//           "Student Token:",
+//           localStorage.getItem(
+//             "studentToken"
+//           )
+//             ? "FOUND"
+//             : "NOT FOUND"
+//         );
+//       }
+
+//       const token =
+//         await getFirebaseToken();
+
+//       console.log(
+//         "Firebase Token:",
+//         token
+//           ? "FOUND"
+//           : "NOT FOUND"
+//       );
+
+//       console.log(
+//         "================================="
+//       );
+
+//       if (!token) {
+//         return Promise.reject(
+//           new Error(
+//             "Firebase user not authenticated"
+//           )
+//         );
+//       }
+
+//       config.headers.Authorization =
+//         `Bearer ${token}`;
+
+//       return config;
+//     }
+
+//     /* =====================================================
+//        6. PUBLIC API
+//     ===================================================== */
+
+//     console.log(
+//       "================================="
+//     );
+
+//     console.log(
+//       "PUBLIC API REQUEST"
+//     );
+
+//     console.log(
+//       "Page:",
+//       getPath()
+//     );
+
+//     console.log(
+//       "Request:",
+//       method,
+//       url
+//     );
+
+//     console.log(
+//       "Authentication:",
+//       "NOT REQUIRED"
+//     );
+
+//     console.log(
+//       "================================="
+//     );
+
+//     /*
+//      * Remove stale authentication.
+//      */
+
+//     delete config.headers.Authorization;
+//     delete config.headers.authorization;
+
+//     return config;
+//   },
+
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
+
+// /* =========================================================
+//    RESPONSE INTERCEPTOR
+// ========================================================= */
+
+// API.interceptors.response.use(
+//   (response) => {
+//     console.log(
+//       "API RESPONSE:",
+//       response.status,
+//       response.config?.url
+//     );
+
+//     return response;
+//   },
+
+//   async (error) => {
+//     const originalRequest =
+//       error.config;
+
+//     console.error(
+//       "API ERROR:",
+//       error.response?.status ||
+//         "NO RESPONSE",
+//       originalRequest?.url,
+//       error.message
+//     );
+
+//     if (!originalRequest) {
+//       return Promise.reject(error);
+//     }
+
+//     /* =====================================================
+//        LOGIN REQUEST FAILURE
+//     ===================================================== */
+
+//     if (
+//       isAdminLoginRequest(
+//         originalRequest
+//       ) ||
+//       isFirebaseLoginRequest(
+//         originalRequest
+//       )
+//     ) {
+//       console.error(
+//         "LOGIN REQUEST FAILED"
+//       );
+
+//       console.error(
+//         "Response:",
+//         error.response?.data
+//       );
+
+//       return Promise.reject(
+//         error
+//       );
+//     }
+
+//     /* =====================================================
+//        PUBLIC WEBSITE FAILURE
+       
+//        NEVER try Firebase refresh for this.
+//     ===================================================== */
+
+//     if (
+//       isPublicWebsiteApiRoute(
+//         originalRequest
+//       )
+//     ) {
+//       console.error(
+//         "PUBLIC WEBSITE API FAILED"
+//       );
+
+//       console.error(
+//         "Response:",
+//         error.response?.data
+//       );
+
+//       return Promise.reject(
+//         error
+//       );
+//     }
+
+//     /* =====================================================
+//        ONLY RETRY 401 ONCE
+//     ===================================================== */
+
+//     if (
+//       error.response?.status !== 401 ||
+//       originalRequest._retry
+//     ) {
+//       return Promise.reject(error);
+//     }
+
+//     originalRequest._retry = true;
+
+//     /* =====================================================
+//        ADMIN 401
+//     ===================================================== */
+
+//     if (
+//       isAdminApiRoute(
+//         originalRequest
+//       )
+//     ) {
+//       console.error(
+//         "ADMIN SESSION INVALID OR EXPIRED"
+//       );
+
+//       console.error(
+//         "Response:",
+//         error.response?.data
+//       );
+
+//       /*
+//        * Clear ONLY Admin authentication.
+//        */
+
+//       localStorage.removeItem(
+//         "adminToken"
+//       );
+
+//       localStorage.removeItem(
+//         "adminUser"
+//       );
+
+//       /*
+//        * Never remove Firebase session here.
+//        */
+
+//       if (
+//         isAdminPage()
+//       ) {
+//         window.location.replace(
+//           "/admin-login"
+//         );
+//       }
+
+//       return Promise.reject(
+//         error
+//       );
+//     }
+
+//     /* =====================================================
+//        FIREBASE 401
+//     ===================================================== */
+
+//     if (
+//       isFirebaseApiRoute(
+//         originalRequest
+//       )
+//     ) {
+//       try {
+//         const auth =
+//           getAuth();
+
+//         if (
+//           !auth.currentUser
+//         ) {
+//           console.error(
+//             "Firebase user no longer exists"
+//           );
+
+//           return Promise.reject(
+//             error
+//           );
+//         }
+
+//         const freshToken =
+//           await auth.currentUser.getIdToken(
+//             true
+//           );
+
+//         if (!freshToken) {
+//           throw new Error(
+//             "Fresh Firebase token not generated"
+//           );
+//         }
+
+//         /* Save Firebase token */
+
+//         localStorage.setItem(
+//           "token",
+//           freshToken
+//         );
+
+//         /* Student token */
+
+//         if (
+//           isWebsitePreviewRoute() ||
+//           localStorage.getItem(
+//             "studentToken"
+//           )
+//         ) {
+//           localStorage.setItem(
+//             "studentToken",
+//             freshToken
+//           );
+//         }
+
+//         /* Retry original request */
+
+//         originalRequest.headers =
+//           originalRequest.headers || {};
+
+//         originalRequest.headers.Authorization =
+//           `Bearer ${freshToken}`;
+
+//         console.log(
+//           "Retrying Firebase request with refreshed token"
+//         );
+
+//         return API(
+//           originalRequest
+//         );
+//       } catch (
+//         refreshError
+//       ) {
+//         console.error(
+//           "Firebase token refresh failed:",
+//           refreshError
+//         );
+
+//         /* Firebase sign out */
+
+//         try {
+//           await signOut(
+//             getAuth()
+//           );
+//         } catch (
+//           signOutError
+//         ) {
+//           console.error(
+//             "Firebase signOut failed:",
+//             signOutError
+//           );
+//         }
+
+//         /* Clear Firebase session */
+
+//         localStorage.removeItem(
+//           "token"
+//         );
+
+//         localStorage.removeItem(
+//           "studentToken"
+//         );
+
+//         localStorage.removeItem(
+//           "studentUser"
+//         );
+
+//         localStorage.removeItem(
+//           "studentProfile"
+//         );
+
+//         localStorage.removeItem(
+//           "studentRole"
+//         );
+
+//         /*
+//          * IMPORTANT:
+//          *
+//          * Do NOT remove adminToken.
+//          */
+
+//         /* Redirect */
+
+//         if (
+//           isWebsitePreviewRoute()
+//         ) {
+//           window.location.replace(
+//             "/institute/website/preview"
+//           );
+//         } else if (
+//           isTrainerPage()
+//         ) {
+//           window.location.replace(
+//             "/trainer-login"
+//           );
+//         } else if (
+//           isInstituteRoute()
+//         ) {
+//           window.location.replace(
+//             "/institute-login"
+//           );
+//         } else {
+//           window.location.replace(
+//             "/institute/login"
+//           );
+//         }
+
+//         return Promise.reject(
+//           refreshError
+//         );
+//       }
+//     }
+
+//     return Promise.reject(
+//       error
+//     );
+//   }
+// );
+
+// /* =========================================================
+//    EXPORT
+// ========================================================= */
+
+// export default API;
+
+
+
 import axios from "axios";
 import { getAuth, signOut } from "firebase/auth";
+
 
 /* =========================================================
    API CONFIG
@@ -3855,10 +4980,11 @@ import { getAuth, signOut } from "firebase/auth";
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api",
+    "https://finearts-backend.onrender.com/api",
 
-  timeout: 30000,
+  timeout: 120000,
 });
+
 
 /* =========================================================
    PATH HELPERS
@@ -3868,6 +4994,7 @@ const getPath = () => {
   return window.location.pathname || "/";
 };
 
+
 const getRequestUrl = (config = {}) => {
   return String(config.url || "")
     .split("?")[0]
@@ -3875,13 +5002,10 @@ const getRequestUrl = (config = {}) => {
     .toLowerCase();
 };
 
+
 /* =========================================================
    PAGE TYPES
 ========================================================= */
-
-/* ---------------------------------------------------------
-   ADMIN PAGE
---------------------------------------------------------- */
 
 const isAdminPage = () => {
   const path = getPath();
@@ -3895,13 +5019,10 @@ const isAdminPage = () => {
   );
 };
 
-/* ---------------------------------------------------------
-   INSTITUTE PAGE
 
-   IMPORTANT:
-   /institute     = Firebase
-   /institutes    = Admin
---------------------------------------------------------- */
+/* =========================================================
+   INSTITUTE PAGE
+========================================================= */
 
 const isInstituteRoute = () => {
   const path = getPath();
@@ -3912,9 +5033,10 @@ const isInstituteRoute = () => {
   );
 };
 
-/* ---------------------------------------------------------
+
+/* =========================================================
    WEBSITE PREVIEW PAGE
---------------------------------------------------------- */
+========================================================= */
 
 const isWebsitePreviewRoute = () => {
   const path = getPath();
@@ -3925,9 +5047,10 @@ const isWebsitePreviewRoute = () => {
   );
 };
 
-/* ---------------------------------------------------------
+
+/* =========================================================
    TRAINER PAGE
---------------------------------------------------------- */
+========================================================= */
 
 const isTrainerPage = () => {
   const path = getPath();
@@ -3939,24 +5062,10 @@ const isTrainerPage = () => {
   );
 };
 
+
 /* =========================================================
    PUBLIC WEBSITE API
 ========================================================= */
-
-/*
- * IMPORTANT
- *
- * These endpoints are PUBLIC even when the browser is
- * currently inside:
- *
- *     /institute/website/preview
- *
- * Example:
- *
- *     GET /websites/public/14
- *
- * MUST NOT become a Firebase request.
- */
 
 const isPublicWebsiteApiRoute = (config = {}) => {
   const url = getRequestUrl(config);
@@ -3966,6 +5075,7 @@ const isPublicWebsiteApiRoute = (config = {}) => {
     url.startsWith("/websites/public/")
   );
 };
+
 
 /* =========================================================
    ADMIN LOGIN REQUEST
@@ -3983,6 +5093,7 @@ const isAdminLoginRequest = (config = {}) => {
   );
 };
 
+
 /* =========================================================
    FIREBASE LOGIN REQUESTS
 ========================================================= */
@@ -3996,6 +5107,7 @@ const isFirebaseLoginRequest = (config = {}) => {
     url === "/students/login"
   );
 };
+
 
 /* =========================================================
    FIREBASE API ROUTES
@@ -4012,16 +5124,18 @@ const isFirebaseApiRoute = (config = {}) => {
     return false;
   }
 
+
   /* -------------------------------------------------------
-     Firebase login endpoints
+     FIREBASE LOGIN
   ------------------------------------------------------- */
 
   if (isFirebaseLoginRequest(config)) {
     return true;
   }
 
+
   /* -------------------------------------------------------
-     Explicit Firebase institute/trainer endpoints
+     EXPLICIT FIREBASE ROUTES
   ------------------------------------------------------- */
 
   const firebaseExactRoutes = [
@@ -4043,27 +5157,28 @@ const isFirebaseApiRoute = (config = {}) => {
     return true;
   }
 
+
   /* -------------------------------------------------------
-     Institute application
-     
-     /institute = Firebase
-     /institutes = Admin
+     INSTITUTE APPLICATION
   ------------------------------------------------------- */
 
   if (isInstituteRoute()) {
     return true;
   }
 
+
   /* -------------------------------------------------------
-     Trainer application
+     TRAINER APPLICATION
   ------------------------------------------------------- */
 
   if (isTrainerPage()) {
     return true;
   }
 
+
   return false;
 };
+
 
 /* =========================================================
    ADMIN API ROUTES
@@ -4072,38 +5187,37 @@ const isFirebaseApiRoute = (config = {}) => {
 const isAdminApiRoute = (config = {}) => {
   const url = getRequestUrl(config);
 
+
   /* -------------------------------------------------------
-     Public website is NOT Admin
+     PUBLIC WEBSITE IS NOT ADMIN
   ------------------------------------------------------- */
 
   if (isPublicWebsiteApiRoute(config)) {
     return false;
   }
 
+
   /* -------------------------------------------------------
-     Admin login is public
+     ADMIN LOGIN IS PUBLIC
   ------------------------------------------------------- */
 
   if (isAdminLoginRequest(config)) {
     return false;
   }
 
+
   /* -------------------------------------------------------
-     Firebase login is NOT Admin
+     FIREBASE LOGIN IS NOT ADMIN
   ------------------------------------------------------- */
 
   if (isFirebaseLoginRequest(config)) {
     return false;
   }
 
-  /* -------------------------------------------------------
-     Users Admin APIs
-  ------------------------------------------------------- */
 
-  /*
-   * GET /users/admin/all
-   * DELETE /users/admin/:id
-   */
+  /* -------------------------------------------------------
+     USERS ADMIN APIs
+  ------------------------------------------------------- */
 
   if (
     url === "/users/admin" ||
@@ -4112,9 +5226,10 @@ const isAdminApiRoute = (config = {}) => {
     return true;
   }
 
-  /*
-   * PATCH /users/:id/status
-   */
+
+  /* -------------------------------------------------------
+     USER STATUS
+  ------------------------------------------------------- */
 
   if (
     /^\/users\/\d+\/status$/.test(url)
@@ -4122,16 +5237,18 @@ const isAdminApiRoute = (config = {}) => {
     return true;
   }
 
+
   /* -------------------------------------------------------
-     Firebase routes are NOT Admin
+     FIREBASE ROUTES ARE NOT ADMIN
   ------------------------------------------------------- */
 
   if (isFirebaseApiRoute(config)) {
     return false;
   }
 
+
   /* -------------------------------------------------------
-     Explicit Admin namespace
+     EXPLICIT ADMIN ROUTES
   ------------------------------------------------------- */
 
   if (
@@ -4141,8 +5258,9 @@ const isAdminApiRoute = (config = {}) => {
     return true;
   }
 
+
   /* -------------------------------------------------------
-     Admin API prefixes
+     ADMIN API PREFIXES
   ------------------------------------------------------- */
 
   const adminApiPrefixes = [
@@ -4159,6 +5277,7 @@ const isAdminApiRoute = (config = {}) => {
     "/testimonials",
   ];
 
+
   const matchesAdminPrefix =
     adminApiPrefixes.some((prefix) => {
       return (
@@ -4167,11 +5286,9 @@ const isAdminApiRoute = (config = {}) => {
       );
     });
 
+
   /* -------------------------------------------------------
-     Safety:
-     
-     /institute/... = Firebase
-     /trainer/...   = Firebase
+     SAFETY
   ------------------------------------------------------- */
 
   if (
@@ -4181,8 +5298,10 @@ const isAdminApiRoute = (config = {}) => {
     return false;
   }
 
+
   return matchesAdminPrefix;
 };
+
 
 /* =========================================================
    GET FIREBASE TOKEN
@@ -4191,8 +5310,9 @@ const isAdminApiRoute = (config = {}) => {
 const getFirebaseToken = async () => {
   const auth = getAuth();
 
+
   /* -------------------------------------------------------
-     Current Firebase user
+     CURRENT FIREBASE USER
   ------------------------------------------------------- */
 
   if (auth.currentUser) {
@@ -4204,6 +5324,7 @@ const getFirebaseToken = async () => {
         return null;
       }
 
+
       /* Normal Firebase token */
 
       localStorage.setItem(
@@ -4211,7 +5332,8 @@ const getFirebaseToken = async () => {
         token
       );
 
-      /* Website Preview / Student session */
+
+      /* Website Preview / Student */
 
       if (
         isWebsitePreviewRoute() ||
@@ -4223,7 +5345,9 @@ const getFirebaseToken = async () => {
         );
       }
 
+
       return token;
+
     } catch (error) {
       console.error(
         "Firebase token refresh failed:",
@@ -4232,8 +5356,9 @@ const getFirebaseToken = async () => {
     }
   }
 
+
   /* -------------------------------------------------------
-     Student token fallback
+     STUDENT TOKEN
   ------------------------------------------------------- */
 
   const studentToken =
@@ -4245,8 +5370,9 @@ const getFirebaseToken = async () => {
     return studentToken;
   }
 
+
   /* -------------------------------------------------------
-     Normal Firebase token fallback
+     FIREBASE TOKEN FALLBACK
   ------------------------------------------------------- */
 
   const storedToken =
@@ -4258,30 +5384,127 @@ const getFirebaseToken = async () => {
     return storedToken;
   }
 
+
   return null;
 };
+
 
 /* =========================================================
    GET ADMIN TOKEN
 ========================================================= */
 
-const getAdminToken = () => {
-  const token =
-    localStorage.getItem(
-      "adminToken"
-    );
+/*
+ * IMPORTANT
+ *
+ * Different versions of the Admin login may store the
+ * token under different localStorage keys.
+ *
+ * We check all known Admin keys first.
+ */
 
-  if (
-    !token ||
-    typeof token !== "string" ||
-    token === "undefined" ||
-    token === "null"
-  ) {
-    return null;
+const getAdminToken = () => {
+  const possibleKeys = [
+    "adminToken",
+    "admin_token",
+    "adminAccessToken",
+    "admin_access_token",
+    "adminAuthToken",
+    "admin_auth_token",
+  ];
+
+
+  /* -------------------------------------------------------
+     CHECK LOCAL STORAGE ADMIN KEYS
+  ------------------------------------------------------- */
+
+  for (const key of possibleKeys) {
+    const value =
+      localStorage.getItem(key);
+
+    if (
+      value &&
+      typeof value === "string" &&
+      value !== "undefined" &&
+      value !== "null" &&
+      value.trim()
+    ) {
+      return value.trim();
+    }
   }
 
-  return token.trim();
+
+  /* -------------------------------------------------------
+     CHECK SESSION STORAGE ADMIN KEYS
+  ------------------------------------------------------- */
+
+  for (const key of possibleKeys) {
+    const value =
+      sessionStorage.getItem(key);
+
+    if (
+      value &&
+      typeof value === "string" &&
+      value !== "undefined" &&
+      value !== "null" &&
+      value.trim()
+    ) {
+      return value.trim();
+    }
+  }
+
+
+  /* -------------------------------------------------------
+     FALLBACK:
+     Some Admin login implementations store the JWT as
+     "token".
+
+     We only use it when an Admin user/session marker
+     exists, to avoid accidentally sending a Firebase token
+     as an Admin token.
+  ------------------------------------------------------- */
+
+  const adminUserKeys = [
+    "adminUser",
+    "admin_user",
+    "admin",
+    "adminProfile",
+    "admin_profile",
+  ];
+
+
+  const hasAdminUser =
+    adminUserKeys.some((key) => {
+      const localValue =
+        localStorage.getItem(key);
+
+      const sessionValue =
+        sessionStorage.getItem(key);
+
+      return (
+        !!localValue ||
+        !!sessionValue
+      );
+    });
+
+
+  if (hasAdminUser) {
+    const genericToken =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
+    if (
+      genericToken &&
+      genericToken !== "undefined" &&
+      genericToken !== "null"
+    ) {
+      return genericToken.trim();
+    }
+  }
+
+
+  return null;
 };
+
 
 /* =========================================================
    REQUEST INTERCEPTOR
@@ -4289,8 +5512,10 @@ const getAdminToken = () => {
 
 API.interceptors.request.use(
   async (config) => {
+
     config.headers =
       config.headers || {};
+
 
     const method =
       config.method?.toUpperCase() ||
@@ -4298,6 +5523,7 @@ API.interceptors.request.use(
 
     const url =
       config.url || "";
+
 
     /* =====================================================
        1. ADMIN LOGIN
@@ -4334,11 +5560,14 @@ API.interceptors.request.use(
         "================================="
       );
 
+
       delete config.headers.Authorization;
       delete config.headers.authorization;
 
+
       return config;
     }
+
 
     /* =====================================================
        2. FIREBASE LOGIN
@@ -4366,17 +5595,13 @@ API.interceptors.request.use(
         url
       );
 
-      console.log(
-        "================================="
-      );
 
       const existingAuthorization =
         config.headers.Authorization ||
         config.headers.authorization;
 
-      if (
-        existingAuthorization
-      ) {
+
+      if (existingAuthorization) {
         console.log(
           "Firebase Authorization:",
           "PROVIDED"
@@ -4385,8 +5610,10 @@ API.interceptors.request.use(
         return config;
       }
 
+
       const firebaseToken =
         await getFirebaseToken();
+
 
       console.log(
         "Firebase Token:",
@@ -4394,6 +5621,7 @@ API.interceptors.request.use(
           ? "FOUND"
           : "NOT FOUND"
       );
+
 
       if (!firebaseToken) {
         return Promise.reject(
@@ -4403,23 +5631,17 @@ API.interceptors.request.use(
         );
       }
 
+
       config.headers.Authorization =
         `Bearer ${firebaseToken}`;
+
 
       return config;
     }
 
+
     /* =====================================================
        3. PUBLIC WEBSITE API
-       
-       THIS MUST COME BEFORE FIREBASE.
-
-       Example:
-       
-       GET /websites/public/14
-       
-       Authentication:
-       NONE
     ===================================================== */
 
     if (
@@ -4460,31 +5682,26 @@ API.interceptors.request.use(
         "================================="
       );
 
-      /*
-       * VERY IMPORTANT:
-       *
-       * Remove any Firebase/Admin token that
-       * may already exist on the Axios config.
-       */
 
       delete config.headers.Authorization;
       delete config.headers.authorization;
 
+
       return config;
     }
 
+
     /* =====================================================
        4. ADMIN PROTECTED API
-       
-       IMPORTANT:
-       Admin is checked before Firebase.
     ===================================================== */
 
     if (
       isAdminApiRoute(config)
     ) {
+
       const adminToken =
         getAdminToken();
+
 
       console.log(
         "================================="
@@ -4516,23 +5733,23 @@ API.interceptors.request.use(
         "================================="
       );
 
+
       if (!adminToken) {
         return Promise.reject(
           new Error(
-            "Admin token missing"
+            "Admin token missing. Please login again."
           )
         );
       }
 
-      /*
-       * ALWAYS send Admin token.
-       */
 
       config.headers.Authorization =
         `Bearer ${adminToken}`;
 
+
       return config;
     }
+
 
     /* =====================================================
        5. FIREBASE PROTECTED API
@@ -4541,6 +5758,7 @@ API.interceptors.request.use(
     if (
       isFirebaseApiRoute(config)
     ) {
+
       console.log(
         "================================="
       );
@@ -4565,26 +5783,10 @@ API.interceptors.request.use(
         "FIREBASE"
       );
 
-      if (
-        isWebsitePreviewRoute()
-      ) {
-        console.log(
-          "Website Preview:",
-          "YES"
-        );
-
-        console.log(
-          "Student Token:",
-          localStorage.getItem(
-            "studentToken"
-          )
-            ? "FOUND"
-            : "NOT FOUND"
-        );
-      }
 
       const token =
         await getFirebaseToken();
+
 
       console.log(
         "Firebase Token:",
@@ -4593,9 +5795,11 @@ API.interceptors.request.use(
           : "NOT FOUND"
       );
 
+
       console.log(
         "================================="
       );
+
 
       if (!token) {
         return Promise.reject(
@@ -4605,11 +5809,14 @@ API.interceptors.request.use(
         );
       }
 
+
       config.headers.Authorization =
         `Bearer ${token}`;
 
+
       return config;
     }
+
 
     /* =====================================================
        6. PUBLIC API
@@ -4643,12 +5850,10 @@ API.interceptors.request.use(
       "================================="
     );
 
-    /*
-     * Remove stale authentication.
-     */
 
     delete config.headers.Authorization;
     delete config.headers.authorization;
+
 
     return config;
   },
@@ -4658,12 +5863,14 @@ API.interceptors.request.use(
   }
 );
 
+
 /* =========================================================
    RESPONSE INTERCEPTOR
 ========================================================= */
 
 API.interceptors.response.use(
   (response) => {
+
     console.log(
       "API RESPONSE:",
       response.status,
@@ -4673,9 +5880,12 @@ API.interceptors.response.use(
     return response;
   },
 
+
   async (error) => {
+
     const originalRequest =
       error.config;
+
 
     console.error(
       "API ERROR:",
@@ -4685,12 +5895,14 @@ API.interceptors.response.use(
       error.message
     );
 
+
     if (!originalRequest) {
       return Promise.reject(error);
     }
 
+
     /* =====================================================
-       LOGIN REQUEST FAILURE
+       LOGIN FAILURE
     ===================================================== */
 
     if (
@@ -4701,6 +5913,7 @@ API.interceptors.response.use(
         originalRequest
       )
     ) {
+
       console.error(
         "LOGIN REQUEST FAILED"
       );
@@ -4715,10 +5928,9 @@ API.interceptors.response.use(
       );
     }
 
+
     /* =====================================================
        PUBLIC WEBSITE FAILURE
-       
-       NEVER try Firebase refresh for this.
     ===================================================== */
 
     if (
@@ -4726,6 +5938,7 @@ API.interceptors.response.use(
         originalRequest
       )
     ) {
+
       console.error(
         "PUBLIC WEBSITE API FAILED"
       );
@@ -4740,6 +5953,7 @@ API.interceptors.response.use(
       );
     }
 
+
     /* =====================================================
        ONLY RETRY 401 ONCE
     ===================================================== */
@@ -4751,7 +5965,9 @@ API.interceptors.response.use(
       return Promise.reject(error);
     }
 
+
     originalRequest._retry = true;
+
 
     /* =====================================================
        ADMIN 401
@@ -4762,6 +5978,7 @@ API.interceptors.response.use(
         originalRequest
       )
     ) {
+
       console.error(
         "ADMIN SESSION INVALID OR EXPIRED"
       );
@@ -4771,34 +5988,85 @@ API.interceptors.response.use(
         error.response?.data
       );
 
-      /*
-       * Clear ONLY Admin authentication.
-       */
+
+      /* ---------------------------------------------------
+         CLEAR ADMIN SESSION ONLY
+      --------------------------------------------------- */
 
       localStorage.removeItem(
         "adminToken"
       );
 
       localStorage.removeItem(
+        "admin_token"
+      );
+
+      localStorage.removeItem(
+        "adminAccessToken"
+      );
+
+      localStorage.removeItem(
+        "admin_access_token"
+      );
+
+      localStorage.removeItem(
+        "adminAuthToken"
+      );
+
+      localStorage.removeItem(
+        "admin_auth_token"
+      );
+
+      sessionStorage.removeItem(
+        "adminToken"
+      );
+
+      sessionStorage.removeItem(
+        "admin_token"
+      );
+
+      sessionStorage.removeItem(
+        "adminAccessToken"
+      );
+
+      sessionStorage.removeItem(
+        "admin_access_token"
+      );
+
+      sessionStorage.removeItem(
+        "adminAuthToken"
+      );
+
+      sessionStorage.removeItem(
+        "admin_auth_token"
+      );
+
+
+      localStorage.removeItem(
         "adminUser"
       );
 
-      /*
-       * Never remove Firebase session here.
-       */
+      localStorage.removeItem(
+        "admin_user"
+      );
 
-      if (
-        isAdminPage()
-      ) {
+
+      /* ---------------------------------------------------
+         DO NOT REMOVE FIREBASE TOKEN
+      --------------------------------------------------- */
+
+      if (isAdminPage()) {
         window.location.replace(
           "/admin-login"
         );
       }
 
+
       return Promise.reject(
         error
       );
     }
+
 
     /* =====================================================
        FIREBASE 401
@@ -4809,13 +6077,17 @@ API.interceptors.response.use(
         originalRequest
       )
     ) {
+
       try {
+
         const auth =
           getAuth();
+
 
         if (
           !auth.currentUser
         ) {
+
           console.error(
             "Firebase user no longer exists"
           );
@@ -4825,10 +6097,12 @@ API.interceptors.response.use(
           );
         }
 
+
         const freshToken =
           await auth.currentUser.getIdToken(
             true
           );
+
 
         if (!freshToken) {
           throw new Error(
@@ -4836,14 +6110,16 @@ API.interceptors.response.use(
           );
         }
 
-        /* Save Firebase token */
+
+        /* -------------------------------------------------
+           SAVE FIREBASE TOKEN
+        ------------------------------------------------- */
 
         localStorage.setItem(
           "token",
           freshToken
         );
 
-        /* Student token */
 
         if (
           isWebsitePreviewRoute() ||
@@ -4851,36 +6127,48 @@ API.interceptors.response.use(
             "studentToken"
           )
         ) {
+
           localStorage.setItem(
             "studentToken",
             freshToken
           );
         }
 
-        /* Retry original request */
+
+        /* -------------------------------------------------
+           RETRY REQUEST
+        ------------------------------------------------- */
 
         originalRequest.headers =
           originalRequest.headers || {};
 
+
         originalRequest.headers.Authorization =
           `Bearer ${freshToken}`;
+
 
         console.log(
           "Retrying Firebase request with refreshed token"
         );
 
+
         return API(
           originalRequest
         );
+
       } catch (
         refreshError
       ) {
+
         console.error(
           "Firebase token refresh failed:",
           refreshError
         );
 
-        /* Firebase sign out */
+
+        /* -------------------------------------------------
+           FIREBASE SIGN OUT
+        ------------------------------------------------- */
 
         try {
           await signOut(
@@ -4895,7 +6183,10 @@ API.interceptors.response.use(
           );
         }
 
-        /* Clear Firebase session */
+
+        /* -------------------------------------------------
+           CLEAR FIREBASE SESSION
+        ------------------------------------------------- */
 
         localStorage.removeItem(
           "token"
@@ -4917,37 +6208,47 @@ API.interceptors.response.use(
           "studentRole"
         );
 
-        /*
-         * IMPORTANT:
-         *
-         * Do NOT remove adminToken.
-         */
 
-        /* Redirect */
+        /* -------------------------------------------------
+           DO NOT CLEAR ADMIN TOKEN
+        ------------------------------------------------- */
+
+
+        /* -------------------------------------------------
+           REDIRECT
+        ------------------------------------------------- */
 
         if (
           isWebsitePreviewRoute()
         ) {
+
           window.location.replace(
             "/institute/website/preview"
           );
+
         } else if (
           isTrainerPage()
         ) {
+
           window.location.replace(
             "/trainer-login"
           );
+
         } else if (
           isInstituteRoute()
         ) {
+
           window.location.replace(
             "/institute-login"
           );
+
         } else {
+
           window.location.replace(
             "/institute/login"
           );
         }
+
 
         return Promise.reject(
           refreshError
@@ -4955,11 +6256,13 @@ API.interceptors.response.use(
       }
     }
 
+
     return Promise.reject(
       error
     );
   }
 );
+
 
 /* =========================================================
    EXPORT

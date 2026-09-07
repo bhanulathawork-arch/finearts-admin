@@ -136,10 +136,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -1049,10 +1049,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -2057,10 +2057,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -3208,10 +3208,10 @@ export default function Classes() {
     if (!item) return "";
     if (typeof item === "string") {
       if (item.startsWith("http")) return item;
-      return `http://localhost:5000${item}`;
+      return `https://finearts-backend.onrender.com${item}`;
     }
     if (item.startsWith("http")) return item;
-    return `http://localhost:5000${item}`;
+    return `https://finearts-backend.onrender.com${item}`;
   };
 
   // ================= TOGGLE DAY HELPER =================

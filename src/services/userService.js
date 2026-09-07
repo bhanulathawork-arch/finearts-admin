@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-// const API_URL = "http://localhost:5000/api/admin/users";
+// const API_URL = "https://finearts-backend.onrender.com/api/admin/users";
 
 // /* ───────── GET TOKEN ───────── */
 // const getToken = () => {
@@ -27,7 +27,7 @@
 
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/admin/users";
+const API_URL = "https://finearts-backend.onrender.com/api/admin/users";
 
 const getToken = () => {
   return localStorage.getItem("adminToken");

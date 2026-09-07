@@ -28,7 +28,7 @@
 //       setLoading(true);
 
 //       const res = await axios.get(
-// "http://localhost:5000/api/institutes/admin/pending",
+// "https://finearts-backend.onrender.com/api/institutes/admin/pending",
 //         {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -272,14 +272,14 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   const fetchInstitutes = async () => {
 //     try {
 //       setLoading(true);
 //       const res = await axios.get(
-//         "http://localhost:5000/api/institutes/admin/pending",
+//         "https://finearts-backend.onrender.com/api/institutes/admin/pending",
 //         {
 //           headers: { Authorization: `Bearer ${token}` },
 //         }
@@ -577,14 +577,14 @@ export default function PendingInstitutesAdmin() {
   const getImageUrl = (img) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   const fetchInstitutes = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:5000/api/institutes/admin/pending",
+        "https://finearts-backend.onrender.com/api/institutes/admin/pending",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -634,7 +634,7 @@ export default function PendingInstitutesAdmin() {
   //   if (!instituteToDelete) return;
   //   try {
   //     await axios.delete(
-  //       `http://localhost:5000/api/institutes/admin/${instituteToDelete.id}`,
+  //       `https://finearts-backend.onrender.com/api/institutes/admin/${instituteToDelete.id}`,
   //       {
   //         headers: { Authorization: `Bearer ${token}` },
   //       }
@@ -653,7 +653,7 @@ export default function PendingInstitutesAdmin() {
 
   try {
     await axios.delete(
-      `http://localhost:5000/api/institutes/${instituteToDelete.id}`,
+      `https://finearts-backend.onrender.com/api/institutes/${instituteToDelete.id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

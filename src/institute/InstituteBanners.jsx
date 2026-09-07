@@ -1821,7 +1821,7 @@ const getImageUrl = (image) => {
     return image;
   }
 
-  return `http://localhost:5000${image}`;
+  return `https://finearts-backend.onrender.com${image}`;
 };
 
 const extractBanners = (response) => {

@@ -151,10 +151,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -1068,10 +1068,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -2105,10 +2105,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -3057,7 +3057,7 @@ const getImageUrl = (item) => {
       return item;
     }
 
-    return `http://localhost:5000${item}`;
+    return `https://finearts-backend.onrender.com${item}`;
   }
 
   return "";

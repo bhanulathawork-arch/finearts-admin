@@ -20,7 +20,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // // =============================================
 // // TRAINER AUTH CONFIG (Firebase)
@@ -804,7 +804,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // // =============================================
 // // TRAINER AUTH CONFIG (Firebase)
@@ -1583,7 +1583,7 @@
 //   X,
 // } from "lucide-react";
 
-// const API_URL = "http://localhost:5000/api";
+// const API_URL = "https://finearts-backend.onrender.com/api";
 
 // // =============================================
 // // TRAINER AUTH CONFIG (Firebase)
@@ -2759,7 +2759,7 @@ import {
 /* ── Timezone Utility ── */
 import { useTimezone, getTimezone } from "../utils/timezone";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://finearts-backend.onrender.com/api";
 
 /* ═══════════════════════════════════════════════════════
    TRAINER AUTH CONFIG (Firebase)

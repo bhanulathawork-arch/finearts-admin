@@ -15,7 +15,7 @@ import {
 
 import StatCard from "../components/ui/StatCard";
 
-const API_URL = "http://localhost:5000/api/dashboard";
+const API_URL = "https://finearts-backend.onrender.com/api/dashboard";
 
 export default function InstituteDashboard() {
   const navigate = useNavigate();

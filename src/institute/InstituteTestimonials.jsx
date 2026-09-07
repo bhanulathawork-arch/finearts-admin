@@ -57,14 +57,14 @@
 //     const img = item?.avatar || item?.image;
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${img}`;
+//     return `${import.meta.env.VITE_API_BASE_URL || "https://finearts-backend.onrender.com"}${img}`;
 //   };
 
 //   const getVideoUrl = (item) => {
 //     const url = item?.video_url || item?.video;
 //     if (!url) return "";
 //     if (url.startsWith("http")) return url;
-//     return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}${url}`;
+//     return `${import.meta.env.VITE_API_BASE_URL || "https://finearts-backend.onrender.com"}${url}`;
 //   };
 
 //   // --- Filtered Testimonials ---
@@ -836,7 +836,7 @@
 
 //     return `${
 //       import.meta.env.VITE_API_BASE_URL ||
-//       "http://localhost:5000"
+//       "https://finearts-backend.onrender.com"
 //     }${img}`;
 //   };
 
@@ -860,7 +860,7 @@
 
 //     return `${
 //       import.meta.env.VITE_API_BASE_URL ||
-//       "http://localhost:5000"
+//       "https://finearts-backend.onrender.com"
 //     }${url}`;
 //   };
 

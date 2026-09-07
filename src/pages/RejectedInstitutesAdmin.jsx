@@ -17,7 +17,7 @@
 //       setLoading(true);
 
 //       const res = await axios.get(
-//         "http://localhost:5000/api/institutes/admin/rejected",
+//         "https://finearts-backend.onrender.com/api/institutes/admin/rejected",
 //         {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -201,14 +201,14 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   const fetchRejectedInstitutes = async () => {
 //     try {
 //       setLoading(true);
 //       const res = await axios.get(
-//         "http://localhost:5000/api/institutes/admin/rejected",
+//         "https://finearts-backend.onrender.com/api/institutes/admin/rejected",
 //         {
 //           headers: { Authorization: `Bearer ${token}` },
 //         }
@@ -450,14 +450,14 @@ export default function RejectedInstitutesAdmin() {
   const getImageUrl = (img) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   const fetchRejectedInstitutes = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:5000/api/institutes/admin/rejected",
+        "https://finearts-backend.onrender.com/api/institutes/admin/rejected",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -487,7 +487,7 @@ export default function RejectedInstitutesAdmin() {
     if (!instituteToDelete) return;
     try {
       await axios.delete(
-         `http://localhost:5000/api/institutes/${instituteToDelete.id}`,
+         `https://finearts-backend.onrender.com/api/institutes/${instituteToDelete.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

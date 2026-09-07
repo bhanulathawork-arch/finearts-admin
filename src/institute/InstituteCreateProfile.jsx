@@ -4240,7 +4240,7 @@
 //     return image;
 //   }
 
-//   return `http://localhost:5000${image}`;
+//   return `https://finearts-backend.onrender.com${image}`;
 // };
 
 // /* =========================================================
@@ -6406,7 +6406,7 @@ const getCategoryImage = (category) => {
     return image;
   }
 
-  return `http://localhost:5000${image}`;
+  return `https://finearts-backend.onrender.com${image}`;
 };
 
 /* =========================================================

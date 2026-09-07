@@ -25,7 +25,7 @@
 //       setLoading(true);
 
 //       const res = await axios.get(
-//         "http://localhost:5000/api/admin/trainers/pending",
+//         "https://finearts-backend.onrender.com/api/admin/trainers/pending",
 //         {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
@@ -245,14 +245,14 @@
 //   const getImageUrl = (img) => {
 //     if (!img) return "";
 //     if (img.startsWith("http")) return img;
-//     return `http://localhost:5000${img}`;
+//     return `https://finearts-backend.onrender.com${img}`;
 //   };
 
 //   const fetchTrainers = async () => {
 //     try {
 //       setLoading(true);
 //       const res = await axios.get(
-//         "http://localhost:5000/api/admin/trainers/pending",
+//         "https://finearts-backend.onrender.com/api/admin/trainers/pending",
 //         {
 //           headers: { Authorization: `Bearer ${token}` },
 //         }
@@ -533,14 +533,14 @@ export default function PendingTrainersAdmin() {
   const getImageUrl = (img) => {
     if (!img) return "";
     if (img.startsWith("http")) return img;
-    return `http://localhost:5000${img}`;
+    return `https://finearts-backend.onrender.com${img}`;
   };
 
   const fetchTrainers = async () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        "http://localhost:5000/api/admin/trainers/pending",
+        "https://finearts-backend.onrender.com/api/admin/trainers/pending",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

@@ -1595,7 +1595,7 @@
 //           <div>
 //             <label className={labelClass}>Class Image</label>
 //             {editingClass?.image && (
-//               <img src={editingClass.image.startsWith("http") ? editingClass.image : `http://localhost:5000/${editingClass.image}`} alt="Current" className="w-20 h-20 object-cover rounded-xl mb-2 border border-[#333]" />
+//               <img src={editingClass.image.startsWith("http") ? editingClass.image : `https://finearts-backend.onrender.com/${editingClass.image}`} alt="Current" className="w-20 h-20 object-cover rounded-xl mb-2 border border-[#333]" />
 //             )}
 //             <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })} className="w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30" />
 //           </div>
@@ -2195,7 +2195,7 @@
 //                           src={
 //                             cls.image.startsWith("http")
 //                               ? cls.image
-//                               : `http://localhost:5000/${cls.image}`
+//                               : `https://finearts-backend.onrender.com/${cls.image}`
 //                           }
 //                           alt={cls.title}
 //                           className="w-10 h-10 rounded-lg object-cover border border-[#333]"
@@ -2363,7 +2363,7 @@
 //                 src={
 //                   editingClass.image.startsWith("http")
 //                     ? editingClass.image
-//                     : `http://localhost:5000/${editingClass.image}`
+//                     : `https://finearts-backend.onrender.com/${editingClass.image}`
 //                 }
 //                 alt="Current"
 //                 className="w-20 h-20 object-cover rounded-xl mb-2 border border-[#333]"
@@ -2865,10 +2865,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   /* ================= TOGGLE DAY HELPER ================= */
@@ -3894,10 +3894,10 @@
 //     if (!item) return "";
 //     if (typeof item === "string") {
 //       if (item.startsWith("http")) return item;
-//       return `http://localhost:5000${item}`;
+//       return `https://finearts-backend.onrender.com${item}`;
 //     }
 //     if (item.startsWith("http")) return item;
-//     return `http://localhost:5000${item}`;
+//     return `https://finearts-backend.onrender.com${item}`;
 //   };
 
 //   // ================= TOGGLE DAY HELPER =================
@@ -4860,10 +4860,10 @@ export default function TrainerClasses() {
     if (!item) return "";
     if (typeof item === "string") {
       if (item.startsWith("http")) return item;
-      return `http://localhost:5000${item}`;
+      return `https://finearts-backend.onrender.com${item}`;
     }
     if (item.startsWith("http")) return item;
-    return `http://localhost:5000${item}`;
+    return `https://finearts-backend.onrender.com${item}`;
   };
 
   // ================= TOGGLE DAY HELPER =================

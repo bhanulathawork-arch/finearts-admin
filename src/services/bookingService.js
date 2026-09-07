@@ -1,7 +1,7 @@
 
 // import axios from "axios";
 
-// const API_URL = "http://localhost:5000/api/bookings";
+// const API_URL = "https://finearts-backend.onrender.com/api/bookings";
 
 // /* GET ADMIN TOKEN */
 // const getAdminConfig = () => {
@@ -77,7 +77,7 @@
 
 // import axios from "axios";
 
-// const API_URL = "http://localhost:5000/api/bookings";
+// const API_URL = "https://finearts-backend.onrender.com/api/bookings";
 
 // /* GET ADMIN TOKEN */
 // const getAdminConfig = () => {
@@ -223,7 +223,7 @@
 import axios from "axios";
 
 const API_URL =
-  "http://localhost:5000/api/bookings";
+  "https://finearts-backend.onrender.com/api/bookings";
 
 
 /* =========================================================

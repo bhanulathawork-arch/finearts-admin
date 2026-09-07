@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-// const API_URL = "http://localhost:5000/api/testimonials";
+// const API_URL = "https://finearts-backend.onrender.com/api/testimonials";
 
 // export const getTestimonials = async () => {
 //   const res = await axios.get(API_URL);
@@ -57,7 +57,7 @@
 // import API from "./api";
 
 // const API_URL =
-//   "http://localhost:5000/api/testimonials";
+//   "https://finearts-backend.onrender.com/api/testimonials";
 
 
 // /* =========================================================
@@ -359,7 +359,7 @@
 // import axios from "axios";
 // import API from "./api";
 
-// const API_URL = "http://localhost:5000/api/testimonials";
+// const API_URL = "https://finearts-backend.onrender.com/api/testimonials";
 
 // /* =========================================================
 //    ADMIN

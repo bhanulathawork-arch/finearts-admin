@@ -174,7 +174,7 @@
 
 //     // API Call
 //     const res = await axios.post(
-//       "http://localhost:5000/api/trainers/complete-profile",
+//       "https://finearts-backend.onrender.com/api/trainers/complete-profile",
 //       fd,
 //       {
 //         headers: {
@@ -493,7 +493,7 @@
 //       );
 
 //       const res = await axios.post(
-//         "http://localhost:5000/api/trainers/complete-profile",
+//         "https://finearts-backend.onrender.com/api/trainers/complete-profile",
 //         fd,
 //         {
 //           headers: {
@@ -896,7 +896,7 @@
 //       );
 
 //       const res = await axios.post(
-//         "http://localhost:5000/api/trainers/complete-profile",
+//         "https://finearts-backend.onrender.com/api/trainers/complete-profile",
 //         fd,
 //         {
 //           headers: {
@@ -1311,7 +1311,7 @@
 //       fd.append("specializations", JSON.stringify(categoryPayload));
 
 //       const res = await axios.post(
-//         "http://localhost:5000/api/trainers/complete-profile",
+//         "https://finearts-backend.onrender.com/api/trainers/complete-profile",
 //         fd,
 //         {
 //           headers: {
@@ -1846,7 +1846,7 @@ export default function TrainerCreateProfile() {
       fd.append("specializations", JSON.stringify(categoryPayload));
 
       const res = await axios.post(
-        "http://localhost:5000/api/trainers/complete-profile",
+        "https://finearts-backend.onrender.com/api/trainers/complete-profile",
         fd,
         {
           headers: {
