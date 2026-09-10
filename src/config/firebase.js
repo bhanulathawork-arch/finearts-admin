@@ -12,14 +12,24 @@ import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth"
 // };
 
 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyBGcqT_lh0XD6JVeS0j8WxE2X0BodSV17A",
+//   authDomain: "finearts-32f6b.firebaseapp.com",
+//   projectId: "finearts-32f6b",
+//   storageBucket: "finearts-32f6b.firebasestorage.app",
+//   messagingSenderId: "860244891245",
+//   appId: "1:860244891245:web:5752f6ac68ba6428a69164",
+//   measurementId: "G-BW62Q5LZPP"
+// };
+
 const firebaseConfig = {
   apiKey: "AIzaSyBGcqT_lh0XD6JVeS0j8WxE2X0BodSV17A",
   authDomain: "finearts-32f6b.firebaseapp.com",
   projectId: "finearts-32f6b",
   storageBucket: "finearts-32f6b.firebasestorage.app",
   messagingSenderId: "860244891245",
-  appId: "1:860244891245:web:5752f6ac68ba6428a69164",
-  measurementId: "G-BW62Q5LZPP"
+  appId: "1:860244891245:web:4cae27ad5baa4ed3a69164",
+  measurementId: "G-9Q8BZ3BH6L"
 };
 
 const app = initializeApp(firebaseConfig);
