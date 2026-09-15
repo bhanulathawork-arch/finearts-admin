@@ -3760,8 +3760,6 @@
 // export default WebsiteClasses;
 
 
-
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Link,
@@ -6428,15 +6426,12 @@ const WebsiteClasses = () => {
 
 
   /* =======================================================
-     SUBCATEGORIES FOR SELECTED CATEGORY
+     VISIBLE SUBCATEGORIES
   ======================================================= */
 
   const visibleSubcategories =
     useMemo(() => {
-      if (
-        selectedCategory ===
-        "all"
-      ) {
+      if (selectedCategory === "all") {
         return [];
       }
 
@@ -6530,8 +6525,8 @@ const WebsiteClasses = () => {
 
           const subcategoryId =
             item?.subcategory_id ??
-            item?.subcategory?.id ??
-            item?.subcategoryId;
+            item?.subcategoryId ??
+            item?.subcategory?.id;
 
 
           const subcategoryMatch =
@@ -6621,6 +6616,27 @@ const WebsiteClasses = () => {
         "all"
       );
     };
+
+
+  /* =======================================================
+     DEBUG DATA
+  ======================================================= */
+
+  useEffect(() => {
+    console.log("WEBSITE CLASSES - CATEGORIES", categoryData);
+    console.log(
+      "WEBSITE CLASSES - SUBCATEGORIES",
+      subcategoryData
+    );
+    console.log(
+      "WEBSITE CLASSES - CLASSES",
+      classData
+    );
+  }, [
+    categoryData,
+    subcategoryData,
+    classData,
+  ]);
 
 
   /* =======================================================
@@ -6958,12 +6974,14 @@ const WebsiteClasses = () => {
                     }
                     onChange={(
                       event
-                    ) =>
+                    ) => {
                       setSelectedCategory(
-                        event.target
-                          .value
-                      )
-                    }
+                        event.target.value
+                      );
+                      setSelectedSubcategory(
+                        "all"
+                      );
+                    }}
                     className="
                       w-full
                       appearance-none
@@ -7054,28 +7072,16 @@ const WebsiteClasses = () => {
                 {/* SUBCATEGORY */}
 
                 <div
-                  className="
-                    relative
-                  "
+                  className="relative"
                 >
-
-                  <FaFilter
-                    className="
-                      absolute
-                      left-4
-                      top-1/2
-                      -translate-y-1/2
-                    "
-                    style={{
-                      color:
-                        branding.iconColor,
-                    }}
-                  />
-
-
                   <select
                     value={
                       selectedSubcategory
+                    }
+                    onChange={(event) =>
+                      setSelectedSubcategory(
+                        event.target.value
+                      )
                     }
                     disabled={
                       selectedCategory ===
@@ -7083,19 +7089,12 @@ const WebsiteClasses = () => {
                       visibleSubcategories.length ===
                         0
                     }
-                    onChange={(
-                      event
-                    ) =>
-                      setSelectedSubcategory(
-                        event.target.value
-                      )
-                    }
                     className="
                       w-full
                       appearance-none
                       border
                       py-3.5
-                      pl-11
+                      pl-4
                       pr-10
                       text-sm
                       outline-none
@@ -7126,20 +7125,16 @@ const WebsiteClasses = () => {
                         ),
                     }}
                   >
-
                     <option value="all">
-                      {selectedCategory ===
-                        "all"
-                        ? "Select a Category First"
+                      {selectedCategory === "all"
+                        ? "Select Category First"
                         : visibleSubcategories.length
-                          ? "All Subcategories"
-                          : "No Subcategories"}
+                        ? "All Subcategories"
+                        : "No Subcategories"}
                     </option>
-
 
                     {visibleSubcategories.map(
                       (subcategory) => {
-
                         const id =
                           subcategory?.id ??
                           subcategory?.subcategory_id;
@@ -7149,6 +7144,10 @@ const WebsiteClasses = () => {
                           subcategory?.subcategory_name ||
                           subcategory?.title ||
                           "Subcategory";
+
+                        if (id === undefined || id === null) {
+                          return null;
+                        }
 
                         return (
                           <option
@@ -7160,9 +7159,7 @@ const WebsiteClasses = () => {
                         );
                       }
                     )}
-
                   </select>
-
 
                   <FaChevronDown
                     className="
@@ -7177,7 +7174,6 @@ const WebsiteClasses = () => {
                         branding.iconColor,
                     }}
                   />
-
                 </div>
 
               </div>
@@ -7286,10 +7282,11 @@ const WebsiteClasses = () => {
                   "
                 >
 
-                  {categoryData.map(
-                    (
-                      category
-                    ) => {
+                  {categoryData
+                    .map(
+                      (
+                        category
+                      ) => {
 
                         const id =
                           category?.id ||
@@ -7330,7 +7327,6 @@ const WebsiteClasses = () => {
                               setSelectedCategory(
                                 nextCategory
                               );
-
                               setSelectedSubcategory(
                                 "all"
                               );
