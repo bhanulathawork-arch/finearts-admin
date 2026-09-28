@@ -1085,1359 +1085,916 @@
 // }
 
 
-import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { FaTrash } from "react-icons/fa";
-
+import { useEffect, useMemo, useState } from "react";
 import {
-  Plus,
-  Search,
-  Clock,
-  Video,
-  Edit,
-  Trash2,
-  CheckCircle,
-  Loader2,
-  Copy,
-  RefreshCcw,
-  BookOpen,
-  X,
-} from "lucide-react";
-
-import { useTimezone, getTimezone } from "../utils/timezone";
-
-/* ============================================================
-   API
-============================================================ */
-
-const API_URL = "https://finearts-backend.onrender.com/api";
-
-/* ============================================================
-   AUTH HEADER
-============================================================ */
-
-const authHeader = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-    "X-Timezone": getTimezone(),
-  },
-});
-
-/* ============================================================
-   TIME HELPERS
-============================================================ */
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaTimes,
+  FaClock,
+  FaGraduationCap,
+  FaSyncAlt,
+} from "react-icons/fa";
+import API from "../../services/api";
 
 /*
-  Converts:
-  10:04 PM
-  ->
-  22:04
+|--------------------------------------------------------------------------
+| Institute Sessions
+|--------------------------------------------------------------------------
+| Removed:
+| - Session Title
+| - Notes
+| - Templates
+|
+| Session now contains only:
+| - Class
+| - Start Time
+|
+| Important:
+| Backend expects start_time as UTC ISO:
+| 2026-09-28T16:34:00.000Z
+|
+| UI works in IST.
+|--------------------------------------------------------------------------
 */
-const convertTo24Hour = (time, ampm) => {
-  if (!time) return "";
 
-  let [hour, minute] = time.split(":").map(Number);
-
-  if (
-    Number.isNaN(hour) ||
-    Number.isNaN(minute) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  ) {
-    return "";
-  }
-
-  if (ampm === "PM" && hour !== 12) {
-    hour += 12;
-  }
-
-  if (ampm === "AM" && hour === 12) {
-    hour = 0;
-  }
-
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
-    2,
-    "0"
-  )}`;
-};
-
-/*
-  Converts:
-  22:04
-  ->
-  10:04 PM
-
-  Also supports ISO strings such as:
-  2026-09-28T16:34:00.000Z
-*/
-const convertTo12Hour = (value) => {
-  if (!value) {
-    return {
-      time: "",
-      ampm: "AM",
-    };
-  }
-
-  let hour;
-  let minute;
-
-  /*
-    ISO / Date value
-  */
-  if (
-    typeof value === "string" &&
-    (value.includes("T") || value.includes("Z"))
-  ) {
-    const date = new Date(value);
-
-    if (!Number.isNaN(date.getTime())) {
-      hour = date.getHours();
-      minute = date.getMinutes();
-    }
-  }
-
-  /*
-    HH:mm value
-  */
-  if (hour === undefined) {
-    const match = String(value).match(/(\d{1,2}):(\d{2})/);
-
-    if (!match) {
-      return {
-        time: "",
-        ampm: "AM",
-      };
-    }
-
-    hour = Number(match[1]);
-    minute = Number(match[2]);
-  }
-
-  const ampm = hour >= 12 ? "PM" : "AM";
-
-  hour = hour % 12;
-
-  if (hour === 0) {
-    hour = 12;
-  }
-
-  return {
-    time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(
-      2,
-      "0"
-    )}`,
-    ampm,
-  };
-};
-
-/*
-  Gets timezone offset for a specific date.
-
-  Example:
-  Asia/Kolkata = +05:30
-*/
-const getTimezoneOffsetMs = (date, timeZone) => {
-  try {
-    const formatter = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    });
-
-    const parts = formatter.formatToParts(date);
-
-    const values = {};
-
-    parts.forEach((part) => {
-      if (part.type !== "literal") {
-        values[part.type] = part.value;
-      }
-    });
-
-    const asUTC = Date.UTC(
-      Number(values.year),
-      Number(values.month) - 1,
-      Number(values.day),
-      Number(values.hour),
-      Number(values.minute),
-      Number(values.second)
-    );
-
-    return asUTC - date.getTime();
-  } catch (error) {
-    console.error("Timezone offset error:", error);
-
-    return 0;
-  }
-};
-
-/*
-  IMPORTANT:
-
-  Backend requires:
-
-  2026-09-28T16:34:00.000Z
-
-  NOT:
-
-  22:04
-
-  This function takes the user's selected local time
-  and converts it into UTC ISO format.
-*/
-const convertTimeToUTCISO = (time, ampm, timeZone) => {
-  const time24 = convertTo24Hour(time, ampm);
-
-  if (!time24) {
-    return "";
-  }
-
-  const [hour, minute] = time24.split(":").map(Number);
-
-  if (
-    Number.isNaN(hour) ||
-    Number.isNaN(minute) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  ) {
-    return "";
-  }
-
-  const now = new Date();
-
-  /*
-    Use today's date.
-
-    The backend can use the time portion for the recurring
-    session while receiving a valid UTC ISO string.
-  */
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
-
-  /*
-    First create a UTC guess using the requested wall-clock time.
-  */
-  const utcGuess = new Date(
-    Date.UTC(year, month, day, hour, minute, 0, 0)
-  );
-
-  /*
-    Find timezone offset.
-  */
-  const offset = getTimezoneOffsetMs(
-    utcGuess,
-    timeZone || getTimezone()
-  );
-
-  /*
-    Convert local wall-clock time -> UTC.
-  */
-  const utcDate = new Date(utcGuess.getTime() - offset);
-
-  return utcDate.toISOString();
-};
-
-/*
-  Returns a safe session ID regardless of whether backend
-  returns `id` or `session_id`.
-*/
-const getSessionId = (session) => {
-  return session?.id ?? session?.session_id ?? null;
-};
-
-/* ============================================================
-   STYLES
-============================================================ */
-
-const inputClass =
-  "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
-
-const selectClass =
-  "w-full mt-2 mb-4 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors";
-
-const labelClass = "block text-sm text-white mb-1";
-
-const gridInputClass =
-  "w-full p-2.5 rounded-lg bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors text-sm";
-
-/* ============================================================
-   MAIN COMPONENT
-============================================================ */
-
-export default function InstituteSessions() {
-  const tz = useTimezone();
-
-  /* ==========================================================
-     STATE
-  ========================================================== */
-
+const Sessions = () => {
   const [sessions, setSessions] = useState([]);
   const [classes, setClasses] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [generatingZoom, setGeneratingZoom] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [page, setPage] = useState(1);
-
-  const PAGE_SIZE = 10;
-
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showZoomModal, setShowZoomModal] = useState(false);
-
-  /* ==========================================================
-     CREATE FORM
-  ========================================================== */
+  const [showModal, setShowModal] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
 
   const [form, setForm] = useState({
     class_id: "",
-    title: "",
     start_time: "",
-    start_ampm: "AM",
-    notes: "",
   });
 
-  /* ==========================================================
-     EDIT FORM
-  ========================================================== */
+  const [search, setSearch] = useState("");
 
-  const [editForm, setEditForm] = useState({
-    session_id: "",
-    class_id: "",
-    title: "",
-    start_time: "",
-    start_ampm: "AM",
-  });
-
-  const [selectedSession, setSelectedSession] = useState(null);
-
-  /* ==========================================================
-     RESET CREATE FORM
-  ========================================================== */
-
-  const resetCreateForm = () => {
-    setForm({
-      class_id: "",
-      title: "",
-      start_time: "",
-      start_ampm: "AM",
-      notes: "",
-    });
-  };
-
-  /* ==========================================================
-     FETCH CLASSES
-  ========================================================== */
-
-  const fetchClasses = async () => {
-    try {
-      const res = await axios.get(
-        `${API_URL}/classes/institute/my-classes`,
-        authHeader()
-      );
-
-      const data = res.data?.data || res.data || [];
-
-      setClasses(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Fetch Classes Error:", err);
-
-      toast.error(
-        err.response?.data?.message || "Failed to load classes"
-      );
-    }
-  };
-
-  /* ==========================================================
-     FETCH SESSIONS
-  ========================================================== */
+  /*
+  |--------------------------------------------------------------------------
+  | Load Sessions
+  |--------------------------------------------------------------------------
+  */
 
   const fetchSessions = async () => {
     try {
       setLoading(true);
 
-      const res = await axios.get(
-        `${API_URL}/sessions/institute/my-sessions`,
-        authHeader()
+      const response = await API.get(
+        "/sessions/institute/my-sessions"
       );
 
-      let data = [];
+      console.log("SESSIONS RESPONSE:", response.data);
 
-      if (Array.isArray(res.data)) {
-        data = res.data;
-      } else if (Array.isArray(res.data?.data)) {
-        data = res.data.data;
-      } else if (Array.isArray(res.data?.sessions)) {
-        data = res.data.sessions;
+      const data = response?.data;
+
+      if (Array.isArray(data)) {
+        setSessions(data);
+      } else if (Array.isArray(data?.sessions)) {
+        setSessions(data.sessions);
+      } else if (Array.isArray(data?.data)) {
+        setSessions(data.data);
+      } else {
+        setSessions([]);
       }
-
-      setSessions(data);
-    } catch (err) {
-      console.error("Fetch Sessions Error:", err);
-      console.error("Backend Response:", err.response?.data);
+    } catch (error) {
+      console.error(
+        "Fetch Institute Sessions Error:",
+        error
+      );
 
       setSessions([]);
-
-      toast.error(
-        err.response?.data?.message || "Failed to load sessions"
-      );
     } finally {
       setLoading(false);
     }
   };
 
-  /* ==========================================================
-     INITIAL LOAD
-  ========================================================== */
+  /*
+  |--------------------------------------------------------------------------
+  | Load Institute Classes
+  |--------------------------------------------------------------------------
+  */
 
-  useEffect(() => {
-    fetchClasses();
-    fetchSessions();
-  }, []);
-
-  /* ==========================================================
-     FILTER
-  ========================================================== */
-
-  const filteredSessions = useMemo(() => {
-    let data = Array.isArray(sessions) ? [...sessions] : [];
-
-    if (statusFilter !== "ALL") {
-      data = data.filter((item) => {
-        const status = String(
-          item.live_status || item.status || ""
-        ).toUpperCase();
-
-        return status === statusFilter;
-      });
-    }
-
-    if (search.trim()) {
-      const keyword = search.toLowerCase().trim();
-
-      data = data.filter((item) => {
-        return (
-          String(item.title || "")
-            .toLowerCase()
-            .includes(keyword) ||
-          String(item.class_title || "")
-            .toLowerCase()
-            .includes(keyword) ||
-          String(item.trainer_name || "")
-            .toLowerCase()
-            .includes(keyword)
-        );
-      });
-    }
-
-    return data;
-  }, [sessions, search, statusFilter]);
-
-  /* ==========================================================
-     PAGINATION
-  ========================================================== */
-
-  const totalPages = Math.ceil(
-    filteredSessions.length / PAGE_SIZE
-  );
-
-  const paginatedSessions = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-
-    return filteredSessions.slice(
-      start,
-      start + PAGE_SIZE
-    );
-  }, [filteredSessions, page]);
-
-  useEffect(() => {
-    if (page > totalPages && totalPages > 0) {
-      setPage(1);
-    }
-  }, [page, totalPages]);
-
-  /* ==========================================================
-     STATS
-  ========================================================== */
-
-  const stats = useMemo(() => {
-    const list = Array.isArray(sessions) ? sessions : [];
-
-    const getStatus = (session) =>
-      String(
-        session?.live_status ||
-          session?.status ||
-          ""
-      ).toUpperCase();
-
-    return {
-      total: list.length,
-
-      scheduled: list.filter((session) => {
-        const status = getStatus(session);
-
-        return (
-          status === "SCHEDULED" ||
-          status === "UPCOMING"
-        );
-      }).length,
-
-      live: list.filter(
-        (session) => getStatus(session) === "LIVE"
-      ).length,
-
-      completed: list.filter(
-        (session) => getStatus(session) === "COMPLETED"
-      ).length,
-    };
-  }, [sessions]);
-
-  /* ==========================================================
-     CREATE SESSION
-  ========================================================== */
-
-  const createSession = async () => {
+  const fetchClasses = async () => {
     try {
-      setCreating(true);
+      const response = await API.get(
+        "/classes/institute/my-classes"
+      );
 
-      /* -----------------------------
-         VALIDATION
-      ----------------------------- */
+      console.log("INSTITUTE CLASSES RESPONSE:", response.data);
 
-      if (!form.class_id) {
-        toast.error("Please select a class");
-        return;
+      const data = response?.data;
+
+      if (Array.isArray(data)) {
+        setClasses(data);
+      } else if (Array.isArray(data?.classes)) {
+        setClasses(data.classes);
+      } else if (Array.isArray(data?.data)) {
+        setClasses(data.data);
+      } else {
+        setClasses([]);
       }
-
-      if (!form.title.trim()) {
-        toast.error("Please enter session title");
-        return;
-      }
-
-      if (form.title.trim().length < 2) {
-        toast.error(
-          "Session title must contain at least 2 characters"
-        );
-        return;
-      }
-
-      if (!form.start_time) {
-        toast.error("Please select start time");
-        return;
-      }
-
-      const utcStartTime = convertTimeToUTCISO(
-        form.start_time,
-        form.start_ampm,
-        tz.timezone
-      );
-
-      if (!utcStartTime) {
-        toast.error("Invalid start time");
-        return;
-      }
-
-      const payload = {
-        class_id: form.class_id,
-        title: form.title.trim(),
-        start_time: utcStartTime,
-        notes: form.notes?.trim() || "",
-        timezone: tz.timezone,
-      };
-
-      console.log("CREATE SESSION PAYLOAD:", payload);
-
-      /*
-        Keep the existing backend contract:
-        sessions: [single session]
-
-        This removes the template UI while maintaining
-        compatibility with the existing create endpoint.
-      */
-      await axios.post(
-        `${API_URL}/sessions/institute/create`,
-        {
-          sessions: [payload],
-        },
-        authHeader()
-      );
-
-      toast.success("Session created successfully");
-
-      setShowCreateModal(false);
-
-      resetCreateForm();
-
-      await fetchSessions();
-    } catch (err) {
-      console.error("Create Session Error:", err);
-      console.error(
-        "Backend Response:",
-        err.response?.data
-      );
-
-      toast.error(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Unable to create session"
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  /* ==========================================================
-     OPEN EDIT MODAL
-  ========================================================== */
-
-  const openEditModal = (session) => {
-    if (!session) {
-      toast.error("Session data is missing");
-      return;
-    }
-
-    const sessionId = getSessionId(session);
-
-    if (!sessionId) {
-      toast.error("Session ID is missing");
-      console.error("Invalid session:", session);
-      return;
-    }
-
-    setSelectedSession(session);
-
-    const start = convertTo12Hour(
-      session.start_time
-    );
-
-    setEditForm({
-      session_id: sessionId,
-      class_id:
-        session.class_id ||
-        session.classId ||
-        "",
-      title: session.title || "",
-      start_time: start.time,
-      start_ampm: start.ampm,
-    });
-
-    setShowEditModal(true);
-  };
-
-  /* ==========================================================
-     UPDATE SESSION
-  ========================================================== */
-
-  const updateSession = async () => {
-    try {
-      setEditing(true);
-
-      /* -----------------------------
-         VALIDATION
-      ----------------------------- */
-
-      if (!editForm.session_id) {
-        toast.error("Session ID is missing");
-        return;
-      }
-
-      if (!editForm.class_id) {
-        toast.error("Please select a class");
-        return;
-      }
-
-      if (!editForm.title.trim()) {
-        toast.error("Please enter session title");
-        return;
-      }
-
-      if (editForm.title.trim().length < 2) {
-        toast.error(
-          "Session title must contain at least 2 characters"
-        );
-        return;
-      }
-
-      if (!editForm.start_time) {
-        toast.error("Please select start time");
-        return;
-      }
-
-      /*
-        IMPORTANT FIX:
-
-        Backend requires:
-
-        2026-09-28T16:34:00.000Z
-
-        NOT:
-
-        22:04
-      */
-      const utcStartTime = convertTimeToUTCISO(
-        editForm.start_time,
-        editForm.start_ampm,
-        tz.timezone
-      );
-
-      if (!utcStartTime) {
-        toast.error("Invalid start time");
-        return;
-      }
-
-      const payload = {
-        class_id: editForm.class_id,
-        title: editForm.title.trim(),
-        start_time: utcStartTime,
-        timezone: tz.timezone,
-      };
-
-      console.log(
-        "================================="
-      );
-
-      console.log("UPDATE SESSION");
-
-      console.log("Session ID:", editForm.session_id);
-
-      console.log("Payload:", payload);
-
-      console.log(
-        "================================="
-      );
-
-      await axios.put(
-        `${API_URL}/sessions/institute/${editForm.session_id}`,
-        payload,
-        authHeader()
-      );
-
-      toast.success("Session updated successfully");
-
-      setShowEditModal(false);
-
-      setSelectedSession(null);
-
-      await fetchSessions();
-    } catch (err) {
-      console.error("Update Session Error:", err);
-
-      console.error(
-        "Backend Response:",
-        err.response?.data
-      );
-
-      toast.error(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Unable to update session"
-      );
-    } finally {
-      setEditing(false);
-    }
-  };
-
-  /* ==========================================================
-     OPEN DELETE MODAL
-  ========================================================== */
-
-  const openDeleteModal = (session) => {
-    if (!session) {
-      toast.error("Session data is missing");
-      return;
-    }
-
-    const sessionId = getSessionId(session);
-
-    if (!sessionId) {
-      toast.error("Session ID is missing");
-      console.error("Invalid session:", session);
-      return;
-    }
-
-    setSelectedSession(session);
-
-    setShowDeleteModal(true);
-  };
-
-  /* ==========================================================
-     DELETE SESSION
-  ========================================================== */
-
-  const deleteSession = async () => {
-    try {
-      setDeleting(true);
-
-      const sessionId = getSessionId(
-        selectedSession
-      );
-
-      if (!sessionId) {
-        toast.error("Session ID is missing");
-        return;
-      }
-
-      await axios.delete(
-        `${API_URL}/sessions/institute/${sessionId}`,
-        authHeader()
-      );
-
-      toast.success("Session deleted successfully");
-
-      setShowDeleteModal(false);
-
-      setSelectedSession(null);
-
-      await fetchSessions();
-    } catch (err) {
-      console.error("Delete Session Error:", err);
-
-      toast.error(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Unable to delete session"
-      );
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  /* ==========================================================
-     OPEN ZOOM MODAL
-  ========================================================== */
-
-  const openZoomModal = (session) => {
-    if (!session) {
-      toast.error("Session data is missing");
-      return;
-    }
-
-    const sessionId = getSessionId(session);
-
-    if (!sessionId) {
-      toast.error("Session ID is missing");
-      return;
-    }
-
-    setSelectedSession(session);
-
-    setShowZoomModal(true);
-  };
-
-  /* ==========================================================
-     GENERATE ZOOM
-  ========================================================== */
-
-  const generateZoomMeeting = async () => {
-    try {
-      setGeneratingZoom(true);
-
-      const sessionId = getSessionId(
-        selectedSession
-      );
-
-      if (!sessionId) {
-        toast.error("Session ID is missing");
-        return;
-      }
-
-      await axios.post(
-        `${API_URL}/sessions/institute/${sessionId}/generate-zoom`,
-        {},
-        authHeader()
-      );
-
-      toast.success(
-        "Zoom meeting generated successfully"
-      );
-
-      await fetchSessions();
-
-      setShowZoomModal(false);
-    } catch (err) {
-      console.error(
-        "Generate Zoom Error:",
-        err
-      );
-
-      toast.error(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Unable to generate Zoom meeting"
-      );
-    } finally {
-      setGeneratingZoom(false);
-    }
-  };
-
-  /* ==========================================================
-     COPY ZOOM LINK
-  ========================================================== */
-
-  const copyZoomLink = async (link) => {
-    if (!link) {
-      toast.error("Zoom link not available");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(link);
-
-      toast.success("Zoom link copied");
     } catch (error) {
       console.error(
-        "Clipboard error:",
+        "Fetch Institute Classes Error:",
         error
       );
 
-      try {
-        const textArea =
-          document.createElement("textarea");
-
-        textArea.value = link;
-
-        document.body.appendChild(textArea);
-
-        textArea.select();
-
-        document.execCommand("copy");
-
-        document.body.removeChild(
-          textArea
-        );
-
-        toast.success("Zoom link copied");
-      } catch {
-        toast.error(
-          "Unable to copy Zoom link"
-        );
-      }
+      /*
+       * Some backend versions use:
+       * /classes/institute/:instituteId
+       *
+       * If the first endpoint doesn't exist, don't break
+       * the sessions page.
+       */
+      setClasses([]);
     }
   };
 
-  /* ==========================================================
-     RENDER
-  ========================================================== */
+  /*
+  |--------------------------------------------------------------------------
+  | Initial Load
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    fetchSessions();
+    fetchClasses();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Refresh
+  |--------------------------------------------------------------------------
+  */
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      fetchSessions(),
+      fetchClasses(),
+    ]);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Convert Backend UTC Date/Time -> IST HH:mm
+  |--------------------------------------------------------------------------
+  */
+
+  const getISTTime = (value) => {
+    if (!value) return "";
+
+    try {
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        /*
+         * Backend may already return HH:mm
+         */
+        if (/^\d{2}:\d{2}$/.test(value)) {
+          return value;
+        }
+
+        return "";
+      }
+
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(date);
+    } catch {
+      return "";
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Convert HH:mm IST -> UTC ISO
+  |--------------------------------------------------------------------------
+  |
+  | Backend requires:
+  |
+  | 2026-09-28T16:34:00.000Z
+  |
+  | NOT:
+  |
+  | 22:04
+  |--------------------------------------------------------------------------
+  */
+
+  const convertISTTimeToUTC = (
+    time,
+    existingStartTime = null
+  ) => {
+    if (!time) return null;
+
+    const match = time.match(/^(\d{1,2}):(\d{2})$/);
+
+    if (!match) return null;
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+
+    /*
+     * Preserve the existing date when editing.
+     *
+     * If editing:
+     * use the date already stored in start_time.
+     *
+     * If creating:
+     * use today's date in IST.
+     */
+
+    let year;
+    let month;
+    let day;
+
+    if (existingStartTime) {
+      const existingDate = new Date(existingStartTime);
+
+      if (!Number.isNaN(existingDate.getTime())) {
+        const parts = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).formatToParts(existingDate);
+
+        year = Number(
+          parts.find((p) => p.type === "year")?.value
+        );
+
+        month = Number(
+          parts.find((p) => p.type === "month")?.value
+        );
+
+        day = Number(
+          parts.find((p) => p.type === "day")?.value
+        );
+      }
+    }
+
+    /*
+     * If no existing date was available,
+     * use today's IST date.
+     */
+
+    if (!year || !month || !day) {
+      const now = new Date();
+
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(now);
+
+      year = Number(
+        parts.find((p) => p.type === "year")?.value
+      );
+
+      month = Number(
+        parts.find((p) => p.type === "month")?.value
+      );
+
+      day = Number(
+        parts.find((p) => p.type === "day")?.value
+      );
+    }
+
+    /*
+     * IST = UTC + 5:30
+     *
+     * Create a UTC date by subtracting 5:30.
+     */
+
+    const utcDate = new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        day,
+        hours - 5,
+        minutes - 30,
+        0,
+        0
+      )
+    );
+
+    return utcDate.toISOString();
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Find Class Name
+  |--------------------------------------------------------------------------
+  */
+
+  const getClassName = (session) => {
+    return (
+      session?.class_name ||
+      session?.className ||
+      session?.class?.name ||
+      session?.class?.class_name ||
+      classes.find(
+        (item) =>
+          String(item?.id) ===
+          String(
+            session?.class_id ||
+              session?.classId
+          )
+      )?.name ||
+      classes.find(
+        (item) =>
+          String(item?.id) ===
+          String(
+            session?.class_id ||
+              session?.classId
+          )
+      )?.class_name ||
+      "Unknown Class"
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Get Session ID
+  |--------------------------------------------------------------------------
+  */
+
+  const getSessionId = (session) => {
+    return (
+      session?.id ||
+      session?.session_id ||
+      session?.sessionId
+    );
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Open Create Modal
+  |--------------------------------------------------------------------------
+  */
+
+  const openCreateModal = () => {
+    setEditingSession(null);
+
+    setForm({
+      class_id:
+        classes.length > 0
+          ? String(classes[0]?.id || "")
+          : "",
+      start_time: "",
+    });
+
+    setShowModal(true);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Open Edit Modal
+  |--------------------------------------------------------------------------
+  */
+
+  const openEditModal = (session) => {
+    setEditingSession(session);
+
+    const classId =
+      session?.class_id ||
+      session?.classId ||
+      session?.class?.id ||
+      "";
+
+    const time = getISTTime(
+      session?.start_time ||
+        session?.startTime
+    );
+
+    setForm({
+      class_id: String(classId || ""),
+      start_time: time,
+    });
+
+    setShowModal(true);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Close Modal
+  |--------------------------------------------------------------------------
+  */
+
+  const closeModal = () => {
+    if (saving) return;
+
+    setShowModal(false);
+    setEditingSession(null);
+
+    setForm({
+      class_id: "",
+      start_time: "",
+    });
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Input Change
+  |--------------------------------------------------------------------------
+  */
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Save / Update Session
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!form.class_id) {
+      alert("Please select a class.");
+      return;
+    }
+
+    if (!form.start_time) {
+      alert("Please select a start time.");
+      return;
+    }
+
+    const sessionId = editingSession
+      ? getSessionId(editingSession)
+      : null;
+
+    /*
+     * Convert IST HH:mm to UTC ISO
+     */
+
+    const utcStartTime = convertISTTimeToUTC(
+      form.start_time,
+      editingSession?.start_time ||
+        editingSession?.startTime ||
+        null
+    );
+
+    if (!utcStartTime) {
+      alert("Invalid start time.");
+      return;
+    }
+
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT send:
+     *
+     * start_time: "22:04"
+     *
+     * Send:
+     *
+     * start_time: "2026-09-28T16:34:00.000Z"
+     */
+
+    const payload = {
+      class_id: Number(form.class_id),
+      start_time: utcStartTime,
+    };
+
+    console.log(
+      "SESSION PAYLOAD:",
+      payload
+    );
+
+    try {
+      setSaving(true);
+
+      if (sessionId) {
+        /*
+         * UPDATE
+         */
+
+        const response = await API.put(
+          `/sessions/${sessionId}`,
+          payload
+        );
+
+        console.log(
+          "SESSION UPDATE RESPONSE:",
+          response.data
+        );
+      } else {
+        /*
+         * CREATE
+         */
+
+        const response = await API.post(
+          "/sessions/institute",
+          payload
+        );
+
+        console.log(
+          "SESSION CREATE RESPONSE:",
+          response.data
+        );
+      }
+
+      closeModal();
+
+      await fetchSessions();
+    } catch (error) {
+      console.error(
+        "Save Session Error:",
+        error
+      );
+
+      console.error(
+        "Backend Response:",
+        error?.response?.data
+      );
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Unable to save session.";
+
+      alert(message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Delete Session
+  |--------------------------------------------------------------------------
+  */
+
+  const handleDelete = async (session) => {
+    const sessionId = getSessionId(session);
+
+    if (!sessionId) {
+      alert("Session ID not found.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this session?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await API.delete(
+        `/sessions/${sessionId}`
+      );
+
+      await fetchSessions();
+    } catch (error) {
+      console.error(
+        "Delete Session Error:",
+        error
+      );
+
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Unable to delete session.";
+
+      alert(message);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Search
+  |--------------------------------------------------------------------------
+  */
+
+  const filteredSessions = useMemo(() => {
+    const keyword =
+      search.trim().toLowerCase();
+
+    if (!keyword) return sessions;
+
+    return sessions.filter((session) => {
+      const className =
+        getClassName(session).toLowerCase();
+
+      const time = getISTTime(
+        session?.start_time ||
+          session?.startTime
+      ).toLowerCase();
+
+      return (
+        className.includes(keyword) ||
+        time.includes(keyword)
+      );
+    });
+  }, [sessions, search, classes]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Format Time
+  |--------------------------------------------------------------------------
+  */
+
+  const formatTime = (session) => {
+    const time = getISTTime(
+      session?.start_time ||
+        session?.startTime
+    );
+
+    if (!time) return "--:--";
+
+    const [hourString, minute] =
+      time.split(":");
+
+    let hour = Number(hourString);
+
+    const period =
+      hour >= 12 ? "PM" : "AM";
+
+    hour = hour % 12 || 12;
+
+    return `${String(hour).padStart(
+      2,
+      "0"
+    )}:${minute} ${period}`;
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Loading
+  |--------------------------------------------------------------------------
+  */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#09080D] text-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-[#A842DF] border-t-transparent animate-spin" />
+
+          <p className="text-gray-400">
+            Loading sessions...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | UI
+  |--------------------------------------------------------------------------
+  */
 
   return (
-    <div className="p-8 text-white min-h-full">
+    <div className="min-h-screen bg-[#09080D] text-white p-6 md:p-8">
 
       {/* ======================================================
           HEADER
       ====================================================== */}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
 
         <div>
-          <h1 className="text-4xl font-bold text-purple-400">
+          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#A842DF] to-[#EE68E0] bg-clip-text text-transparent">
             Institute Sessions
           </h1>
 
-          <p className="text-white mt-2">
+          <p className="text-gray-400 mt-2 text-lg">
             Manage sessions for your institute classes.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            resetCreateForm();
-            setShowCreateModal(true);
-          }}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity flex items-center gap-2"
-        >
-          <Plus size={18} />
+        <div className="flex items-center gap-3">
 
-          Create Session
-        </button>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="px-5 py-3 rounded-xl bg-[#17151D] border border-white/10 hover:border-[#A842DF]/50 transition-all flex items-center gap-2"
+          >
+            <FaSyncAlt />
+
+            Refresh
+          </button>
+
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#A842DF] to-[#EE68E0] font-bold flex items-center gap-2 hover:scale-[1.02] transition-all shadow-lg shadow-purple-900/30"
+          >
+            <FaPlus />
+
+            Add Session
+          </button>
+
+        </div>
       </div>
 
       {/* ======================================================
-          STATS
-      ====================================================== */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-
-        <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-5">
-          <p className="text-white text-sm">
-            Total Sessions
-          </p>
-
-          <h2 className="text-4xl font-bold mt-2">
-            {stats.total}
-          </h2>
-        </div>
-
-        <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-5">
-          <p className="text-white text-sm">
-            Scheduled
-          </p>
-
-          <h2 className="text-4xl font-bold text-white mt-2">
-            {stats.scheduled}
-          </h2>
-        </div>
-
-        <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-5">
-          <p className="text-white text-sm">
-            Live
-          </p>
-
-          <h2 className="text-4xl font-bold text-white mt-2">
-            {stats.live}
-          </h2>
-        </div>
-
-        <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-5">
-          <p className="text-white text-sm">
-            Completed
-          </p>
-
-          <h2 className="text-4xl font-bold text-white mt-2">
-            {stats.completed}
-          </h2>
-        </div>
-
-      </div>
-
-      {/* ======================================================
-          SEARCH + FILTER
+          SEARCH
       ====================================================== */}
 
       <div className="mb-6">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-          <div className="relative w-full">
-
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white pointer-events-none"
-              size={18}
-            />
-
-            <input
-              type="text"
-              placeholder="Search sessions..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
-            />
-
-            {search && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch("");
-                  setPage(1);
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-purple-300"
-              >
-                <X size={14} />
-              </button>
-            )}
-
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-full py-3.5 px-4 rounded-xl bg-[#151519] border border-[#2c2c35] text-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
-          >
-            <option value="ALL">
-              All Status
-            </option>
-
-            <option value="SCHEDULED">
-              Scheduled
-            </option>
-
-            <option value="UPCOMING">
-              Upcoming
-            </option>
-
-            <option value="LIVE">
-              Live
-            </option>
-
-            <option value="COMPLETED">
-              Completed
-            </option>
-          </select>
-
-        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(event) =>
+            setSearch(event.target.value)
+          }
+          placeholder="Search by class or time..."
+          className="w-full bg-[#17151D] border border-white/10 rounded-xl px-5 py-4 text-white placeholder-gray-500 outline-none focus:border-[#A842DF]"
+        />
 
       </div>
 
       {/* ======================================================
-          TABLE
+          SESSIONS TABLE
       ====================================================== */}
 
-      <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
+      <div className="bg-[#15141B] border border-white/10 rounded-2xl overflow-hidden">
 
         <div className="overflow-x-auto">
 
-          {loading ? (
+          <table className="w-full min-w-[750px]">
 
-            <div className="p-24 flex flex-col items-center justify-center">
+            <thead className="bg-[#201E28]">
 
-              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <tr>
 
-              <p className="mt-5 text-gray-500">
-                Loading Sessions...
-              </p>
+                <th className="text-left px-6 py-5 text-sm font-bold text-gray-300">
+                  Class
+                </th>
 
-            </div>
+                <th className="text-left px-6 py-5 text-sm font-bold text-gray-300">
+                  Start Time
+                </th>
 
-          ) : paginatedSessions.length === 0 ? (
+                <th className="text-left px-6 py-5 text-sm font-bold text-gray-300">
+                  Date
+                </th>
 
-            <div className="p-12 text-center">
+                <th className="text-right px-6 py-5 text-sm font-bold text-gray-300">
+                  Actions
+                </th>
 
-              <BookOpen
-                size={40}
-                className="text-gray-600 mx-auto"
-              />
+              </tr>
 
-              <p className="text-gray-500 text-lg mt-3">
+            </thead>
 
-                {search
-                  ? "No sessions found"
-                  : "No sessions available right now"}
+            <tbody>
 
-              </p>
-
-            </div>
-
-          ) : (
-
-            <table className="w-full">
-
-              <thead className="bg-[#202027] text-white">
+              {filteredSessions.length === 0 ? (
 
                 <tr>
 
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Session
-                  </th>
+                  <td
+                    colSpan="4"
+                    className="px-6 py-16 text-center"
+                  >
 
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Class
-                  </th>
+                    <FaGraduationCap className="mx-auto text-5xl text-[#A842DF] mb-4" />
 
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Trainer
-                  </th>
+                    <p className="text-xl font-bold text-white">
+                      No sessions found
+                    </p>
 
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Start Time
-                  </th>
+                    <p className="text-gray-500 mt-2">
+                      Create a session for one of your classes.
+                    </p>
 
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Status
-                  </th>
-
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Zoom
-                  </th>
-
-                  <th className="p-4 text-left whitespace-nowrap">
-                    Actions
-                  </th>
+                  </td>
 
                 </tr>
 
-              </thead>
+              ) : (
 
-              <tbody>
+                filteredSessions.map(
+                  (session, index) => {
 
-                {paginatedSessions.map(
-                  (session) => {
+                    const startDate =
+                      session?.start_time ||
+                      session?.startTime;
 
-                    const sessionId =
-                      getSessionId(session);
+                    let formattedDate = "--";
 
-                    const hasZoom =
-                      !!session.zoom_link;
+                    if (startDate) {
+                      const date =
+                        new Date(startDate);
 
-                    const start12 =
-                      convertTo12Hour(
-                        session.start_time
-                      );
-
-                    const currentStatus =
-                      String(
-                        session.live_status ||
-                          session.status ||
-                          "SCHEDULED"
-                      ).toUpperCase();
+                      if (
+                        !Number.isNaN(
+                          date.getTime()
+                        )
+                      ) {
+                        formattedDate =
+                          new Intl.DateTimeFormat(
+                            "en-IN",
+                            {
+                              timeZone:
+                                "Asia/Kolkata",
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          ).format(date);
+                      }
+                    }
 
                     return (
                       <tr
-                        key={sessionId}
-                        className="border-t border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
+                        key={
+                          getSessionId(
+                            session
+                          ) ||
+                          `session-${index}`
+                        }
+                        className="border-t border-white/10 hover:bg-white/[0.025] transition-colors"
                       >
-
-                        {/* SESSION */}
-
-                        <td className="p-4 text-white whitespace-nowrap">
-
-                          <div className="font-semibold">
-                            {session.title ||
-                              "Untitled Session"}
-                          </div>
-
-                        </td>
 
                         {/* CLASS */}
 
-                        <td className="p-4 text-white whitespace-nowrap">
+                        <td className="px-6 py-5">
 
-                          {session.class_title ||
-                            session.class_name ||
-                            "-"}
+                          <div className="flex items-center gap-3">
 
-                        </td>
+                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#A842DF] to-[#EE68E0] flex items-center justify-center">
 
-                        {/* TRAINER */}
+                              <FaGraduationCap />
 
-                        <td className="p-4 text-white whitespace-nowrap">
+                            </div>
 
-                          {session.trainer_name ||
-                            "-"}
+                            <div>
+
+                              <p className="font-bold text-white">
+                                {getClassName(
+                                  session
+                                )}
+                              </p>
+
+                            </div>
+
+                          </div>
 
                         </td>
 
                         {/* TIME */}
 
-                        <td className="p-4 text-white whitespace-nowrap">
+                        <td className="px-6 py-5">
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-white">
 
-                            <Clock
-                              size={14}
-                              className="text-purple-400"
-                            />
+                            <FaClock className="text-[#A842DF]" />
 
                             <span>
-                              {start12.time}{" "}
-                              {start12.ampm}
+                              {formatTime(
+                                session
+                              )}
                             </span>
 
                           </div>
 
-                          {session.session_timezone &&
-                            session.session_timezone !==
-                              tz.timezone && (
-                              <span className="ml-5 text-[10px] text-purple-400/70 bg-purple-500/10 px-1.5 py-0.5 rounded">
-                                {
-                                  session.session_timezone
-                                }
-                              </span>
-                            )}
-
                         </td>
 
-                        {/* STATUS */}
+                        {/* DATE */}
 
-                        <td className="p-4 whitespace-nowrap">
+                        <td className="px-6 py-5 text-gray-300">
 
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                              currentStatus ===
-                              "LIVE"
-                                ? "bg-green-500/20 text-green-400"
-                                : currentStatus ===
-                                  "COMPLETED"
-                                ? "bg-blue-500/20 text-blue-400"
-                                : currentStatus ===
-                                  "UPCOMING"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-yellow-500/20 text-yellow-400"
-                            }`}
-                          >
-
-                            {currentStatus ===
-                              "LIVE" && (
-                              <CheckCircle
-                                size={12}
-                              />
-                            )}
-
-                            {currentStatus}
-
-                          </span>
-
-                        </td>
-
-                        {/* ZOOM */}
-
-                        <td className="p-4 whitespace-nowrap">
-
-                          {hasZoom ? (
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                copyZoomLink(
-                                  session.zoom_link
-                                )
-                              }
-                              className="flex items-center gap-1.5 text-purple-300/80 hover:text-purple-300 transition-colors"
-                            >
-                              <Copy size={14} />
-
-                              Copy Link
-                            </button>
-
-                          ) : (
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openZoomModal(
-                                  session
-                                )
-                              }
-                              className="flex items-center gap-1.5 text-gray-500 hover:text-white transition-colors"
-                            >
-                              <RefreshCcw
-                                size={14}
-                              />
-
-                              Generate
-                            </button>
-
-                          )}
+                          {formattedDate}
 
                         </td>
 
                         {/* ACTIONS */}
 
-                        <td className="p-4">
+                        <td className="px-6 py-5">
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex justify-end items-center gap-3">
 
                             <button
                               type="button"
@@ -2446,29 +2003,23 @@ export default function InstituteSessions() {
                                   session
                                 )
                               }
-                              className="p-2 rounded-lg hover:bg-[#2a2a35] transition-colors group"
                               title="Edit Session"
+                              className="w-10 h-10 rounded-lg bg-white/5 hover:bg-[#A842DF]/20 text-gray-300 hover:text-[#D878FF] flex items-center justify-center transition-all"
                             >
-                              <Edit
-                                size={16}
-                                className="text-white group-hover:text-purple-300"
-                              />
+                              <FaEdit />
                             </button>
 
                             <button
                               type="button"
                               onClick={() =>
-                                openDeleteModal(
+                                handleDelete(
                                   session
                                 )
                               }
-                              className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
                               title="Delete Session"
+                              className="w-10 h-10 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-400 flex items-center justify-center transition-all"
                             >
-                              <Trash2
-                                size={16}
-                                className="text-red-500/70 group-hover:text-red-400"
-                              />
+                              <FaTrash />
                             </button>
 
                           </div>
@@ -2478,829 +2029,185 @@ export default function InstituteSessions() {
                       </tr>
                     );
                   }
-                )}
+                )
 
-              </tbody>
+              )}
 
-            </table>
+            </tbody>
 
-          )}
+          </table>
 
         </div>
 
       </div>
 
       {/* ======================================================
-          PAGINATION
+          MODAL
       ====================================================== */}
 
-      {totalPages > 1 && (
+      {showModal && (
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 text-sm">
+        <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
 
-          <p className="text-white">
+          <div className="w-full max-w-2xl bg-[#211D32] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
 
-            Showing{" "}
-            {(page - 1) * PAGE_SIZE + 1}{" "}
-            to{" "}
-            {Math.min(
-              page * PAGE_SIZE,
-              filteredSessions.length
-            )}{" "}
-            of{" "}
-            {filteredSessions.length} entries
+            {/* ==================================================
+                MODAL HEADER
+            ================================================== */}
 
-          </p>
-
-          <div className="flex gap-2">
-
-            <button
-              type="button"
-              onClick={() =>
-                setPage((p) =>
-                  Math.max(1, p - 1)
-                )
-              }
-              disabled={page === 1}
-              className="px-4 py-2 rounded-xl bg-[#151519] border border-[#2c2c35] text-gray-300 hover:bg-[#1a1a20] disabled:opacity-50 transition-colors"
-            >
-              Prev
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                setPage((p) =>
-                  Math.min(
-                    totalPages,
-                    p + 1
-                  )
-                )
-              }
-              disabled={
-                page === totalPages
-              }
-              className="px-4 py-2 rounded-xl bg-[#151519] border border-[#2c2c35] text-gray-300 hover:bg-[#1a1a20] disabled:opacity-50 transition-colors"
-            >
-              Next
-            </button>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* ======================================================
-          CREATE SESSION MODAL
-      ====================================================== */}
-
-      {showCreateModal && (
-
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-
-          <div className="w-full max-w-[650px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
-
-            {/* HEADER */}
-
-            <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
+            <div className="px-7 py-6 border-b border-white/10 flex items-center justify-between">
 
               <div>
 
-                <h2 className="text-2xl font-bold text-white">
-                  Create Session
+                <h2 className="text-2xl md:text-3xl font-black text-white">
+
+                  {editingSession
+                    ? "Edit Session"
+                    : "Add Session"}
+
                 </h2>
 
-                <p className="text-white mt-1 text-sm">
-                  Create a session for your class.
-                  Time is saved as{" "}
-                  <span className="text-purple-300">
-                    {tz.label}
-                  </span>
-                  .
+                <p className="text-gray-400 mt-1">
+                  {editingSession
+                    ? "Update session information."
+                    : "Create a new session for your class."}
                 </p>
 
               </div>
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowCreateModal(false)
-                }
-                className="text-white hover:text-purple-300 transition-colors"
+                onClick={closeModal}
+                disabled={saving}
+                className="w-10 h-10 rounded-lg hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
               >
-                <X size={20} />
+                <FaTimes size={20} />
               </button>
 
             </div>
 
-            {/* BODY */}
+            {/* ==================================================
+                FORM
+            ================================================== */}
 
-            <div className="overflow-y-auto max-h-[75vh] p-6">
+            <form
+              onSubmit={handleSubmit}
+              className="p-7"
+            >
 
               {/* CLASS */}
 
-              <div>
+              <div className="mb-7">
 
-                <label className={labelClass}>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
                   Class
                 </label>
 
                 <select
-                  className={selectClass}
+                  name="class_id"
                   value={form.class_id}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      class_id:
-                        e.target.value,
-                    })
-                  }
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-[#302B40] border border-white/10 rounded-xl px-4 py-4 text-white outline-none focus:border-[#A842DF]"
                 >
 
                   <option value="">
                     Select Class
                   </option>
 
-                  {classes.map((cls) => (
+                  {classes.map((item) => (
 
                     <option
-                      key={cls.id}
-                      value={cls.id}
+                      key={item?.id}
+                      value={item?.id}
                     >
-                      {cls.title ||
-                        cls.class_title ||
-                        cls.name}
+                      {item?.name ||
+                        item?.class_name ||
+                        `Class ${item?.id}`}
                     </option>
 
                   ))}
 
                 </select>
 
+                {classes.length === 0 && (
+
+                  <p className="text-sm text-yellow-400 mt-2">
+                    No institute classes found.
+                  </p>
+
+                )}
+
               </div>
 
-              {/* SESSION TITLE */}
+              {/* START TIME */}
 
-              <div>
+              <div className="mb-8">
 
-                <label className={labelClass}>
-                  Session Title
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 mb-2">
+
+                  <FaClock className="text-[#A842DF]" />
+
+                  Start Time
+                  <span className="text-gray-500 font-normal">
+                    (IST)
+                  </span>
+
                 </label>
 
                 <input
-                  type="text"
-                  className={inputClass}
-                  placeholder="e.g. Introduction to Painting"
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      title: e.target.value,
-                    })
-                  }
+                  type="time"
+                  name="start_time"
+                  value={form.start_time}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-[#302B40] border border-white/10 rounded-xl px-4 py-4 text-white outline-none focus:border-[#A842DF]"
                 />
 
-              </div>
-
-              {/* TIME */}
-
-              <div className="border-t border-[#3a3448] pt-6 mt-4">
-
-                <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-white">
-
-                  <Clock
-                    size={18}
-                    className="text-purple-400"
-                  />
-
-                  Start Time
-
-                  <span className="text-xs font-normal text-gray-500 ml-1">
-                    ({tz.abbr})
-                  </span>
-
-                </h3>
-
-                <div className="bg-[#151519] border border-[#2c2c35] rounded-xl p-4">
-
-                  <div className="flex gap-2 max-w-sm">
-
-                    <input
-                      type="time"
-                      className={`${gridInputClass} flex-1`}
-                      value={form.start_time}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          start_time:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <select
-                      className="w-24 p-2.5 rounded-lg bg-[#2b2638] text-white border border-transparent focus:outline-none text-sm"
-                      value={form.start_ampm}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          start_ampm:
-                            e.target.value,
-                        })
-                      }
-                    >
-
-                      <option value="AM">
-                        AM
-                      </option>
-
-                      <option value="PM">
-                        PM
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* NOTES */}
-
-              <div className="mt-6">
-
-                <label className={labelClass}>
-                  Notes
-                </label>
-
-                <textarea
-                  rows={4}
-                  className={`${inputClass} resize-none`}
-                  placeholder="Optional notes..."
-                  value={form.notes}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      notes: e.target.value,
-                    })
-                  }
-                />
-
-              </div>
-
-            </div>
-
-            {/* FOOTER */}
-
-            <div className="flex justify-end gap-3 p-6 border-t border-[#3a3448]">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowCreateModal(false)
-                }
-                className="px-5 py-3 rounded-xl border border-[#4a4359] text-white hover:bg-[#2b2638] transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={createSession}
-                disabled={creating}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2"
-              >
-
-                {creating ? (
-                  <>
-                    <Loader2
-                      size={18}
-                      className="animate-spin"
-                    />
-
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus size={18} />
-
-                    Create Session
-                  </>
-                )}
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* ======================================================
-          EDIT SESSION MODAL
-      ====================================================== */}
-
-      {showEditModal && (
-
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-
-          <div className="w-full max-w-[650px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
-
-            {/* HEADER */}
-
-            <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
-
-              <div>
-
-                <h2 className="text-2xl font-bold text-white">
-                  Edit Session
-                </h2>
-
-                <p className="text-white mt-1 text-sm">
-                  Update session information.{" "}
-                  <span className="text-purple-300">
-                    ({tz.abbr})
-                  </span>
+                <p className="text-xs text-gray-500 mt-2">
+                  Time is entered in IST. It will automatically
+                  be converted to UTC before being sent to the
+                  backend.
                 </p>
 
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setShowEditModal(false)
-                }
-                className="text-white hover:text-purple-300 transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-            </div>
-
-            {/* BODY */}
-
-            <div className="overflow-y-auto max-h-[75vh] p-6">
-
-              {/* CLASS */}
-
-              <div>
-
-                <label className={labelClass}>
-                  Class
-                </label>
-
-                <select
-                  className={selectClass}
-                  value={editForm.class_id}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      class_id:
-                        e.target.value,
-                    })
-                  }
-                >
-
-                  <option value="">
-                    Select Class
-                  </option>
-
-                  {classes.map((cls) => (
-
-                    <option
-                      key={cls.id}
-                      value={cls.id}
-                    >
-                      {cls.title ||
-                        cls.class_title ||
-                        cls.name}
-                    </option>
-
-                  ))}
-
-                </select>
-
-              </div>
-
-              {/* SESSION TITLE */}
-
-              <div>
-
-                <label className={labelClass}>
-                  Session Title
-                </label>
-
-                <input
-                  type="text"
-                  className={inputClass}
-                  value={editForm.title}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      title: e.target.value,
-                    })
-                  }
-                />
-
-              </div>
-
-              {/* TIME */}
-
-              <div className="border-t border-[#3a3448] pt-6 mt-4">
-
-                <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-white">
-
-                  <Clock
-                    size={18}
-                    className="text-purple-400"
-                  />
-
-                  Start Time
-
-                </h3>
-
-                <div className="bg-[#151519] border border-[#2c2c35] rounded-xl p-4">
-
-                  <div className="flex gap-2 max-w-sm">
-
-                    <input
-                      type="time"
-                      className={`${gridInputClass} flex-1`}
-                      value={editForm.start_time}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          start_time:
-                            e.target.value,
-                        })
-                      }
-                    />
-
-                    <select
-                      className="w-24 p-2.5 rounded-lg bg-[#2b2638] text-white border border-transparent focus:outline-none text-sm"
-                      value={editForm.start_ampm}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          start_ampm:
-                            e.target.value,
-                        })
-                      }
-                    >
-
-                      <option value="AM">
-                        AM
-                      </option>
-
-                      <option value="PM">
-                        PM
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* FOOTER */}
-
-            <div className="flex justify-end gap-3 p-6 border-t border-[#3a3448]">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowEditModal(false)
-                }
-                className="px-5 py-3 rounded-xl border border-[#4a4359] text-white hover:bg-[#2b2638] transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={updateSession}
-                disabled={editing}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2"
-              >
-
-                {editing ? (
-                  <>
-                    <Loader2
-                      size={18}
-                      className="animate-spin"
-                    />
-
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <Edit size={18} />
-
-                    Update Session
-                  </>
-                )}
-
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* ======================================================
-          DELETE CONFIRMATION MODAL
-      ====================================================== */}
-
-      {showDeleteModal && (
-
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-
-          <div className="w-full max-w-[420px] bg-[#1e1b2e] border border-[#2e2a42] rounded-2xl shadow-2xl overflow-hidden">
-
-            <div className="p-8 flex flex-col items-center">
-
-              <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mb-5">
-
-                <FaTrash className="text-red-400 text-lg" />
-
-              </div>
-
-              <h2 className="text-xl font-bold text-white mb-3 text-center">
-                Delete Session
-              </h2>
-
-              <p className="text-white text-center text-sm leading-relaxed mb-4">
-                Are you sure you want to delete this session?
-              </p>
-
-              {selectedSession && (
-
-                <div className="w-full bg-[#151519] rounded-xl p-4 mb-6 border border-[#2c2c35] text-sm">
-
-                  <p className="text-gray-500 text-xs">
-                    Session
-                  </p>
-
-                  <p className="font-semibold text-white">
-                    {selectedSession.title ||
-                      "Untitled Session"}
-                  </p>
-
-                  <div className="mt-3">
-
-                    <p className="text-gray-500 text-xs">
-                      Start Time
-                    </p>
-
-                    <p className="text-gray-300">
-
-                      {
-                        convertTo12Hour(
-                          selectedSession.start_time
-                        ).time
-                      }{" "}
-
-                      {
-                        convertTo12Hour(
-                          selectedSession.start_time
-                        ).ampm
-                      }
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-              )}
-
-              <div className="flex gap-3 w-full">
+              {/* ==================================================
+                  BUTTONS
+              ================================================== */}
+
+              <div className="flex justify-end gap-3 pt-5 border-t border-white/10">
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowDeleteModal(false)
-                  }
-                  className="flex-1 px-5 py-3 rounded-xl border border-[#4a4359] text-white hover:bg-[#2b2638] transition-colors"
+                  onClick={closeModal}
+                  disabled={saving}
+                  className="px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-all"
                 >
                   Cancel
                 </button>
 
                 <button
-                  type="button"
-                  onClick={deleteSession}
-                  disabled={deleting}
-                  className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+                  type="submit"
+                  disabled={saving}
+                  className="px-7 py-3 rounded-xl bg-gradient-to-r from-[#A842DF] to-[#EE68E0] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
 
-                  {deleting ? (
-                    <>
-                      <Loader2
-                        size={16}
-                        className="animate-spin"
-                      />
-
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 size={16} />
-
-                      Delete
-                    </>
+                  {saving && (
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   )}
+
+                  {saving
+                    ? "Saving..."
+                    : editingSession
+                    ? "Update Session"
+                    : "Create Session"}
 
                 </button>
 
               </div>
 
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* ======================================================
-          ZOOM MODAL
-      ====================================================== */}
-
-      {showZoomModal && (
-
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-
-          <div className="w-full max-w-[600px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
-
-            {/* HEADER */}
-
-            <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
-
-              <div>
-
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-
-                  <Video
-                    className="text-white"
-                    size={22}
-                  />
-
-                  Zoom Meeting
-
-                </h2>
-
-                <p className="text-white mt-1 text-sm">
-                  Manage the Zoom link for this session.
-                </p>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShowZoomModal(false)
-                }
-                className="text-white hover:text-purple-300 transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-            </div>
-
-            {/* BODY */}
-
-            <div className="overflow-y-auto max-h-[75vh] p-6">
-
-              {selectedSession?.zoom_link ? (
-
-                <div className="space-y-4">
-
-                  <div>
-
-                    <label className={labelClass}>
-                      Meeting ID
-                    </label>
-
-                    <div className="w-full p-3 rounded-xl bg-[#2b2638] text-white">
-                      {selectedSession.zoom_meeting_id ||
-                        "-"}
-                    </div>
-
-                  </div>
-
-                  <div>
-
-                    <label className={labelClass}>
-                      Password
-                    </label>
-
-                    <div className="w-full p-3 rounded-xl bg-[#2b2638] text-white">
-                      {selectedSession.zoom_password ||
-                        "-"}
-                    </div>
-
-                  </div>
-
-                  <div>
-
-                    <label className={labelClass}>
-                      Join URL
-                    </label>
-
-                    <div className="flex gap-3 mt-2">
-
-                      <input
-                        readOnly
-                        value={
-                          selectedSession.zoom_link
-                        }
-                        className="w-full p-3 rounded-xl bg-[#2b2638] text-white border border-transparent"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          copyZoomLink(
-                            selectedSession.zoom_link
-                          )
-                        }
-                        className="px-5 py-3 rounded-xl bg-[#151519] border border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
-                      >
-                        <Copy size={18} />
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              ) : (
-
-                <div className="text-center py-14">
-
-                  <Video
-                    size={60}
-                    className="mx-auto text-white"
-                  />
-
-                  <h3 className="text-2xl font-bold mt-6">
-                    No Zoom Meeting
-                  </h3>
-
-                  <p className="text-white mt-2">
-                    Generate a Zoom link for this session.
-                  </p>
-
-                </div>
-
-              )}
-
-              {/* ZOOM ACTION */}
-
-              <div className="flex justify-end pt-4 border-t border-[#3a3448] mt-6">
-
-                <button
-                  type="button"
-                  onClick={generateZoomMeeting}
-                  disabled={generatingZoom}
-                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2"
-                >
-
-                  {generatingZoom ? (
-                    <>
-                      <Loader2
-                        size={18}
-                        className="animate-spin"
-                      />
-
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCcw size={18} />
-
-                      {selectedSession?.zoom_link
-                        ? "Regenerate Zoom"
-                        : "Generate Zoom"}
-                    </>
-                  )}
-
-                </button>
-
-              </div>
-
-            </div>
+            </form>
 
           </div>
 
@@ -3310,4 +2217,6 @@ export default function InstituteSessions() {
 
     </div>
   );
-}
+};
+
+export default Sessions;
