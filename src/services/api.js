@@ -3,7 +3,7 @@
 // import { getAuth } from "firebase/auth";
 
 // const API = axios.create({
-// baseURL: "https://finearts-backend.onrender.com/api",
+// baseURL: "http://localhost:5000/api",
 // });
 
 // API.interceptors.request.use(
@@ -72,7 +72,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "https://finearts-backend.onrender.com/api",
+//   baseURL: "http://localhost:5000/api",
 // });
 
 // API.interceptors.request.use(
@@ -131,7 +131,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "https://finearts-backend.onrender.com/api",
+//   baseURL: "http://localhost:5000/api",
 // });
 
 // /* =========================
@@ -215,7 +215,7 @@
 // import { getAuth, signOut } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "https://finearts-backend.onrender.com/api",
+//   baseURL: "http://localhost:5000/api",
 //   timeout: 30000,
 // });
 
@@ -346,7 +346,7 @@
 // } from "firebase/auth";
 
 // const API = axios.create({
-//   baseURL: "https://finearts-backend.onrender.com/api",
+//   baseURL: "http://localhost:5000/api",
 //   timeout: 30000,
 // });
 
@@ -727,7 +727,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "https://finearts-backend.onrender.com/api",
+//     "http://localhost:5000/api",
 
 //   timeout: 30000,
 // });
@@ -1174,7 +1174,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "https://finearts-backend.onrender.com/api",
+//     "http://localhost:5000/api",
 
 //   timeout: 30000,
 // });
@@ -1972,7 +1972,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "https://finearts-backend.onrender.com/api",
+//     "http://localhost:5000/api",
 
 //   timeout: 30000,
 // });
@@ -2858,7 +2858,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "https://finearts-backend.onrender.com/api",
+//     "http://localhost:5000/api",
 
 //   timeout: 30000,
 // });
@@ -3855,7 +3855,7 @@
 // const API = axios.create({
 //   baseURL:
 //     import.meta.env.VITE_API_URL ||
-//     "https://finearts-backend.onrender.com/api",
+//     "http://localhost:5000/api",
 
 //   timeout: 30000,
 // });
@@ -4977,14 +4977,22 @@ import { getAuth, signOut } from "firebase/auth";
    API CONFIG
 ========================================================= */
 
-const API = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://finearts-backend.onrender.com/api",
+// const API = axios.create({
+//   baseURL:
+//     import.meta.env.VITE_API_URL ||
+//     "http://localhost:5000/api",
 
+//   timeout: 120000,
+// });
+
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+const API = axios.create({
+  baseURL: API_BASE_URL,
   timeout: 120000,
 });
-
 
 /* =========================================================
    PATH HELPERS

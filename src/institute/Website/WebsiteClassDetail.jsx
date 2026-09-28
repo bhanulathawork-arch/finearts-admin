@@ -5368,765 +5368,3551 @@
 // export default WebsiteClassDetail;
 
 
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+// import React, {
+//   useEffect,
+//   useMemo,
+//   useState,
+// } from "react";
 
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useOutletContext,
-} from "react-router-dom";
+// import {
+//   Link,
+//   useNavigate,
+//   useParams,
+//   useOutletContext,
+// } from "react-router-dom";
 
+// import {
+//   FaArrowLeft,
+//   FaArrowRight,
+//   FaCalendarAlt,
+//   FaCalendarWeek,
+//   FaCheck,
+//   FaChevronDown,
+//   FaChevronUp,
+//   FaClock,
+//   FaGlobe,
+//   FaHourglassHalf,
+//   FaUsers,
+// } from "react-icons/fa";
+
+// import { getClassById } from "../../services/Classes.js";
+// import { getClassSessions } from "../../services/session.service";
+
+// import WebsiteBooking from "./WebsiteBooking";
+
+
+// /* =========================================================
+//    DEFAULT BRANDING
+// ========================================================= */
+
+// const DEFAULT_BRANDING = {
+//   navbarColor: "#1F2937",
+
+//   headingColor: "#111827",
+//   subheadingColor: "#5B21B6",
+//   textColor: "#111827",
+//   iconColor: "#F59E0B",
+
+//   buttonColor: "#7C3AED",
+//   buttonTextColor: "#FFFFFF",
+
+//   pageBackgroundColor: "#FAFAF9",
+//   cardBackgroundColor: "#FFFFFF",
+
+//   footerBackgroundColor: "#1F2937",
+//   footerHeadingColor: "#FFFFFF",
+//   footerTextColor: "#FAFAF9",
+
+//   fontHeading: "Inter",
+//   fontSubheading: "Inter",
+//   fontBody: "Inter",
+
+//   headingWeight: 700,
+//   headingLineHeight: 1.15,
+//   headingLetterSpacing: 0,
+
+//   subheadingWeight: 600,
+//   subheadingLineHeight: 1.4,
+
+//   bodyWeight: 400,
+//   bodyLineHeight: 1.6,
+//   bodyLetterSpacing: 0,
+
+//   roundedButtons: true,
+// };
+
+
+// /* =========================================================
+//    DEFAULT CONTENT
+// ========================================================= */
+
+// const DEFAULT_CONTENT = {
+//   classDetail: {
+//     eyebrow: "CLASS DETAILS",
+//     heading: "Class Details",
+//     subheading:
+//       "Explore this class, its schedule, trainer and available sessions.",
+
+//     about: {
+//       heading: "About This Class",
+//       subheading:
+//         "Learn more about this class and what you can expect.",
+//     },
+
+//     information: {
+//       heading: "Class Information",
+//       subheading:
+//         "Everything you need to know about this class.",
+//     },
+
+//     schedule: {
+//       heading: "Schedule",
+//       subheading:
+//         "Check the class schedule and timings.",
+//     },
+
+//     sessions: {
+//       heading: "Upcoming Sessions",
+//       subheading:
+//         "Scheduled sessions for this class.",
+//     },
+
+//     skills: {
+//       heading: "What You Will Learn",
+//       subheading:
+//         "Key skills and topics covered in this class.",
+//     },
+
+//     trainer: {
+//       eyebrow: "YOUR TRAINER",
+//       heading: "Your Trainer",
+//       subheading:
+//         "Learn with an experienced trainer.",
+//     },
+
+//     fee: {
+//       eyebrow: "COURSE FEE",
+//       heading: "Course Fee",
+//       subheading: "",
+//     },
+
+//     booking: {
+//       buttonText: "Book This Class",
+//       backButtonText: "Back To Classes",
+//     },
+
+//     navigation: {
+//       backText: "Back To Classes",
+//     },
+//   },
+// };
+
+
+// /* =========================================================
+//    GENERIC VALUE HELPERS
+// ========================================================= */
+
+// const getValue = (...values) => {
+//   for (const value of values) {
+//     if (
+//       value !== undefined &&
+//       value !== null &&
+//       value !== ""
+//     ) {
+//       return value;
+//     }
+//   }
+
+//   return null;
+// };
+
+
+// /* =========================================================
+//    BRANDING HELPERS
+// ========================================================= */
+
+// const getBrandingValue = (
+//   branding,
+//   camelCaseKey,
+//   snakeCaseKey,
+//   fallback
+// ) => {
+//   const value =
+//     branding?.[camelCaseKey] ??
+//     branding?.[snakeCaseKey];
+
+//   return (
+//     value !== undefined &&
+//     value !== null &&
+//     value !== ""
+//   )
+//     ? value
+//     : fallback;
+// };
+
+
+// const normalizeBranding = (
+//   branding = {}
+// ) => ({
+//   navbarColor: getBrandingValue(
+//     branding,
+//     "navbarColor",
+//     "navbar_color",
+//     DEFAULT_BRANDING.navbarColor
+//   ),
+
+//   headingColor: getBrandingValue(
+//     branding,
+//     "headingColor",
+//     "heading_color",
+//     DEFAULT_BRANDING.headingColor
+//   ),
+
+//   subheadingColor: getBrandingValue(
+//     branding,
+//     "subheadingColor",
+//     "subheading_color",
+//     DEFAULT_BRANDING.subheadingColor
+//   ),
+
+//   textColor: getBrandingValue(
+//     branding,
+//     "textColor",
+//     "text_color",
+//     DEFAULT_BRANDING.textColor
+//   ),
+
+//   iconColor: getBrandingValue(
+//     branding,
+//     "iconColor",
+//     "icon_color",
+//     DEFAULT_BRANDING.iconColor
+//   ),
+
+//   buttonColor: getBrandingValue(
+//     branding,
+//     "buttonColor",
+//     "button_color",
+//     DEFAULT_BRANDING.buttonColor
+//   ),
+
+//   buttonTextColor: getBrandingValue(
+//     branding,
+//     "buttonTextColor",
+//     "button_text_color",
+//     DEFAULT_BRANDING.buttonTextColor
+//   ),
+
+//   pageBackgroundColor:
+//     getBrandingValue(
+//       branding,
+//       "pageBackgroundColor",
+//       "page_background_color",
+//       DEFAULT_BRANDING.pageBackgroundColor
+//     ),
+
+//   cardBackgroundColor:
+//     getBrandingValue(
+//       branding,
+//       "cardBackgroundColor",
+//       "card_background_color",
+//       DEFAULT_BRANDING.cardBackgroundColor
+//     ),
+
+//   footerBackgroundColor:
+//     getBrandingValue(
+//       branding,
+//       "footerBackgroundColor",
+//       "footer_background_color",
+//       DEFAULT_BRANDING.footerBackgroundColor
+//     ),
+
+//   footerHeadingColor:
+//     getBrandingValue(
+//       branding,
+//       "footerHeadingColor",
+//       "footer_heading_color",
+//       DEFAULT_BRANDING.footerHeadingColor
+//     ),
+
+//   footerTextColor:
+//     getBrandingValue(
+//       branding,
+//       "footerTextColor",
+//       "footer_text_color",
+//       DEFAULT_BRANDING.footerTextColor
+//     ),
+
+//   fontHeading:
+//     getBrandingValue(
+//       branding,
+//       "fontHeading",
+//       "font_heading",
+//       DEFAULT_BRANDING.fontHeading
+//     ),
+
+//   fontSubheading:
+//     getBrandingValue(
+//       branding,
+//       "fontSubheading",
+//       "font_subheading",
+//       DEFAULT_BRANDING.fontSubheading
+//     ),
+
+//   fontBody:
+//     getBrandingValue(
+//       branding,
+//       "fontBody",
+//       "font_body",
+//       DEFAULT_BRANDING.fontBody
+//     ),
+
+//   headingWeight:
+//     getBrandingValue(
+//       branding,
+//       "headingWeight",
+//       "heading_weight",
+//       DEFAULT_BRANDING.headingWeight
+//     ),
+
+//   headingLineHeight:
+//     getBrandingValue(
+//       branding,
+//       "headingLineHeight",
+//       "heading_line_height",
+//       DEFAULT_BRANDING.headingLineHeight
+//     ),
+
+//   headingLetterSpacing:
+//     getBrandingValue(
+//       branding,
+//       "headingLetterSpacing",
+//       "heading_letter_spacing",
+//       DEFAULT_BRANDING.headingLetterSpacing
+//     ),
+
+//   subheadingWeight:
+//     getBrandingValue(
+//       branding,
+//       "subheadingWeight",
+//       "subheading_weight",
+//       DEFAULT_BRANDING.subheadingWeight
+//     ),
+
+//   subheadingLineHeight:
+//     getBrandingValue(
+//       branding,
+//       "subheadingLineHeight",
+//       "subheading_line_height",
+//       DEFAULT_BRANDING.subheadingLineHeight
+//     ),
+
+//   bodyWeight:
+//     getBrandingValue(
+//       branding,
+//       "bodyWeight",
+//       "body_weight",
+//       DEFAULT_BRANDING.bodyWeight
+//     ),
+
+//   bodyLineHeight:
+//     getBrandingValue(
+//       branding,
+//       "bodyLineHeight",
+//       "body_line_height",
+//       DEFAULT_BRANDING.bodyLineHeight
+//     ),
+
+//   bodyLetterSpacing:
+//     getBrandingValue(
+//       branding,
+//       "bodyLetterSpacing",
+//       "body_letter_spacing",
+//       DEFAULT_BRANDING.bodyLetterSpacing
+//     ),
+
+//   roundedButtons:
+//     getBrandingValue(
+//       branding,
+//       "roundedButtons",
+//       "rounded_buttons",
+//       DEFAULT_BRANDING.roundedButtons
+//     ),
+// });
+
+
+// const fontFamily = (font) =>
+//   font
+//     ? `'${font}', sans-serif`
+//     : "Inter, sans-serif";
+
+
+// const getButtonRadius = (
+//   branding,
+//   large = false
+// ) => {
+//   if (branding.roundedButtons) {
+//     return "9999px";
+//   }
+
+//   return large ? "12px" : "8px";
+// };
+
+
+// const hexToRgba = (
+//   color,
+//   alpha
+// ) => {
+//   if (
+//     typeof color !== "string"
+//   ) {
+//     return color;
+//   }
+
+//   const hex =
+//     color.replace("#", "");
+
+//   if (
+//     !/^[0-9A-Fa-f]{6}$/.test(hex)
+//   ) {
+//     return color;
+//   }
+
+//   const r = parseInt(
+//     hex.substring(0, 2),
+//     16
+//   );
+
+//   const g = parseInt(
+//     hex.substring(2, 4),
+//     16
+//   );
+
+//   const b = parseInt(
+//     hex.substring(4, 6),
+//     16
+//   );
+
+//   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+// };
+
+
+// /* =========================================================
+//    CONTENT NORMALIZER
+// ========================================================= */
+
+// const normalizeContent = (
+//   content = {}
+// ) => {
+//   const source =
+//     content?.classDetail ||
+//     content?.class_detail ||
+//     content ||
+//     {};
+
+//   return {
+//     classDetail: {
+//       eyebrow:
+//         getValue(
+//           source?.eyebrow,
+//           source?.eyebrow_text,
+//           DEFAULT_CONTENT.classDetail.eyebrow
+//         ),
+
+//       heading:
+//         getValue(
+//           source?.heading,
+//           source?.title,
+//           DEFAULT_CONTENT.classDetail.heading
+//         ),
+
+//       subheading:
+//         getValue(
+//           source?.subheading,
+//           source?.subtitle,
+//           DEFAULT_CONTENT.classDetail.subheading
+//         ),
+
+//       about: {
+//         heading:
+//           getValue(
+//             source?.about?.heading,
+//             source?.about_heading,
+//             DEFAULT_CONTENT.classDetail.about.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.about?.subheading,
+//             source?.about_subheading,
+//             DEFAULT_CONTENT.classDetail.about.subheading
+//           ),
+//       },
+
+//       information: {
+//         heading:
+//           getValue(
+//             source?.information?.heading,
+//             source?.information_heading,
+//             DEFAULT_CONTENT.classDetail.information.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.information?.subheading,
+//             source?.information_subheading,
+//             DEFAULT_CONTENT.classDetail.information.subheading
+//           ),
+//       },
+
+//       schedule: {
+//         heading:
+//           getValue(
+//             source?.schedule?.heading,
+//             source?.schedule_heading,
+//             DEFAULT_CONTENT.classDetail.schedule.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.schedule?.subheading,
+//             source?.schedule_subheading,
+//             DEFAULT_CONTENT.classDetail.schedule.subheading
+//           ),
+//       },
+
+//       sessions: {
+//         heading:
+//           getValue(
+//             source?.sessions?.heading,
+//             source?.sessions_heading,
+//             DEFAULT_CONTENT.classDetail.sessions.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.sessions?.subheading,
+//             source?.sessions_subheading,
+//             DEFAULT_CONTENT.classDetail.sessions.subheading
+//           ),
+//       },
+
+//       skills: {
+//         heading:
+//           getValue(
+//             source?.skills?.heading,
+//             source?.skills_heading,
+//             DEFAULT_CONTENT.classDetail.skills.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.skills?.subheading,
+//             source?.skills_subheading,
+//             DEFAULT_CONTENT.classDetail.skills.subheading
+//           ),
+//       },
+
+//       trainer: {
+//         eyebrow:
+//           getValue(
+//             source?.trainer?.eyebrow,
+//             source?.trainer_eyebrow,
+//             DEFAULT_CONTENT.classDetail.trainer.eyebrow
+//           ),
+
+//         heading:
+//           getValue(
+//             source?.trainer?.heading,
+//             source?.trainer_heading,
+//             DEFAULT_CONTENT.classDetail.trainer.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.trainer?.subheading,
+//             source?.trainer_subheading,
+//             DEFAULT_CONTENT.classDetail.trainer.subheading
+//           ),
+//       },
+
+//       fee: {
+//         eyebrow:
+//           getValue(
+//             source?.fee?.eyebrow,
+//             source?.fee_eyebrow,
+//             DEFAULT_CONTENT.classDetail.fee.eyebrow
+//           ),
+
+//         heading:
+//           getValue(
+//             source?.fee?.heading,
+//             source?.fee_heading,
+//             DEFAULT_CONTENT.classDetail.fee.heading
+//           ),
+
+//         subheading:
+//           getValue(
+//             source?.fee?.subheading,
+//             source?.fee_subheading,
+//             DEFAULT_CONTENT.classDetail.fee.subheading
+//           ),
+//       },
+
+//       booking: {
+//         buttonText:
+//           getValue(
+//             source?.booking?.buttonText,
+//             source?.booking?.button_text,
+//             source?.booking_button_text,
+//             DEFAULT_CONTENT.classDetail.booking.buttonText
+//           ),
+
+//         backButtonText:
+//           getValue(
+//             source?.booking?.backButtonText,
+//             source?.booking?.back_button_text,
+//             source?.back_button_text,
+//             DEFAULT_CONTENT.classDetail.booking.backButtonText
+//           ),
+//       },
+
+//       navigation: {
+//         backText:
+//           getValue(
+//             source?.navigation?.backText,
+//             source?.navigation?.back_text,
+//             source?.back_text,
+//             DEFAULT_CONTENT.classDetail.navigation.backText
+//           ),
+//       },
+//     },
+//   };
+// };
+
+
+// /* =========================================================
+//    SECTION NORMALIZER
+// ========================================================= */
+
+// const normalizeSections = (
+//   sections = {}
+// ) => {
+//   const source =
+//     sections?.classDetail ||
+//     sections?.class_detail ||
+//     sections ||
+//     {};
+
+//   const getSection = (
+//     key,
+//     aliases = []
+//   ) => {
+//     const values = [
+//       source?.[key],
+//       ...aliases.map(
+//         (alias) =>
+//           source?.[alias]
+//       ),
+//     ];
+
+//     for (
+//       const value of values
+//     ) {
+//       if (
+//         typeof value ===
+//         "boolean"
+//       ) {
+//         return value;
+//       }
+
+//       if (
+//         typeof value ===
+//         "object" &&
+//         value !== null &&
+//         typeof value.visible ===
+//           "boolean"
+//       ) {
+//         return value.visible;
+//       }
+
+//       if (
+//         typeof value ===
+//         "object" &&
+//         value !== null &&
+//         typeof value.is_visible ===
+//           "boolean"
+//       ) {
+//         return value.is_visible;
+//       }
+//     }
+
+//     return true;
+//   };
+
+//   return {
+//     hero: getSection(
+//       "hero",
+//       ["banner"]
+//     ),
+
+//     about: getSection(
+//       "about",
+//       ["aboutClass"]
+//     ),
+
+//     information: getSection(
+//       "information",
+//       [
+//         "classInformation",
+//         "class_information",
+//       ]
+//     ),
+
+//     schedule: getSection(
+//       "schedule"
+//     ),
+
+//     sessions: getSection(
+//       "sessions",
+//       ["upcomingSessions"]
+//     ),
+
+//     skills: getSection(
+//       "skills",
+//       ["whatYouWillLearn"]
+//     ),
+
+//     trainer: getSection(
+//       "trainer",
+//       ["sidebar"]
+//     ),
+
+//     booking: getSection(
+//       "booking",
+//       ["cta"]
+//     ),
+//   };
+// };
+
+
+// /* =========================================================
+//    CLASS HELPERS
+// ========================================================= */
+
+// const getClassTitle = (
+//   data
+// ) =>
+//   getValue(
+//     data?.title,
+//     data?.class_title,
+//     data?.className,
+//     data?.name,
+//     "Class"
+//   );
+
+
+// const getClassDescription = (
+//   data
+// ) =>
+//   getValue(
+//     data?.description,
+//     data?.class_description,
+//     data?.about,
+//     data?.overview,
+//     "No description available."
+//   );
+
+
+// const getClassImage = (
+//   data
+// ) =>
+//   getValue(
+//     data?.image,
+//     data?.image_url,
+//     data?.class_image,
+//     data?.class_image_url,
+//     data?.thumbnail,
+//     data?.thumbnail_url,
+//     data?.banner_image,
+//     ""
+//   );
+
+
+// const getTrainerName = (
+//   data
+// ) =>
+//   getValue(
+//     data?.trainer_name,
+//     data?.trainerName,
+//     data?.trainer?.full_name,
+//     data?.trainer?.name,
+//     "Trainer"
+//   );
+
+
+// const getTrainerImage = (
+//   data
+// ) =>
+//   getValue(
+//     data?.trainer_image,
+//     data?.trainerImage,
+//     data?.trainer?.profile_image,
+//     data?.trainer?.image,
+//     data?.trainer?.image_url,
+//     ""
+//   );
+
+
+// const getInstituteName = (
+//   data
+// ) =>
+//   getValue(
+//     data?.institute_name,
+//     data?.instituteName,
+//     data?.institute?.name,
+//     "Institute"
+//   );
+
+
+// const getLevel = (
+//   data
+// ) =>
+//   getValue(
+//     data?.level,
+//     data?.class_level,
+//     data?.difficulty,
+//     "All Levels"
+//   );
+
+
+// const getDuration = (
+//   data
+// ) =>
+//   getValue(
+//     data?.duration,
+//     data?.class_duration,
+//     data?.duration_minutes,
+//     "--"
+//   );
+
+
+// const getPrice = (
+//   data
+// ) =>
+//   Number(
+//     getValue(
+//       data?.price,
+//       data?.class_price,
+//       data?.monthly_price,
+//       0
+//     )
+//   );
+
+
+// const getRating = (
+//   data
+// ) =>
+//   Number(
+//     getValue(
+//       data?.rating,
+//       data?.trainer_rating,
+//       0
+//     )
+//   );
+
+
+// const getStudents = (
+//   data
+// ) =>
+//   Number(
+//     getValue(
+//       data?.students,
+//       data?.students_count,
+//       data?.total_students,
+//       0
+//     )
+//   );
+
+
+// const getAvailableDays = (
+//   data
+// ) => {
+//   const days =
+//     getValue(
+//       data?.available_days,
+//       data?.days,
+//       data?.schedule_days
+//     );
+
+//   if (Array.isArray(days)) {
+//     return days;
+//   }
+
+//   if (
+//     typeof days ===
+//     "string"
+//   ) {
+//     return days
+//       .split(",")
+//       .map(
+//         (item) =>
+//           item.trim()
+//       )
+//       .filter(Boolean);
+//   }
+
+//   return [];
+// };
+
+
+// const formatDate = (
+//   value
+// ) => {
+//   if (!value) return "--";
+
+//   const date =
+//     new Date(value);
+
+//   if (
+//     Number.isNaN(
+//       date.getTime()
+//     )
+//   ) {
+//     return String(value);
+//   }
+
+//   return date.toLocaleDateString(
+//     "en-IN",
+//     {
+//       day: "2-digit",
+//       month: "short",
+//       year: "numeric",
+//     }
+//   );
+// };
+
+
+// const formatTime = (
+//   value
+// ) => {
+//   if (!value) return "--";
+
+//   const text =
+//     String(value);
+
+//   if (
+//     text
+//       .toLowerCase()
+//       .includes("am") ||
+//     text
+//       .toLowerCase()
+//       .includes("pm")
+//   ) {
+//     return text;
+//   }
+
+//   const parts =
+//     text.split(":");
+
+//   if (
+//     parts.length < 2
+//   ) {
+//     return text;
+//   }
+
+//   const hours =
+//     Number(parts[0]);
+
+//   const minutes =
+//     Number(parts[1]);
+
+//   if (
+//     Number.isNaN(hours) ||
+//     Number.isNaN(minutes)
+//   ) {
+//     return text;
+//   }
+
+//   const period =
+//     hours >= 12
+//       ? "PM"
+//       : "AM";
+
+//   const hour =
+//     hours % 12 || 12;
+
+//   return `${hour}:${String(
+//     minutes
+//   ).padStart(2, "0")} ${period}`;
+// };
+
+
+// const getTimezone = (
+//   data
+// ) =>
+//   getValue(
+//     data?.timezone,
+//     data?.class_timezone,
+//     data?.time_zone,
+//     "Asia/Kolkata"
+//   );
+
+
+// const getCategoryName = (
+//   data
+// ) =>
+//   getValue(
+//     data?.category_name,
+//     data?.category?.name,
+//     data?.categoryName,
+//     "General"
+//   );
+
+
+// const getSubcategoryName = (
+//   data
+// ) =>
+//   getValue(
+//     data?.subcategory_name,
+//     data?.subcategory?.name,
+//     data?.subcategoryName,
+//     ""
+//   );
+
+
+// /* =========================================================
+//    STAR RATING
+// ========================================================= */
+
+// const StarRating = ({
+//   rating = 0,
+//   branding,
+// }) => {
+//   const value =
+//     Math.max(
+//       0,
+//       Math.min(
+//         5,
+//         Number(rating) || 0
+//       )
+//     );
+
+//   return (
+//     <div className="flex items-center gap-1">
+//       <div
+//         className="text-sm tracking-[2px]"
+//         aria-label={`Rating ${value.toFixed(
+//           1
+//         )} out of 5`}
+//       >
+//         {[1, 2, 3, 4, 5].map(
+//           (star) => (
+//             <span
+//               key={star}
+//               style={{
+//                 color:
+//                   star <=
+//                   Math.round(value)
+//                     ? branding.iconColor
+//                     : hexToRgba(
+//                         branding.textColor,
+//                         0.18
+//                       ),
+//               }}
+//             >
+//               ★
+//             </span>
+//           )
+//         )}
+//       </div>
+
+//       <span
+//         className="ml-1 text-sm"
+//         style={{
+//           color:
+//             branding.textColor,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontBody
+//             ),
+//           fontWeight:
+//             branding.bodyWeight,
+//         }}
+//       >
+//         {value.toFixed(1)}
+//       </span>
+//     </div>
+//   );
+// };
+
+
+// /* =========================================================
+//    INFO ITEM
+// ========================================================= */
+
+// const InfoItem = ({
+//   icon: Icon,
+//   label,
+//   value,
+//   branding,
+// }) => (
+//   <div className="flex items-start gap-3">
+//     <div
+//       className="
+//         mt-0.5
+//         flex
+//         h-9
+//         w-9
+//         shrink-0
+//         items-center
+//         justify-center
+//       "
+//       style={{
+//         backgroundColor:
+//           hexToRgba(
+//             branding.buttonColor,
+//             0.1
+//           ),
+//         color:
+//           branding.iconColor,
+//         borderRadius: "10px",
+//       }}
+//     >
+//       <Icon size={15} />
+//     </div>
+
+//     <div className="min-w-0">
+//       <p
+//         className="text-xs"
+//         style={{
+//           color:
+//             branding.textColor,
+//           opacity: 0.65,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontBody
+//             ),
+//           fontWeight:
+//             branding.bodyWeight,
+//         }}
+//       >
+//         {label}
+//       </p>
+
+//       <p
+//         className="
+//           mt-0.5
+//           break-words
+//           text-sm
+//         "
+//         style={{
+//           color:
+//             branding.headingColor,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontBody
+//             ),
+//           fontWeight:
+//             branding.headingWeight,
+//         }}
+//       >
+//         {value || "--"}
+//       </p>
+//     </div>
+//   </div>
+// );
+
+
+// /* =========================================================
+//    SECTION HEADER
+// ========================================================= */
+
+// const SectionHeader = ({
+//   eyebrow,
+//   heading,
+//   subheading,
+//   branding,
+//   centered = false,
+// }) => (
+//   <div
+//     className={
+//       centered
+//         ? "text-center"
+//         : ""
+//     }
+//   >
+//     {eyebrow && (
+//       <p
+//         className="
+//           text-xs
+//           uppercase
+//           tracking-[0.18em]
+//         "
+//         style={{
+//           color:
+//             branding.subheadingColor,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontSubheading
+//             ),
+//           fontWeight:
+//             branding.subheadingWeight,
+//         }}
+//       >
+//         {eyebrow}
+//       </p>
+//     )}
+
+//     {heading && (
+//       <h2
+//         className="
+//           mt-1
+//           text-2xl
+//           sm:text-3xl
+//         "
+//         style={{
+//           color:
+//             branding.headingColor,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontHeading
+//             ),
+//           fontWeight:
+//             branding.headingWeight,
+//           lineHeight:
+//             branding.headingLineHeight,
+//           letterSpacing:
+//             branding.headingLetterSpacing,
+//         }}
+//       >
+//         {heading}
+//       </h2>
+//     )}
+
+//     {subheading && (
+//       <p
+//         className="
+//           mt-2
+//           max-w-2xl
+//           text-sm
+//         "
+//         style={{
+//           color:
+//             branding.textColor,
+//           opacity: 0.68,
+//           fontFamily:
+//             fontFamily(
+//               branding.fontBody
+//             ),
+//           fontWeight:
+//             branding.bodyWeight,
+//           lineHeight:
+//             branding.bodyLineHeight,
+//         }}
+//       >
+//         {subheading}
+//       </p>
+//     )}
+//   </div>
+// );
+
+
+// /* =========================================================
+//    SESSION ITEM
+// ========================================================= */
+
+// const SessionItem = ({
+//   session,
+//   branding,
+// }) => {
+//   const sessionDate =
+//     getValue(
+//       session?.session_date,
+//       session?.date,
+//       session?.start_date
+//     );
+
+//   const startTime =
+//     getValue(
+//       session?.start_time,
+//       session?.startTime
+//     );
+
+//   const endTime =
+//     getValue(
+//       session?.end_time,
+//       session?.endTime
+//     );
+
+//   const timezone =
+//     getValue(
+//       session?.timezone,
+//       session?.time_zone,
+//       "Asia/Kolkata"
+//     );
+
+//   return (
+//     <div
+//       className="
+//         border
+//         p-4
+//         transition
+//         hover:shadow-sm
+//       "
+//       style={{
+//         backgroundColor:
+//           branding.cardBackgroundColor,
+//         borderColor:
+//           hexToRgba(
+//             branding.textColor,
+//             0.12
+//           ),
+//         borderRadius:
+//           "12px",
+//       }}
+//     >
+//       <div
+//         className="
+//           flex
+//           flex-col
+//           gap-4
+//           sm:flex-row
+//           sm:items-center
+//           sm:justify-between
+//         "
+//       >
+//         <div className="flex items-start gap-3">
+//           <div
+//             className="
+//               flex
+//               h-11
+//               w-11
+//               shrink-0
+//               items-center
+//               justify-center
+//             "
+//             style={{
+//               backgroundColor:
+//                 hexToRgba(
+//                   branding.buttonColor,
+//                   0.1
+//                 ),
+//               color:
+//                 branding.iconColor,
+//               borderRadius:
+//                 "10px",
+//             }}
+//           >
+//             <FaCalendarAlt />
+//           </div>
+
+//           <div>
+//             <p
+//               className="text-sm"
+//               style={{
+//                 color:
+//                   branding.headingColor,
+//                 fontFamily:
+//                   fontFamily(
+//                     branding.fontHeading
+//                   ),
+//                 fontWeight:
+//                   branding.headingWeight,
+//               }}
+//             >
+//               {formatDate(
+//                 sessionDate
+//               )}
+//             </p>
+
+//             <p
+//               className="
+//                 mt-1
+//                 text-xs
+//               "
+//               style={{
+//                 color:
+//                   branding.textColor,
+//                 opacity: 0.7,
+//                 fontFamily:
+//                   fontFamily(
+//                     branding.fontBody
+//                   ),
+//               }}
+//             >
+//               {startTime
+//                 ? formatTime(
+//                     startTime
+//                   )
+//                 : "--"}
+
+//               {endTime
+//                 ? ` - ${formatTime(
+//                     endTime
+//                   )}`
+//                 : ""}
+//             </p>
+//           </div>
+//         </div>
+
+//         <div
+//           className="
+//             flex
+//             items-center
+//             gap-2
+//             text-xs
+//           "
+//           style={{
+//             color:
+//               branding.textColor,
+//             fontFamily:
+//               fontFamily(
+//                 branding.fontBody
+//               ),
+//           }}
+//         >
+//           <FaGlobe
+//             style={{
+//               color:
+//                 branding.iconColor,
+//             }}
+//           />
+
+//           {timezone}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+// /* =========================================================
+//    MAIN COMPONENT
+// ========================================================= */
+
+// const WebsiteClassDetail = () => {
+//   const {
+//     classId,
+//   } = useParams();
+
+//   const navigate =
+//     useNavigate();
+
+//   const outletContext =
+//     useOutletContext() || {};
+
+//   /* =======================================================
+//      BRANDING
+//   ======================================================= */
+
+//   const branding =
+//     useMemo(
+//       () =>
+//         normalizeBranding(
+//           outletContext?.branding ||
+//             outletContext?.websiteBranding ||
+//             outletContext?.brand ||
+//             {}
+//         ),
+//       [
+//         outletContext?.branding,
+//         outletContext?.websiteBranding,
+//         outletContext?.brand,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      CONTENT
+//   ======================================================= */
+
+//   const content =
+//     useMemo(
+//       () =>
+//         normalizeContent(
+//           outletContext?.content ||
+//             outletContext?.websiteContent ||
+//             outletContext?.contents ||
+//             {}
+//         ),
+//       [
+//         outletContext?.content,
+//         outletContext?.websiteContent,
+//         outletContext?.contents,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      SECTIONS
+//   ======================================================= */
+
+//   const sections =
+//     useMemo(
+//       () =>
+//         normalizeSections(
+//           outletContext?.sections ||
+//             outletContext?.websiteSections ||
+//             {}
+//         ),
+//       [
+//         outletContext?.sections,
+//         outletContext?.websiteSections,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      STATE
+//   ======================================================= */
+
+//   const [
+//     classData,
+//     setClassData,
+//   ] = useState(null);
+
+//   const [
+//     sessions,
+//     setSessions,
+//   ] = useState([]);
+
+//   const [
+//     loading,
+//     setLoading,
+//   ] = useState(true);
+
+//   const [
+//     sessionsLoading,
+//     setSessionsLoading,
+//   ] = useState(false);
+
+//   const [
+//     error,
+//     setError,
+//   ] = useState("");
+
+//   const [
+//     sessionError,
+//     setSessionError,
+//   ] = useState("");
+
+//   const [
+//     showAllSessions,
+//     setShowAllSessions,
+//   ] = useState(false);
+
+//   const [
+//     showBooking,
+//     setShowBooking,
+//   ] = useState(false);
+
+
+//   /* =======================================================
+//      FETCH CLASS
+//   ======================================================= */
+
+//   useEffect(() => {
+//     let mounted = true;
+
+//     const fetchClass =
+//       async () => {
+//         if (!classId) {
+//           if (mounted) {
+//             setError(
+//               "Class ID is missing."
+//             );
+//             setLoading(false);
+//           }
+
+//           return;
+//         }
+
+//         try {
+//           setLoading(true);
+//           setError("");
+
+//           const response =
+//             await getClassById(
+//               classId
+//             );
+
+//           let data =
+//             response?.data?.data ??
+//             response?.data?.class ??
+//             response?.data ??
+//             response?.class ??
+//             response;
+
+//           if (
+//             data?.data &&
+//             typeof data.data ===
+//               "object"
+//           ) {
+//             data =
+//               data.data;
+//           }
+
+//           if (
+//             !data ||
+//             typeof data !==
+//               "object"
+//           ) {
+//             throw new Error(
+//               "Class data was not returned by the server."
+//             );
+//           }
+
+//           if (mounted) {
+//             setClassData(
+//               data
+//             );
+//           }
+//         } catch (err) {
+//           console.error(
+//             "CLASS DETAIL ERROR:",
+//             err
+//           );
+
+//           if (mounted) {
+//             setError(
+//               err?.response
+//                 ?.data?.message ||
+//                 err?.response
+//                   ?.data?.error ||
+//                 err?.message ||
+//                 "Failed to load class details."
+//             );
+//           }
+//         } finally {
+//           if (mounted) {
+//             setLoading(false);
+//           }
+//         }
+//       };
+
+//     fetchClass();
+
+//     return () => {
+//       mounted = false;
+//     };
+//   }, [classId]);
+
+
+//   /* =======================================================
+//      FETCH SESSIONS
+//   ======================================================= */
+
+//   useEffect(() => {
+//     let mounted = true;
+
+//     const fetchSessions =
+//       async () => {
+//         if (!classId) {
+//           return;
+//         }
+
+//         try {
+//           setSessionsLoading(
+//             true
+//           );
+
+//           setSessionError("");
+
+//           const response =
+//             await getClassSessions(
+//               classId
+//             );
+
+//           let data =
+//             response?.data?.data ??
+//             response?.data?.sessions ??
+//             response?.data ??
+//             response?.sessions ??
+//             response;
+
+//           if (
+//             !Array.isArray(data)
+//           ) {
+//             data = [];
+//           }
+
+//           if (mounted) {
+//             setSessions(
+//               data
+//             );
+//           }
+//         } catch (err) {
+//           console.error(
+//             "SESSION FETCH ERROR:",
+//             err
+//           );
+
+//           if (mounted) {
+//             setSessions([]);
+
+//             setSessionError(
+//               err?.response
+//                 ?.data?.message ||
+//                 err?.message ||
+//                 "Unable to load sessions."
+//             );
+//           }
+//         } finally {
+//           if (mounted) {
+//             setSessionsLoading(
+//               false
+//             );
+//           }
+//         }
+//       };
+
+//     fetchSessions();
+
+//     return () => {
+//       mounted = false;
+//     };
+//   }, [classId]);
+
+
+//   /* =======================================================
+//      DERIVED DATA
+//   ======================================================= */
+
+//   const title =
+//     getClassTitle(
+//       classData
+//     );
+
+//   const description =
+//     getClassDescription(
+//       classData
+//     );
+
+//   const image =
+//     getClassImage(
+//       classData
+//     );
+
+//   const trainerName =
+//     getTrainerName(
+//       classData
+//     );
+
+//   const trainerImage =
+//     getTrainerImage(
+//       classData
+//     );
+
+//   const instituteName =
+//     getInstituteName(
+//       classData
+//     );
+
+//   const categoryName =
+//     getCategoryName(
+//       classData
+//     );
+
+//   const subcategoryName =
+//     getSubcategoryName(
+//       classData
+//     );
+
+//   const level =
+//     getLevel(
+//       classData
+//     );
+
+//   const duration =
+//     getDuration(
+//       classData
+//     );
+
+//   const rating =
+//     getRating(
+//       classData
+//     );
+
+//   const students =
+//     getStudents(
+//       classData
+//     );
+
+//   const price =
+//     getPrice(
+//       classData
+//     );
+
+//   const availableDays =
+//     getAvailableDays(
+//       classData
+//     );
+
+//   const startDate =
+//     getValue(
+//       classData?.start_date,
+//       classData?.startDate
+//     );
+
+//   const startTime =
+//     getValue(
+//       classData?.start_time,
+//       classData?.startTime
+//     );
+
+//   const timezone =
+//     getTimezone(
+//       classData
+//     );
+
+//   const visibleSessions =
+//     showAllSessions
+//       ? sessions
+//       : sessions.slice(
+//           0,
+//           5
+//         );
+
+
+//   /* =======================================================
+//      SHARED STYLES
+//   ======================================================= */
+
+//   const headingStyle = {
+//     color:
+//       branding.headingColor,
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontHeading
+//       ),
+
+//     fontWeight:
+//       branding.headingWeight,
+
+//     lineHeight:
+//       branding.headingLineHeight,
+
+//     letterSpacing:
+//       branding.headingLetterSpacing,
+//   };
+
+
+//   const bodyStyle = {
+//     color:
+//       branding.textColor,
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontBody
+//       ),
+
+//     fontWeight:
+//       branding.bodyWeight,
+
+//     lineHeight:
+//       branding.bodyLineHeight,
+
+//     letterSpacing:
+//       branding.bodyLetterSpacing,
+//   };
+
+
+//   const buttonStyle = {
+//     backgroundColor:
+//       branding.buttonColor,
+
+//     color:
+//       branding.buttonTextColor,
+
+//     borderRadius:
+//       getButtonRadius(
+//         branding,
+//         true
+//       ),
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontBody
+//       ),
+
+//     fontWeight:
+//       branding.bodyWeight,
+//   };
+
+
+//   /* =======================================================
+//      LOADING
+//   ======================================================= */
+
+//   if (loading) {
+//     return (
+//       <div
+//         className="
+//           flex
+//           min-h-[550px]
+//           items-center
+//           justify-center
+//         "
+//         style={{
+//           backgroundColor:
+//             branding.pageBackgroundColor,
+//         }}
+//       >
+//         <div className="text-center">
+//           <div
+//             className="
+//               mx-auto
+//               mb-5
+//               h-12
+//               w-12
+//               animate-spin
+//               rounded-full
+//               border-4
+//             "
+//             style={{
+//               borderColor:
+//                 hexToRgba(
+//                   branding.buttonColor,
+//                   0.2
+//                 ),
+//               borderTopColor:
+//                 branding.buttonColor,
+//             }}
+//           />
+
+//           <p style={bodyStyle}>
+//             Loading class details...
+//           </p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+
+//   /* =======================================================
+//      ERROR
+//   ======================================================= */
+
+//   if (error) {
+//     return (
+//       <div
+//         className="
+//           flex
+//           min-h-[550px]
+//           items-center
+//           justify-center
+//           px-6
+//         "
+//         style={{
+//           backgroundColor:
+//             branding.pageBackgroundColor,
+//         }}
+//       >
+//         <div className="max-w-lg text-center">
+//           <div
+//             className="
+//               mx-auto
+//               flex
+//               h-16
+//               w-16
+//               items-center
+//               justify-center
+//               text-2xl
+//             "
+//             style={{
+//               backgroundColor:
+//                 "rgba(239,68,68,0.08)",
+//               color:
+//                 "#EF4444",
+//               borderRadius:
+//                 "50%",
+//             }}
+//           >
+//             !
+//           </div>
+
+//           <h1
+//             className="
+//               mt-5
+//               text-2xl
+//             "
+//             style={headingStyle}
+//           >
+//             Unable to Load Class
+//           </h1>
+
+//           <p
+//             className="
+//               mt-3
+//               text-sm
+//             "
+//             style={{
+//               ...bodyStyle,
+//               opacity: 0.7,
+//             }}
+//           >
+//             {error}
+//           </p>
+
+//           <p
+//             className="
+//               mt-2
+//               text-xs
+//             "
+//             style={{
+//               ...bodyStyle,
+//               opacity: 0.5,
+//             }}
+//           >
+//             Class ID: {classId}
+//           </p>
+
+//           <button
+//             type="button"
+//             onClick={() =>
+//               navigate(
+//                 "/institute/website/preview/classes"
+//               )
+//             }
+//             className="
+//               mt-6
+//               inline-flex
+//               items-center
+//               gap-2
+//               px-6
+//               py-3
+//             "
+//             style={buttonStyle}
+//           >
+//             <FaArrowLeft />
+//             {content.classDetail.navigation.backText}
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+
+//   /* =======================================================
+//      NOT FOUND
+//   ======================================================= */
+
+//   if (!classData) {
+//     return (
+//       <div
+//         className="
+//           flex
+//           min-h-[550px]
+//           items-center
+//           justify-center
+//         "
+//         style={{
+//           backgroundColor:
+//             branding.pageBackgroundColor,
+//         }}
+//       >
+//         <div className="text-center">
+//           <h1
+//             className="text-3xl"
+//             style={headingStyle}
+//           >
+//             Class Not Found
+//           </h1>
+
+//           <button
+//             type="button"
+//             onClick={() =>
+//               navigate(
+//                 "/institute/website/preview/classes"
+//               )
+//             }
+//             className="
+//               mt-6
+//               px-6
+//               py-3
+//             "
+//             style={buttonStyle}
+//           >
+//             {content.classDetail.booking.backButtonText}
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+
+//   /* =======================================================
+//      MAIN
+//   ======================================================= */
+
+//   return (
+//     <div
+//       className="min-h-screen"
+//       style={{
+//         backgroundColor:
+//           branding.pageBackgroundColor,
+//         ...bodyStyle,
+//       }}
+//     >
+
+//       {/* ===================================================
+//           HERO
+//       =================================================== */}
+
+//       {sections.hero && (
+//         <section
+//           style={{
+//             backgroundColor:
+//               branding.navbarColor,
+//           }}
+//         >
+//           <div
+//             className="
+//               mx-auto
+//               max-w-7xl
+//               px-4
+//               py-6
+//               sm:px-6
+//               lg:px-8
+//             "
+//           >
+
+//             <button
+//               type="button"
+//               onClick={() =>
+//                 navigate(
+//                   "/institute/website/preview/classes"
+//                 )
+//               }
+//               className="
+//                 mb-5
+//                 inline-flex
+//                 items-center
+//                 gap-2
+//                 text-sm
+//               "
+//               style={{
+//                 color:
+//                   branding.buttonTextColor,
+//                 fontFamily:
+//                   fontFamily(
+//                     branding.fontBody
+//                   ),
+//                 fontWeight:
+//                   branding.bodyWeight,
+//               }}
+//             >
+//               <FaArrowLeft />
+//               {content.classDetail.navigation.backText}
+//             </button>
+
+
+//             <div
+//               className="
+//                 overflow-hidden
+//                 border
+//                 shadow-sm
+//               "
+//               style={{
+//                 backgroundColor:
+//                   branding.cardBackgroundColor,
+//                 borderColor:
+//                   hexToRgba(
+//                     branding.buttonTextColor,
+//                     0.12
+//                   ),
+//                 borderRadius:
+//                   "18px",
+//               }}
+//             >
+
+//               <div
+//                 className="
+//                   relative
+//                   aspect-[16/7]
+//                   min-h-[260px]
+//                   overflow-hidden
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.navbarColor,
+//                 }}
+//               >
+
+//                 {image ? (
+//                   <img
+//                     src={image}
+//                     alt={title}
+//                     className="
+//                       h-full
+//                       w-full
+//                       object-cover
+//                     "
+//                   />
+//                 ) : (
+//                   <div
+//                     className="
+//                       flex
+//                       h-full
+//                       w-full
+//                       items-center
+//                       justify-center
+//                     "
+//                     style={{
+//                       color:
+//                         branding.buttonTextColor,
+//                     }}
+//                   >
+//                     No Class Image
+//                   </div>
+//                 )}
+
+
+//                 <div
+//                   className="
+//                     absolute
+//                     inset-0
+//                   "
+//                   style={{
+//                     background:
+//                       `linear-gradient(
+//                         to top,
+//                         rgba(0,0,0,0.78),
+//                         rgba(0,0,0,0.18),
+//                         transparent
+//                       )`,
+//                   }}
+//                 />
+
+
+//                 <div
+//                   className="
+//                     absolute
+//                     bottom-6
+//                     left-5
+//                     right-5
+//                     sm:left-8
+//                     sm:right-8
+//                   "
+//                 >
+
+//                   <div
+//                     className="
+//                       mb-3
+//                       flex
+//                       flex-wrap
+//                       gap-2
+//                     "
+//                   >
+//                     <span
+//                       className="
+//                         px-3
+//                         py-1
+//                         text-xs
+//                       "
+//                       style={{
+//                         backgroundColor:
+//                           branding.buttonColor,
+//                         color:
+//                           branding.buttonTextColor,
+//                         borderRadius:
+//                           getButtonRadius(
+//                             branding
+//                           ),
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontBody
+//                           ),
+//                         fontWeight:
+//                           branding.bodyWeight,
+//                       }}
+//                     >
+//                       {categoryName}
+//                     </span>
+
+//                     {subcategoryName && (
+//                       <span
+//                         className="
+//                           px-3
+//                           py-1
+//                           text-xs
+//                         "
+//                         style={{
+//                           backgroundColor:
+//                             branding.cardBackgroundColor,
+//                           color:
+//                             branding.buttonColor,
+//                           borderRadius:
+//                             getButtonRadius(
+//                               branding
+//                             ),
+//                           fontFamily:
+//                             fontFamily(
+//                               branding.fontBody
+//                             ),
+//                           fontWeight:
+//                             branding.bodyWeight,
+//                         }}
+//                       >
+//                         {subcategoryName}
+//                       </span>
+//                     )}
+
+//                     <span
+//                       className="
+//                         px-3
+//                         py-1
+//                         text-xs
+//                       "
+//                       style={{
+//                         backgroundColor:
+//                           "rgba(0,0,0,0.6)",
+//                         color:
+//                           "#FFFFFF",
+//                         borderRadius:
+//                           getButtonRadius(
+//                             branding
+//                           ),
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontBody
+//                           ),
+//                         fontWeight:
+//                           branding.bodyWeight,
+//                       }}
+//                     >
+//                       {level}
+//                     </span>
+//                   </div>
+
+
+//                   {content.classDetail.eyebrow && (
+//                     <p
+//                       className="
+//                         mb-2
+//                         text-xs
+//                         uppercase
+//                         tracking-[0.18em]
+//                       "
+//                       style={{
+//                         color:
+//                           branding.buttonTextColor,
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontSubheading
+//                           ),
+//                         fontWeight:
+//                           branding.subheadingWeight,
+//                         opacity: 0.85,
+//                       }}
+//                     >
+//                       {content.classDetail.eyebrow}
+//                     </p>
+//                   )}
+
+
+//                   <h1
+//                     className="
+//                       max-w-4xl
+//                       text-3xl
+//                       sm:text-4xl
+//                       lg:text-5xl
+//                     "
+//                     style={{
+//                       color:
+//                         branding.buttonTextColor,
+//                       fontFamily:
+//                         fontFamily(
+//                           branding.fontHeading
+//                         ),
+//                       fontWeight:
+//                         branding.headingWeight,
+//                       lineHeight:
+//                         branding.headingLineHeight,
+//                       letterSpacing:
+//                         branding.headingLetterSpacing,
+//                     }}
+//                   >
+//                     {title ||
+//                       content.classDetail.heading}
+//                   </h1>
+
+
+//                   {content.classDetail.subheading && (
+//                     <p
+//                       className="
+//                         mt-3
+//                         max-w-2xl
+//                         text-sm
+//                         sm:text-base
+//                       "
+//                       style={{
+//                         color:
+//                           branding.buttonTextColor,
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontBody
+//                           ),
+//                         fontWeight:
+//                           branding.bodyWeight,
+//                         lineHeight:
+//                           branding.bodyLineHeight,
+//                         opacity: 0.88,
+//                       }}
+//                     >
+//                       {content.classDetail.subheading}
+//                     </p>
+//                   )}
+
+//                 </div>
+
+//               </div>
+//             </div>
+//           </div>
+//         </section>
+//       )}
+
+
+//       {/* ===================================================
+//           MAIN CONTENT
+//       =================================================== */}
+
+//       <section
+//         className="
+//           mx-auto
+//           max-w-7xl
+//           px-4
+//           py-8
+//           sm:px-6
+//           lg:px-8
+//         "
+//       >
+
+//         <div
+//           className="
+//             grid
+//             grid-cols-1
+//             gap-8
+//             lg:grid-cols-[1fr_360px]
+//           "
+//         >
+
+//           {/* =================================================
+//               LEFT
+//           ================================================= */}
+
+//           <div className="space-y-8">
+
+//             {/* ABOUT */}
+
+//             {sections.about && (
+//               <div
+//                 className="
+//                   border
+//                   p-6
+//                   shadow-sm
+//                   sm:p-8
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.cardBackgroundColor,
+//                   borderColor:
+//                     hexToRgba(
+//                       branding.textColor,
+//                       0.12
+//                     ),
+//                   borderRadius:
+//                     "18px",
+//                 }}
+//               >
+
+//                 <SectionHeader
+//                   heading={
+//                     content.classDetail.about.heading
+//                   }
+//                   subheading={
+//                     content.classDetail.about.subheading
+//                   }
+//                   branding={
+//                     branding
+//                   }
+//                 />
+
+//                 <div
+//                   className="
+//                     mt-5
+//                     whitespace-pre-line
+//                     text-sm
+//                   "
+//                   style={{
+//                     ...bodyStyle,
+//                     opacity: 0.72,
+//                   }}
+//                 >
+//                   {description}
+//                 </div>
+
+//               </div>
+//             )}
+
+
+//             {/* CLASS INFORMATION */}
+
+//             {sections.information && (
+//               <div
+//                 className="
+//                   border
+//                   p-6
+//                   shadow-sm
+//                   sm:p-8
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.cardBackgroundColor,
+//                   borderColor:
+//                     hexToRgba(
+//                       branding.textColor,
+//                       0.12
+//                     ),
+//                   borderRadius:
+//                     "18px",
+//                 }}
+//               >
+
+//                 <SectionHeader
+//                   heading={
+//                     content.classDetail.information.heading
+//                   }
+//                   subheading={
+//                     content.classDetail.information.subheading
+//                   }
+//                   branding={
+//                     branding
+//                   }
+//                 />
+
+
+//                 <div
+//                   className="
+//                     mt-6
+//                     grid
+//                     grid-cols-1
+//                     gap-5
+//                     sm:grid-cols-2
+//                   "
+//                 >
+
+//                   <InfoItem
+//                     icon={
+//                       FaHourglassHalf
+//                     }
+//                     label="Level"
+//                     value={
+//                       level
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+//                   <InfoItem
+//                     icon={
+//                       FaClock
+//                     }
+//                     label="Duration"
+//                     value={
+//                       duration
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+//                   <InfoItem
+//                     icon={
+//                       FaUsers
+//                     }
+//                     label="Students"
+//                     value={
+//                       students
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+//                   <InfoItem
+//                     icon={
+//                       FaGlobe
+//                     }
+//                     label="Timezone"
+//                     value={
+//                       timezone
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+//                 </div>
+//               </div>
+//             )}
+
+
+//             {/* SCHEDULE */}
+
+//             {sections.schedule && (
+//               <div
+//                 className="
+//                   border
+//                   p-6
+//                   shadow-sm
+//                   sm:p-8
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.cardBackgroundColor,
+//                   borderColor:
+//                     hexToRgba(
+//                       branding.textColor,
+//                       0.12
+//                     ),
+//                   borderRadius:
+//                     "18px",
+//                 }}
+//               >
+
+//                 <SectionHeader
+//                   heading={
+//                     content.classDetail.schedule.heading
+//                   }
+//                   subheading={
+//                     content.classDetail.schedule.subheading
+//                   }
+//                   branding={
+//                     branding
+//                   }
+//                 />
+
+
+//                 <div
+//                   className="
+//                     mt-6
+//                     grid
+//                     grid-cols-1
+//                     gap-4
+//                     sm:grid-cols-2
+//                   "
+//                 >
+
+//                   <InfoItem
+//                     icon={
+//                       FaCalendarWeek
+//                     }
+//                     label="Available Days"
+//                     value={
+//                       availableDays.length
+//                         ? availableDays
+//                             .map(
+//                               (
+//                                 day
+//                               ) =>
+//                                 String(
+//                                   day
+//                                 ).substring(
+//                                   0,
+//                                   3
+//                                 )
+//                             )
+//                             .join(
+//                               " • "
+//                             )
+//                         : "--"
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+
+//                   <InfoItem
+//                     icon={
+//                       FaCalendarAlt
+//                     }
+//                     label="Start Date"
+//                     value={formatDate(
+//                       startDate
+//                     )}
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+
+//                   <InfoItem
+//                     icon={
+//                       FaClock
+//                     }
+//                     label="Start Time"
+//                     value={
+//                       startTime
+//                         ? `${formatTime(
+//                             startTime
+//                           )} ${timezone}`
+//                         : "--"
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+//                 </div>
+//               </div>
+//             )}
+
+
+//             {/* SESSIONS */}
+
+//             {sections.sessions && (
+//               <div
+//                 className="
+//                   border
+//                   p-6
+//                   shadow-sm
+//                   sm:p-8
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.cardBackgroundColor,
+//                   borderColor:
+//                     hexToRgba(
+//                       branding.textColor,
+//                       0.12
+//                     ),
+//                   borderRadius:
+//                     "18px",
+//                 }}
+//               >
+
+//                 <SectionHeader
+//                   heading={
+//                     content.classDetail.sessions.heading
+//                   }
+//                   subheading={
+//                     content.classDetail.sessions.subheading
+//                   }
+//                   branding={
+//                     branding
+//                   }
+//                 />
+
+
+//                 {sessions.length >
+//                   0 && (
+//                   <div className="mt-3">
+//                     <span
+//                       className="
+//                         inline-flex
+//                         px-3
+//                         py-1
+//                         text-xs
+//                       "
+//                       style={{
+//                         backgroundColor:
+//                           hexToRgba(
+//                             branding.buttonColor,
+//                             0.1
+//                           ),
+//                         color:
+//                           branding.buttonColor,
+//                         borderRadius:
+//                           getButtonRadius(
+//                             branding
+//                           ),
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontBody
+//                           ),
+//                         fontWeight:
+//                           branding.headingWeight,
+//                       }}
+//                     >
+//                       {sessions.length}{" "}
+//                       Sessions
+//                     </span>
+//                   </div>
+//                 )}
+
+
+//                 {sessionsLoading ? (
+//                   <div
+//                     className="
+//                       flex
+//                       items-center
+//                       justify-center
+//                       py-12
+//                     "
+//                   >
+//                     <div
+//                       className="
+//                         h-8
+//                         w-8
+//                         animate-spin
+//                         rounded-full
+//                         border-4
+//                       "
+//                       style={{
+//                         borderColor:
+//                           hexToRgba(
+//                             branding.buttonColor,
+//                             0.2
+//                           ),
+//                         borderTopColor:
+//                           branding.buttonColor,
+//                       }}
+//                     />
+//                   </div>
+//                 ) : sessionError ? (
+//                   <div
+//                     className="
+//                       mt-6
+//                       p-5
+//                       text-center
+//                       text-sm
+//                     "
+//                     style={{
+//                       backgroundColor:
+//                         hexToRgba(
+//                           branding.textColor,
+//                           0.05
+//                         ),
+//                       color:
+//                         branding.textColor,
+//                       borderRadius:
+//                         "12px",
+//                       fontFamily:
+//                         fontFamily(
+//                           branding.fontBody
+//                         ),
+//                     }}
+//                   >
+//                     {sessionError}
+//                   </div>
+//                 ) : sessions.length ===
+//                   0 ? (
+//                   <div
+//                     className="
+//                       mt-6
+//                       border
+//                       border-dashed
+//                       p-8
+//                       text-center
+//                       text-sm
+//                     "
+//                     style={{
+//                       borderColor:
+//                         hexToRgba(
+//                           branding.textColor,
+//                           0.18
+//                         ),
+//                       color:
+//                         branding.textColor,
+//                       opacity: 0.7,
+//                       borderRadius:
+//                         "12px",
+//                       fontFamily:
+//                         fontFamily(
+//                           branding.fontBody
+//                         ),
+//                     }}
+//                   >
+//                     No upcoming
+//                     sessions available.
+//                   </div>
+//                 ) : (
+//                   <div className="mt-6 space-y-3">
+
+//                     {visibleSessions.map(
+//                       (
+//                         session,
+//                         index
+//                       ) => (
+//                         <SessionItem
+//                           key={
+//                             session?.id ||
+//                             session?.session_id ||
+//                             index
+//                           }
+//                           session={
+//                             session
+//                           }
+//                           branding={
+//                             branding
+//                           }
+//                         />
+//                       )
+//                     )}
+
+
+//                     {sessions.length >
+//                       5 && (
+//                       <button
+//                         type="button"
+//                         onClick={() =>
+//                           setShowAllSessions(
+//                             (
+//                               value
+//                             ) =>
+//                               !value
+//                           )
+//                         }
+//                         className="
+//                           mx-auto
+//                           mt-4
+//                           flex
+//                           items-center
+//                           gap-2
+//                           text-sm
+//                         "
+//                         style={{
+//                           color:
+//                             branding.buttonColor,
+//                           fontFamily:
+//                             fontFamily(
+//                               branding.fontBody
+//                             ),
+//                           fontWeight:
+//                             branding.headingWeight,
+//                         }}
+//                       >
+//                         {showAllSessions
+//                           ? "Show Less"
+//                           : "View All Sessions"}
+
+//                         {showAllSessions ? (
+//                           <FaChevronUp />
+//                         ) : (
+//                           <FaChevronDown />
+//                         )}
+//                       </button>
+//                     )}
+//                   </div>
+//                 )}
+//               </div>
+//             )}
+
+
+//             {/* SKILLS */}
+
+//             {sections.skills &&
+//               Array.isArray(
+//                 classData?.skills
+//               ) &&
+//               classData.skills.length >
+//                 0 && (
+//                 <div
+//                   className="
+//                     border
+//                     p-6
+//                     shadow-sm
+//                     sm:p-8
+//                   "
+//                   style={{
+//                     backgroundColor:
+//                       branding.cardBackgroundColor,
+//                     borderColor:
+//                       hexToRgba(
+//                         branding.textColor,
+//                         0.12
+//                       ),
+//                     borderRadius:
+//                       "18px",
+//                   }}
+//                 >
+
+//                   <SectionHeader
+//                     heading={
+//                       content.classDetail.skills.heading
+//                     }
+//                     subheading={
+//                       content.classDetail.skills.subheading
+//                     }
+//                     branding={
+//                       branding
+//                     }
+//                   />
+
+
+//                   <div
+//                     className="
+//                       mt-6
+//                       grid
+//                       grid-cols-1
+//                       gap-4
+//                       sm:grid-cols-2
+//                     "
+//                   >
+
+//                     {classData.skills.map(
+//                       (
+//                         skill,
+//                         index
+//                       ) => (
+//                         <div
+//                           key={index}
+//                           className="
+//                             flex
+//                             items-start
+//                             gap-3
+//                           "
+//                         >
+//                           <div
+//                             className="
+//                               mt-0.5
+//                               flex
+//                               h-6
+//                               w-6
+//                               shrink-0
+//                               items-center
+//                               justify-center
+//                             "
+//                             style={{
+//                               backgroundColor:
+//                                 hexToRgba(
+//                                   branding.buttonColor,
+//                                   0.1
+//                                 ),
+//                               color:
+//                                 branding.iconColor,
+//                               borderRadius:
+//                                 "50%",
+//                             }}
+//                           >
+//                             <FaCheck
+//                               size={11}
+//                             />
+//                           </div>
+
+//                           <span
+//                             className="
+//                               text-sm
+//                             "
+//                             style={{
+//                               ...bodyStyle,
+//                               opacity: 0.8,
+//                             }}
+//                           >
+//                             {typeof skill ===
+//                             "string"
+//                               ? skill
+//                               : skill?.name ||
+//                                 skill?.title ||
+//                                 "Skill"}
+//                           </span>
+//                         </div>
+//                       )
+//                     )}
+
+//                   </div>
+//                 </div>
+//               )}
+
+//           </div>
+
+
+//           {/* =================================================
+//               RIGHT SIDEBAR
+//           ================================================= */}
+
+//           {sections.trainer && (
+//             <aside
+//               className="
+//                 h-fit
+//                 lg:sticky
+//                 lg:top-6
+//               "
+//             >
+
+//               <div
+//                 className="
+//                   overflow-hidden
+//                   border
+//                   shadow-sm
+//                 "
+//                 style={{
+//                   backgroundColor:
+//                     branding.cardBackgroundColor,
+//                   borderColor:
+//                     hexToRgba(
+//                       branding.textColor,
+//                       0.12
+//                     ),
+//                   borderRadius:
+//                     "18px",
+//                 }}
+//               >
+
+//                 {/* FEE */}
+
+//                 <div
+//                   className="
+//                     border-b
+//                     p-6
+//                   "
+//                   style={{
+//                     backgroundColor:
+//                       hexToRgba(
+//                         branding.buttonColor,
+//                         0.05
+//                       ),
+//                     borderColor:
+//                       hexToRgba(
+//                         branding.textColor,
+//                         0.08
+//                       ),
+//                   }}
+//                 >
+
+//                   <p
+//                     className="
+//                       text-xs
+//                       uppercase
+//                       tracking-wider
+//                     "
+//                     style={{
+//                       color:
+//                         branding.subheadingColor,
+//                       fontFamily:
+//                         fontFamily(
+//                           branding.fontSubheading
+//                         ),
+//                       fontWeight:
+//                         branding.subheadingWeight,
+//                     }}
+//                   >
+//                     {content.classDetail.fee.eyebrow}
+//                   </p>
+
+
+//                   <div className="mt-2">
+//                     <span
+//                       className="text-3xl"
+//                       style={{
+//                         color:
+//                           branding.buttonColor,
+//                         fontFamily:
+//                           fontFamily(
+//                             branding.fontHeading
+//                           ),
+//                         fontWeight:
+//                           branding.headingWeight,
+//                       }}
+//                     >
+//                       ₹
+//                       {price.toLocaleString(
+//                         "en-IN"
+//                       )}
+//                     </span>
+
+//                     <span
+//                       className="
+//                         ml-1
+//                         text-sm
+//                       "
+//                       style={{
+//                         ...bodyStyle,
+//                         opacity: 0.65,
+//                       }}
+//                     >
+//                       /month
+//                     </span>
+//                   </div>
+
+//                 </div>
+
+
+//                 {/* TRAINER */}
+
+//                 <div className="p-6">
+
+//                   <p
+//                     className="
+//                       text-xs
+//                       uppercase
+//                       tracking-wider
+//                     "
+//                     style={{
+//                       color:
+//                         branding.subheadingColor,
+//                       fontFamily:
+//                         fontFamily(
+//                           branding.fontSubheading
+//                         ),
+//                       fontWeight:
+//                         branding.subheadingWeight,
+//                     }}
+//                   >
+//                     {content.classDetail.trainer.eyebrow}
+//                   </p>
+
+
+//                   <div
+//                     className="
+//                       mt-4
+//                       flex
+//                       items-center
+//                       gap-3
+//                     "
+//                   >
+
+//                     {trainerImage ? (
+//                       <img
+//                         src={
+//                           trainerImage
+//                         }
+//                         alt={
+//                           trainerName
+//                         }
+//                         className="
+//                           h-14
+//                           w-14
+//                           rounded-full
+//                           object-cover
+//                         "
+//                         style={{
+//                           boxShadow:
+//                             `0 0 0 2px ${hexToRgba(
+//                               branding.iconColor,
+//                               0.3
+//                             )}`,
+//                         }}
+//                       />
+//                     ) : (
+//                       <div
+//                         className="
+//                           flex
+//                           h-14
+//                           w-14
+//                           items-center
+//                           justify-center
+//                           rounded-full
+//                           text-lg
+//                         "
+//                         style={{
+//                           backgroundColor:
+//                             hexToRgba(
+//                               branding.buttonColor,
+//                               0.1
+//                             ),
+//                           color:
+//                             branding.buttonColor,
+//                           fontFamily:
+//                             fontFamily(
+//                               branding.fontHeading
+//                             ),
+//                           fontWeight:
+//                             branding.headingWeight,
+//                         }}
+//                       >
+//                         {String(
+//                           trainerName
+//                         )
+//                           .charAt(
+//                             0
+//                           )
+//                           .toUpperCase()}
+//                       </div>
+//                     )}
+
+
+//                     <div className="min-w-0">
+
+//                       <p
+//                         className="
+//                           truncate
+//                           text-base
+//                         "
+//                         style={{
+//                           color:
+//                             branding.headingColor,
+//                           fontFamily:
+//                             fontFamily(
+//                               branding.fontHeading
+//                             ),
+//                           fontWeight:
+//                             branding.headingWeight,
+//                         }}
+//                       >
+//                         {trainerName}
+//                       </p>
+
+
+//                       <p
+//                         className="
+//                           mt-1
+//                           text-xs
+//                         "
+//                         style={{
+//                           ...bodyStyle,
+//                           opacity: 0.65,
+//                         }}
+//                       >
+//                         {instituteName}
+//                       </p>
+
+
+//                       <div className="mt-1">
+//                         <StarRating
+//                           rating={
+//                             rating
+//                           }
+//                           branding={
+//                             branding
+//                           }
+//                         />
+//                       </div>
+
+//                     </div>
+
+//                   </div>
+
+
+//                   {/* TRAINER DETAILS */}
+
+//                   <div
+//                     className="
+//                       mt-6
+//                       space-y-4
+//                       border-t
+//                       pt-5
+//                     "
+//                     style={{
+//                       borderColor:
+//                         hexToRgba(
+//                           branding.textColor,
+//                           0.1
+//                         ),
+//                     }}
+//                   >
+
+//                     <InfoItem
+//                       icon={
+//                         FaClock
+//                       }
+//                       label="Duration"
+//                       value={
+//                         duration
+//                       }
+//                       branding={
+//                         branding
+//                       }
+//                     />
+
+//                     <InfoItem
+//                       icon={
+//                         FaUsers
+//                       }
+//                       label="Students"
+//                       value={`${students} Students`}
+//                       branding={
+//                         branding
+//                       }
+//                     />
+
+//                     <InfoItem
+//                       icon={
+//                         FaCalendarAlt
+//                       }
+//                       label="Start Date"
+//                       value={formatDate(
+//                         startDate
+//                       )}
+//                       branding={
+//                         branding
+//                       }
+//                     />
+
+//                   </div>
+
+
+//                   {/* BOOK BUTTON */}
+
+//                   {sections.booking && (
+//                     <>
+//                       <button
+//                         type="button"
+//                         onClick={() =>
+//                           setShowBooking(
+//                             true
+//                           )
+//                         }
+//                         className="
+//                           mt-7
+//                           flex
+//                           w-full
+//                           items-center
+//                           justify-center
+//                           gap-2
+//                           px-6
+//                           py-3.5
+//                           transition
+//                         "
+//                         style={
+//                           buttonStyle
+//                         }
+//                       >
+//                         {
+//                           content
+//                             .classDetail
+//                             .booking
+//                             .buttonText
+//                         }
+
+//                         <FaArrowRight
+//                           size={13}
+//                         />
+//                       </button>
+
+
+//                       <Link
+//                         to="/institute/website/preview/classes"
+//                         className="
+//                           mt-3
+//                           flex
+//                           w-full
+//                           items-center
+//                           justify-center
+//                           gap-2
+//                           border
+//                           px-6
+//                           py-3.5
+//                           text-sm
+//                           transition
+//                         "
+//                         style={{
+//                           backgroundColor:
+//                             branding.cardBackgroundColor,
+//                           color:
+//                             branding.buttonColor,
+//                           borderColor:
+//                             branding.buttonColor,
+//                           borderRadius:
+//                             getButtonRadius(
+//                               branding,
+//                               true
+//                             ),
+//                           fontFamily:
+//                             fontFamily(
+//                               branding.fontBody
+//                             ),
+//                           fontWeight:
+//                             branding.bodyWeight,
+//                         }}
+//                       >
+//                         <FaArrowLeft
+//                           size={12}
+//                         />
+
+//                         {
+//                           content
+//                             .classDetail
+//                             .booking
+//                             .backButtonText
+//                         }
+//                       </Link>
+//                     </>
+//                   )}
+
+//                 </div>
+//               </div>
+//             </aside>
+//           )}
+
+//         </div>
+//       </section>
+
+
+//       {/* ===================================================
+//           BOOKING MODAL
+//       =================================================== */}
+
+//       {showBooking && (
+//         <WebsiteBooking
+//           classId={classId}
+//           classData={classData}
+//           sessions={sessions}
+//           onClose={() =>
+//             setShowBooking(
+//               false
+//             )
+//           }
+//         />
+//       )}
+
+//     </div>
+//   );
+// };
+
+
+// export default WebsiteClassDetail;
+
+
+
+
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
-  FaArrowRight,
   FaCalendarAlt,
   FaCalendarWeek,
-  FaCheck,
-  FaChevronDown,
-  FaChevronUp,
   FaClock,
-  FaGlobe,
-  FaHourglassHalf,
+  FaUser,
   FaUsers,
+  FaChartBar,
 } from "react-icons/fa";
 
 import { getClassById } from "../../services/Classes.js";
-import { getClassSessions } from "../../services/session.service";
-
 import WebsiteBooking from "./WebsiteBooking";
 
-
 /* =========================================================
-   DEFAULT BRANDING
+   BLACK + RADIANT BLUE CLASS DETAIL PAGE
+   Layout:
+   Row 1 = 50%  -> image / class information
+   Row 2 = 25%  -> class name / price / book
+   Row 3 = 25%  -> available days / trainer
 ========================================================= */
 
 const DEFAULT_BRANDING = {
-  navbarColor: "#1F2937",
-
-  headingColor: "#111827",
-  subheadingColor: "#5B21B6",
-  textColor: "#111827",
-  iconColor: "#F59E0B",
-
-  buttonColor: "#7C3AED",
-  buttonTextColor: "#FFFFFF",
-
-  pageBackgroundColor: "#FAFAF9",
-  cardBackgroundColor: "#FFFFFF",
-
-  footerBackgroundColor: "#1F2937",
-  footerHeadingColor: "#FFFFFF",
-  footerTextColor: "#FAFAF9",
-
   fontHeading: "Inter",
-  fontSubheading: "Inter",
   fontBody: "Inter",
-
   headingWeight: 700,
-  headingLineHeight: 1.15,
-  headingLetterSpacing: 0,
-
-  subheadingWeight: 600,
-  subheadingLineHeight: 1.4,
-
   bodyWeight: 400,
-  bodyLineHeight: 1.6,
-  bodyLetterSpacing: 0,
-
   roundedButtons: true,
 };
 
-
-/* =========================================================
-   DEFAULT CONTENT
-========================================================= */
-
-const DEFAULT_CONTENT = {
-  classDetail: {
-    eyebrow: "CLASS DETAILS",
-    heading: "Class Details",
-    subheading:
-      "Explore this class, its schedule, trainer and available sessions.",
-
-    about: {
-      heading: "About This Class",
-      subheading:
-        "Learn more about this class and what you can expect.",
-    },
-
-    information: {
-      heading: "Class Information",
-      subheading:
-        "Everything you need to know about this class.",
-    },
-
-    schedule: {
-      heading: "Schedule",
-      subheading:
-        "Check the class schedule and timings.",
-    },
-
-    sessions: {
-      heading: "Upcoming Sessions",
-      subheading:
-        "Scheduled sessions for this class.",
-    },
-
-    skills: {
-      heading: "What You Will Learn",
-      subheading:
-        "Key skills and topics covered in this class.",
-    },
-
-    trainer: {
-      eyebrow: "YOUR TRAINER",
-      heading: "Your Trainer",
-      subheading:
-        "Learn with an experienced trainer.",
-    },
-
-    fee: {
-      eyebrow: "COURSE FEE",
-      heading: "Course Fee",
-      subheading: "",
-    },
-
-    booking: {
-      buttonText: "Book This Class",
-      backButtonText: "Back To Classes",
-    },
-
-    navigation: {
-      backText: "Back To Classes",
-    },
-  },
-};
-
-
-/* =========================================================
-   GENERIC VALUE HELPERS
-========================================================= */
-
 const getValue = (...values) => {
   for (const value of values) {
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== ""
-    ) {
-      return value;
-    }
+    if (value !== undefined && value !== null && value !== "") return value;
   }
-
   return null;
 };
 
+const fontFamily = (font) => (font ? `'${font}', sans-serif` : "Inter, sans-serif");
 
-/* =========================================================
-   BRANDING HELPERS
-========================================================= */
-
-const getBrandingValue = (
-  branding,
-  camelCaseKey,
-  snakeCaseKey,
-  fallback
-) => {
-  const value =
-    branding?.[camelCaseKey] ??
-    branding?.[snakeCaseKey];
-
-  return (
-    value !== undefined &&
-    value !== null &&
-    value !== ""
-  )
-    ? value
-    : fallback;
-};
-
-
-const normalizeBranding = (
-  branding = {}
-) => ({
-  navbarColor: getBrandingValue(
-    branding,
-    "navbarColor",
-    "navbar_color",
-    DEFAULT_BRANDING.navbarColor
-  ),
-
-  headingColor: getBrandingValue(
-    branding,
-    "headingColor",
-    "heading_color",
-    DEFAULT_BRANDING.headingColor
-  ),
-
-  subheadingColor: getBrandingValue(
-    branding,
-    "subheadingColor",
-    "subheading_color",
-    DEFAULT_BRANDING.subheadingColor
-  ),
-
-  textColor: getBrandingValue(
-    branding,
-    "textColor",
-    "text_color",
-    DEFAULT_BRANDING.textColor
-  ),
-
-  iconColor: getBrandingValue(
-    branding,
-    "iconColor",
-    "icon_color",
-    DEFAULT_BRANDING.iconColor
-  ),
-
-  buttonColor: getBrandingValue(
-    branding,
-    "buttonColor",
-    "button_color",
-    DEFAULT_BRANDING.buttonColor
-  ),
-
-  buttonTextColor: getBrandingValue(
-    branding,
-    "buttonTextColor",
-    "button_text_color",
-    DEFAULT_BRANDING.buttonTextColor
-  ),
-
-  pageBackgroundColor:
-    getBrandingValue(
-      branding,
-      "pageBackgroundColor",
-      "page_background_color",
-      DEFAULT_BRANDING.pageBackgroundColor
-    ),
-
-  cardBackgroundColor:
-    getBrandingValue(
-      branding,
-      "cardBackgroundColor",
-      "card_background_color",
-      DEFAULT_BRANDING.cardBackgroundColor
-    ),
-
-  footerBackgroundColor:
-    getBrandingValue(
-      branding,
-      "footerBackgroundColor",
-      "footer_background_color",
-      DEFAULT_BRANDING.footerBackgroundColor
-    ),
-
-  footerHeadingColor:
-    getBrandingValue(
-      branding,
-      "footerHeadingColor",
-      "footer_heading_color",
-      DEFAULT_BRANDING.footerHeadingColor
-    ),
-
-  footerTextColor:
-    getBrandingValue(
-      branding,
-      "footerTextColor",
-      "footer_text_color",
-      DEFAULT_BRANDING.footerTextColor
-    ),
-
-  fontHeading:
-    getBrandingValue(
-      branding,
-      "fontHeading",
-      "font_heading",
-      DEFAULT_BRANDING.fontHeading
-    ),
-
-  fontSubheading:
-    getBrandingValue(
-      branding,
-      "fontSubheading",
-      "font_subheading",
-      DEFAULT_BRANDING.fontSubheading
-    ),
-
-  fontBody:
-    getBrandingValue(
-      branding,
-      "fontBody",
-      "font_body",
-      DEFAULT_BRANDING.fontBody
-    ),
-
-  headingWeight:
-    getBrandingValue(
-      branding,
-      "headingWeight",
-      "heading_weight",
-      DEFAULT_BRANDING.headingWeight
-    ),
-
-  headingLineHeight:
-    getBrandingValue(
-      branding,
-      "headingLineHeight",
-      "heading_line_height",
-      DEFAULT_BRANDING.headingLineHeight
-    ),
-
-  headingLetterSpacing:
-    getBrandingValue(
-      branding,
-      "headingLetterSpacing",
-      "heading_letter_spacing",
-      DEFAULT_BRANDING.headingLetterSpacing
-    ),
-
-  subheadingWeight:
-    getBrandingValue(
-      branding,
-      "subheadingWeight",
-      "subheading_weight",
-      DEFAULT_BRANDING.subheadingWeight
-    ),
-
-  subheadingLineHeight:
-    getBrandingValue(
-      branding,
-      "subheadingLineHeight",
-      "subheading_line_height",
-      DEFAULT_BRANDING.subheadingLineHeight
-    ),
-
-  bodyWeight:
-    getBrandingValue(
-      branding,
-      "bodyWeight",
-      "body_weight",
-      DEFAULT_BRANDING.bodyWeight
-    ),
-
-  bodyLineHeight:
-    getBrandingValue(
-      branding,
-      "bodyLineHeight",
-      "body_line_height",
-      DEFAULT_BRANDING.bodyLineHeight
-    ),
-
-  bodyLetterSpacing:
-    getBrandingValue(
-      branding,
-      "bodyLetterSpacing",
-      "body_letter_spacing",
-      DEFAULT_BRANDING.bodyLetterSpacing
-    ),
-
-  roundedButtons:
-    getBrandingValue(
-      branding,
-      "roundedButtons",
-      "rounded_buttons",
-      DEFAULT_BRANDING.roundedButtons
-    ),
+const normalizeBranding = (branding = {}) => ({
+  ...DEFAULT_BRANDING,
+  ...branding,
+  fontHeading: getValue(branding?.fontHeading, branding?.font_heading, DEFAULT_BRANDING.fontHeading),
+  fontBody: getValue(branding?.fontBody, branding?.font_body, DEFAULT_BRANDING.fontBody),
+  headingWeight: getValue(branding?.headingWeight, branding?.heading_weight, DEFAULT_BRANDING.headingWeight),
+  bodyWeight: getValue(branding?.bodyWeight, branding?.body_weight, DEFAULT_BRANDING.bodyWeight),
 });
 
+const getClassTitle = (data) =>
+  getValue(data?.title, data?.class_title, data?.className, data?.name, "Class");
 
-const fontFamily = (font) =>
-  font
-    ? `'${font}', sans-serif`
-    : "Inter, sans-serif";
-
-
-const getButtonRadius = (
-  branding,
-  large = false
-) => {
-  if (branding.roundedButtons) {
-    return "9999px";
-  }
-
-  return large ? "12px" : "8px";
-};
-
-
-const hexToRgba = (
-  color,
-  alpha
-) => {
-  if (
-    typeof color !== "string"
-  ) {
-    return color;
-  }
-
-  const hex =
-    color.replace("#", "");
-
-  if (
-    !/^[0-9A-Fa-f]{6}$/.test(hex)
-  ) {
-    return color;
-  }
-
-  const r = parseInt(
-    hex.substring(0, 2),
-    16
-  );
-
-  const g = parseInt(
-    hex.substring(2, 4),
-    16
-  );
-
-  const b = parseInt(
-    hex.substring(4, 6),
-    16
-  );
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-
-/* =========================================================
-   CONTENT NORMALIZER
-========================================================= */
-
-const normalizeContent = (
-  content = {}
-) => {
-  const source =
-    content?.classDetail ||
-    content?.class_detail ||
-    content ||
-    {};
-
-  return {
-    classDetail: {
-      eyebrow:
-        getValue(
-          source?.eyebrow,
-          source?.eyebrow_text,
-          DEFAULT_CONTENT.classDetail.eyebrow
-        ),
-
-      heading:
-        getValue(
-          source?.heading,
-          source?.title,
-          DEFAULT_CONTENT.classDetail.heading
-        ),
-
-      subheading:
-        getValue(
-          source?.subheading,
-          source?.subtitle,
-          DEFAULT_CONTENT.classDetail.subheading
-        ),
-
-      about: {
-        heading:
-          getValue(
-            source?.about?.heading,
-            source?.about_heading,
-            DEFAULT_CONTENT.classDetail.about.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.about?.subheading,
-            source?.about_subheading,
-            DEFAULT_CONTENT.classDetail.about.subheading
-          ),
-      },
-
-      information: {
-        heading:
-          getValue(
-            source?.information?.heading,
-            source?.information_heading,
-            DEFAULT_CONTENT.classDetail.information.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.information?.subheading,
-            source?.information_subheading,
-            DEFAULT_CONTENT.classDetail.information.subheading
-          ),
-      },
-
-      schedule: {
-        heading:
-          getValue(
-            source?.schedule?.heading,
-            source?.schedule_heading,
-            DEFAULT_CONTENT.classDetail.schedule.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.schedule?.subheading,
-            source?.schedule_subheading,
-            DEFAULT_CONTENT.classDetail.schedule.subheading
-          ),
-      },
-
-      sessions: {
-        heading:
-          getValue(
-            source?.sessions?.heading,
-            source?.sessions_heading,
-            DEFAULT_CONTENT.classDetail.sessions.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.sessions?.subheading,
-            source?.sessions_subheading,
-            DEFAULT_CONTENT.classDetail.sessions.subheading
-          ),
-      },
-
-      skills: {
-        heading:
-          getValue(
-            source?.skills?.heading,
-            source?.skills_heading,
-            DEFAULT_CONTENT.classDetail.skills.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.skills?.subheading,
-            source?.skills_subheading,
-            DEFAULT_CONTENT.classDetail.skills.subheading
-          ),
-      },
-
-      trainer: {
-        eyebrow:
-          getValue(
-            source?.trainer?.eyebrow,
-            source?.trainer_eyebrow,
-            DEFAULT_CONTENT.classDetail.trainer.eyebrow
-          ),
-
-        heading:
-          getValue(
-            source?.trainer?.heading,
-            source?.trainer_heading,
-            DEFAULT_CONTENT.classDetail.trainer.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.trainer?.subheading,
-            source?.trainer_subheading,
-            DEFAULT_CONTENT.classDetail.trainer.subheading
-          ),
-      },
-
-      fee: {
-        eyebrow:
-          getValue(
-            source?.fee?.eyebrow,
-            source?.fee_eyebrow,
-            DEFAULT_CONTENT.classDetail.fee.eyebrow
-          ),
-
-        heading:
-          getValue(
-            source?.fee?.heading,
-            source?.fee_heading,
-            DEFAULT_CONTENT.classDetail.fee.heading
-          ),
-
-        subheading:
-          getValue(
-            source?.fee?.subheading,
-            source?.fee_subheading,
-            DEFAULT_CONTENT.classDetail.fee.subheading
-          ),
-      },
-
-      booking: {
-        buttonText:
-          getValue(
-            source?.booking?.buttonText,
-            source?.booking?.button_text,
-            source?.booking_button_text,
-            DEFAULT_CONTENT.classDetail.booking.buttonText
-          ),
-
-        backButtonText:
-          getValue(
-            source?.booking?.backButtonText,
-            source?.booking?.back_button_text,
-            source?.back_button_text,
-            DEFAULT_CONTENT.classDetail.booking.backButtonText
-          ),
-      },
-
-      navigation: {
-        backText:
-          getValue(
-            source?.navigation?.backText,
-            source?.navigation?.back_text,
-            source?.back_text,
-            DEFAULT_CONTENT.classDetail.navigation.backText
-          ),
-      },
-    },
-  };
-};
-
-
-/* =========================================================
-   SECTION NORMALIZER
-========================================================= */
-
-const normalizeSections = (
-  sections = {}
-) => {
-  const source =
-    sections?.classDetail ||
-    sections?.class_detail ||
-    sections ||
-    {};
-
-  const getSection = (
-    key,
-    aliases = []
-  ) => {
-    const values = [
-      source?.[key],
-      ...aliases.map(
-        (alias) =>
-          source?.[alias]
-      ),
-    ];
-
-    for (
-      const value of values
-    ) {
-      if (
-        typeof value ===
-        "boolean"
-      ) {
-        return value;
-      }
-
-      if (
-        typeof value ===
-        "object" &&
-        value !== null &&
-        typeof value.visible ===
-          "boolean"
-      ) {
-        return value.visible;
-      }
-
-      if (
-        typeof value ===
-        "object" &&
-        value !== null &&
-        typeof value.is_visible ===
-          "boolean"
-      ) {
-        return value.is_visible;
-      }
-    }
-
-    return true;
-  };
-
-  return {
-    hero: getSection(
-      "hero",
-      ["banner"]
-    ),
-
-    about: getSection(
-      "about",
-      ["aboutClass"]
-    ),
-
-    information: getSection(
-      "information",
-      [
-        "classInformation",
-        "class_information",
-      ]
-    ),
-
-    schedule: getSection(
-      "schedule"
-    ),
-
-    sessions: getSection(
-      "sessions",
-      ["upcomingSessions"]
-    ),
-
-    skills: getSection(
-      "skills",
-      ["whatYouWillLearn"]
-    ),
-
-    trainer: getSection(
-      "trainer",
-      ["sidebar"]
-    ),
-
-    booking: getSection(
-      "booking",
-      ["cta"]
-    ),
-  };
-};
-
-
-/* =========================================================
-   CLASS HELPERS
-========================================================= */
-
-const getClassTitle = (
-  data
-) =>
-  getValue(
-    data?.title,
-    data?.class_title,
-    data?.className,
-    data?.name,
-    "Class"
-  );
-
-
-const getClassDescription = (
-  data
-) =>
-  getValue(
-    data?.description,
-    data?.class_description,
-    data?.about,
-    data?.overview,
-    "No description available."
-  );
-
-
-const getClassImage = (
-  data
-) =>
+const getClassImage = (data) =>
   getValue(
     data?.image,
     data?.image_url,
@@ -6138,10 +8924,28 @@ const getClassImage = (
     ""
   );
 
+const getDuration = (data) =>
+  getValue(data?.duration, data?.class_duration, data?.duration_minutes, "--");
 
-const getTrainerName = (
-  data
-) =>
+const getLevel = (data) =>
+  getValue(data?.level, data?.class_level, data?.difficulty, "All Levels");
+
+const getStudents = (data) =>
+  Number(getValue(data?.students, data?.students_count, data?.total_students, 0)) || 0;
+
+const getPrice = (data) =>
+  Number(getValue(data?.price, data?.class_price, data?.monthly_price, 0)) || 0;
+
+const getTrainerId = (data) =>
+  getValue(
+    data?.trainer_id,
+    data?.trainerId,
+    data?.trainer?.id,
+    data?.trainer?.trainer_id,
+    null
+  );
+
+const getTrainerName = (data) =>
   getValue(
     data?.trainer_name,
     data?.trainerName,
@@ -6150,10 +8954,7 @@ const getTrainerName = (
     "Trainer"
   );
 
-
-const getTrainerImage = (
-  data
-) =>
+const getTrainerImage = (data) =>
   getValue(
     data?.trainer_image,
     data?.trainerImage,
@@ -6163,833 +8964,184 @@ const getTrainerImage = (
     ""
   );
 
-
-const getInstituteName = (
-  data
-) =>
-  getValue(
-    data?.institute_name,
-    data?.instituteName,
-    data?.institute?.name,
-    "Institute"
-  );
-
-
-const getLevel = (
-  data
-) =>
-  getValue(
-    data?.level,
-    data?.class_level,
-    data?.difficulty,
-    "All Levels"
-  );
-
-
-const getDuration = (
-  data
-) =>
-  getValue(
-    data?.duration,
-    data?.class_duration,
-    data?.duration_minutes,
-    "--"
-  );
-
-
-const getPrice = (
-  data
-) =>
+const getTrainerRating = (data) =>
   Number(
     getValue(
-      data?.price,
-      data?.class_price,
-      data?.monthly_price,
-      0
-    )
-  );
-
-
-const getRating = (
-  data
-) =>
-  Number(
-    getValue(
-      data?.rating,
       data?.trainer_rating,
+      data?.trainerRating,
+      data?.trainer?.rating,
+      data?.rating,
       0
     )
+  ) || 0;
+
+const getAvailableDays = (data) => {
+  const days = getValue(
+    data?.available_days,
+    data?.availableDays,
+    data?.days,
+    data?.schedule_days
   );
 
+  if (Array.isArray(days)) return days;
 
-const getStudents = (
-  data
-) =>
-  Number(
-    getValue(
-      data?.students,
-      data?.students_count,
-      data?.total_students,
-      0
-    )
-  );
-
-
-const getAvailableDays = (
-  data
-) => {
-  const days =
-    getValue(
-      data?.available_days,
-      data?.days,
-      data?.schedule_days
-    );
-
-  if (Array.isArray(days)) {
-    return days;
-  }
-
-  if (
-    typeof days ===
-    "string"
-  ) {
-    return days
-      .split(",")
-      .map(
-        (item) =>
-          item.trim()
-      )
-      .filter(Boolean);
+  if (typeof days === "string") {
+    return days.split(",").map((day) => day.trim()).filter(Boolean);
   }
 
   return [];
 };
 
-
-const formatDate = (
-  value
-) => {
+const formatDate = (value) => {
   if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
 
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
-
-const formatTime = (
-  value
-) => {
+const formatTime = (value) => {
   if (!value) return "--";
 
-  const text =
-    String(value);
+  const text = String(value);
+  if (/am|pm/i.test(text)) return text;
 
-  if (
-    text
-      .toLowerCase()
-      .includes("am") ||
-    text
-      .toLowerCase()
-      .includes("pm")
-  ) {
-    return text;
-  }
+  const [hoursRaw, minutesRaw] = text.split(":");
+  const hours = Number(hoursRaw);
+  const minutes = Number(minutesRaw);
 
-  const parts =
-    text.split(":");
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return text;
 
-  if (
-    parts.length < 2
-  ) {
-    return text;
-  }
+  const period = hours >= 12 ? "PM" : "AM";
+  const hour = hours % 12 || 12;
 
-  const hours =
-    Number(parts[0]);
-
-  const minutes =
-    Number(parts[1]);
-
-  if (
-    Number.isNaN(hours) ||
-    Number.isNaN(minutes)
-  ) {
-    return text;
-  }
-
-  const period =
-    hours >= 12
-      ? "PM"
-      : "AM";
-
-  const hour =
-    hours % 12 || 12;
-
-  return `${hour}:${String(
-    minutes
-  ).padStart(2, "0")} ${period}`;
+  return `${hour}:${String(minutes).padStart(2, "0")} ${period}`;
 };
 
+const hexToRgba = (hex, alpha = 1) => {
+  if (typeof hex !== "string") return hex;
+  const clean = hex.replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) return hex;
 
-const getTimezone = (
-  data
-) =>
-  getValue(
-    data?.timezone,
-    data?.class_timezone,
-    data?.time_zone,
-    "Asia/Kolkata"
-  );
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
 
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
-const getCategoryName = (
-  data
-) =>
-  getValue(
-    data?.category_name,
-    data?.category?.name,
-    data?.categoryName,
-    "General"
-  );
-
-
-const getSubcategoryName = (
-  data
-) =>
-  getValue(
-    data?.subcategory_name,
-    data?.subcategory?.name,
-    data?.subcategoryName,
-    ""
-  );
-
-
-/* =========================================================
-   STAR RATING
-========================================================= */
-
-const StarRating = ({
-  rating = 0,
-  branding,
-}) => {
-  const value =
-    Math.max(
-      0,
-      Math.min(
-        5,
-        Number(rating) || 0
-      )
-    );
+const StarRating = ({ rating }) => {
+  const value = Math.max(0, Math.min(5, Number(rating) || 0));
 
   return (
-    <div className="flex items-center gap-1">
-      <div
-        className="text-sm tracking-[2px]"
-        aria-label={`Rating ${value.toFixed(
-          1
-        )} out of 5`}
-      >
-        {[1, 2, 3, 4, 5].map(
-          (star) => (
-            <span
-              key={star}
-              style={{
-                color:
-                  star <=
-                  Math.round(value)
-                    ? branding.iconColor
-                    : hexToRgba(
-                        branding.textColor,
-                        0.18
-                      ),
-              }}
-            >
-              ★
-            </span>
-          )
-        )}
+    <div className="flex items-center gap-2">
+      <div className="text-xl tracking-[2px]" aria-label={`Rating ${value.toFixed(1)} out of 5`}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={star <= Math.round(value) ? "text-yellow-400" : "text-white/20"}
+          >
+            ★
+          </span>
+        ))}
       </div>
 
-      <span
-        className="ml-1 text-sm"
-        style={{
-          color:
-            branding.textColor,
-          fontFamily:
-            fontFamily(
-              branding.fontBody
-            ),
-          fontWeight:
-            branding.bodyWeight,
-        }}
-      >
+      <span className="text-lg font-bold text-white">
         {value.toFixed(1)}
       </span>
     </div>
   );
 };
 
-
-/* =========================================================
-   INFO ITEM
-========================================================= */
-
-const InfoItem = ({
-  icon: Icon,
-  label,
-  value,
-  branding,
-}) => (
-  <div className="flex items-start gap-3">
-    <div
-      className="
-        mt-0.5
-        flex
-        h-9
-        w-9
-        shrink-0
-        items-center
-        justify-center
-      "
-      style={{
-        backgroundColor:
-          hexToRgba(
-            branding.buttonColor,
-            0.1
-          ),
-        color:
-          branding.iconColor,
-        borderRadius: "10px",
-      }}
-    >
-      <Icon size={15} />
+const DetailItem = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-4 rounded-2xl border border-blue-500/30 bg-black/30 px-5 py-4 shadow-[0_0_18px_rgba(0,110,255,0.08)]">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+      <Icon size={22} />
     </div>
 
     <div className="min-w-0">
-      <p
-        className="text-xs"
-        style={{
-          color:
-            branding.textColor,
-          opacity: 0.65,
-          fontFamily:
-            fontFamily(
-              branding.fontBody
-            ),
-          fontWeight:
-            branding.bodyWeight,
-        }}
-      >
-        {label}
-      </p>
-
-      <p
-        className="
-          mt-0.5
-          break-words
-          text-sm
-        "
-        style={{
-          color:
-            branding.headingColor,
-          fontFamily:
-            fontFamily(
-              branding.fontBody
-            ),
-          fontWeight:
-            branding.headingWeight,
-        }}
-      >
-        {value || "--"}
-      </p>
+      <p className="text-sm text-slate-400">{label}</p>
+      <p className="mt-1 truncate text-lg font-bold text-white">{value || "--"}</p>
     </div>
   </div>
 );
-
-
-/* =========================================================
-   SECTION HEADER
-========================================================= */
-
-const SectionHeader = ({
-  eyebrow,
-  heading,
-  subheading,
-  branding,
-  centered = false,
-}) => (
-  <div
-    className={
-      centered
-        ? "text-center"
-        : ""
-    }
-  >
-    {eyebrow && (
-      <p
-        className="
-          text-xs
-          uppercase
-          tracking-[0.18em]
-        "
-        style={{
-          color:
-            branding.subheadingColor,
-          fontFamily:
-            fontFamily(
-              branding.fontSubheading
-            ),
-          fontWeight:
-            branding.subheadingWeight,
-        }}
-      >
-        {eyebrow}
-      </p>
-    )}
-
-    {heading && (
-      <h2
-        className="
-          mt-1
-          text-2xl
-          sm:text-3xl
-        "
-        style={{
-          color:
-            branding.headingColor,
-          fontFamily:
-            fontFamily(
-              branding.fontHeading
-            ),
-          fontWeight:
-            branding.headingWeight,
-          lineHeight:
-            branding.headingLineHeight,
-          letterSpacing:
-            branding.headingLetterSpacing,
-        }}
-      >
-        {heading}
-      </h2>
-    )}
-
-    {subheading && (
-      <p
-        className="
-          mt-2
-          max-w-2xl
-          text-sm
-        "
-        style={{
-          color:
-            branding.textColor,
-          opacity: 0.68,
-          fontFamily:
-            fontFamily(
-              branding.fontBody
-            ),
-          fontWeight:
-            branding.bodyWeight,
-          lineHeight:
-            branding.bodyLineHeight,
-        }}
-      >
-        {subheading}
-      </p>
-    )}
-  </div>
-);
-
-
-/* =========================================================
-   SESSION ITEM
-========================================================= */
-
-const SessionItem = ({
-  session,
-  branding,
-}) => {
-  const sessionDate =
-    getValue(
-      session?.session_date,
-      session?.date,
-      session?.start_date
-    );
-
-  const startTime =
-    getValue(
-      session?.start_time,
-      session?.startTime
-    );
-
-  const endTime =
-    getValue(
-      session?.end_time,
-      session?.endTime
-    );
-
-  const timezone =
-    getValue(
-      session?.timezone,
-      session?.time_zone,
-      "Asia/Kolkata"
-    );
-
-  return (
-    <div
-      className="
-        border
-        p-4
-        transition
-        hover:shadow-sm
-      "
-      style={{
-        backgroundColor:
-          branding.cardBackgroundColor,
-        borderColor:
-          hexToRgba(
-            branding.textColor,
-            0.12
-          ),
-        borderRadius:
-          "12px",
-      }}
-    >
-      <div
-        className="
-          flex
-          flex-col
-          gap-4
-          sm:flex-row
-          sm:items-center
-          sm:justify-between
-        "
-      >
-        <div className="flex items-start gap-3">
-          <div
-            className="
-              flex
-              h-11
-              w-11
-              shrink-0
-              items-center
-              justify-center
-            "
-            style={{
-              backgroundColor:
-                hexToRgba(
-                  branding.buttonColor,
-                  0.1
-                ),
-              color:
-                branding.iconColor,
-              borderRadius:
-                "10px",
-            }}
-          >
-            <FaCalendarAlt />
-          </div>
-
-          <div>
-            <p
-              className="text-sm"
-              style={{
-                color:
-                  branding.headingColor,
-                fontFamily:
-                  fontFamily(
-                    branding.fontHeading
-                  ),
-                fontWeight:
-                  branding.headingWeight,
-              }}
-            >
-              {formatDate(
-                sessionDate
-              )}
-            </p>
-
-            <p
-              className="
-                mt-1
-                text-xs
-              "
-              style={{
-                color:
-                  branding.textColor,
-                opacity: 0.7,
-                fontFamily:
-                  fontFamily(
-                    branding.fontBody
-                  ),
-              }}
-            >
-              {startTime
-                ? formatTime(
-                    startTime
-                  )
-                : "--"}
-
-              {endTime
-                ? ` - ${formatTime(
-                    endTime
-                  )}`
-                : ""}
-            </p>
-          </div>
-        </div>
-
-        <div
-          className="
-            flex
-            items-center
-            gap-2
-            text-xs
-          "
-          style={{
-            color:
-              branding.textColor,
-            fontFamily:
-              fontFamily(
-                branding.fontBody
-              ),
-          }}
-        >
-          <FaGlobe
-            style={{
-              color:
-                branding.iconColor,
-            }}
-          />
-
-          {timezone}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
 
 const WebsiteClassDetail = () => {
-  const {
-    classId,
-  } = useParams();
+  const { classId } = useParams();
+  const navigate = useNavigate();
+  const outletContext = useOutletContext() || {};
 
-  const navigate =
-    useNavigate();
+  const branding = useMemo(
+    () =>
+      normalizeBranding(
+        outletContext?.branding ||
+          outletContext?.websiteBranding ||
+          outletContext?.brand ||
+          {}
+      ),
+    [
+      outletContext?.branding,
+      outletContext?.websiteBranding,
+      outletContext?.brand,
+    ]
+  );
 
-  const outletContext =
-    useOutletContext() || {};
-
-  /* =======================================================
-     BRANDING
-  ======================================================= */
-
-  const branding =
-    useMemo(
-      () =>
-        normalizeBranding(
-          outletContext?.branding ||
-            outletContext?.websiteBranding ||
-            outletContext?.brand ||
-            {}
-        ),
-      [
-        outletContext?.branding,
-        outletContext?.websiteBranding,
-        outletContext?.brand,
-      ]
-    );
-
-
-  /* =======================================================
-     CONTENT
-  ======================================================= */
-
-  const content =
-    useMemo(
-      () =>
-        normalizeContent(
-          outletContext?.content ||
-            outletContext?.websiteContent ||
-            outletContext?.contents ||
-            {}
-        ),
-      [
-        outletContext?.content,
-        outletContext?.websiteContent,
-        outletContext?.contents,
-      ]
-    );
-
-
-  /* =======================================================
-     SECTIONS
-  ======================================================= */
-
-  const sections =
-    useMemo(
-      () =>
-        normalizeSections(
-          outletContext?.sections ||
-            outletContext?.websiteSections ||
-            {}
-        ),
-      [
-        outletContext?.sections,
-        outletContext?.websiteSections,
-      ]
-    );
-
-
-  /* =======================================================
-     STATE
-  ======================================================= */
-
-  const [
-    classData,
-    setClassData,
-  ] = useState(null);
-
-  const [
-    sessions,
-    setSessions,
-  ] = useState([]);
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-  const [
-    sessionsLoading,
-    setSessionsLoading,
-  ] = useState(false);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-  const [
-    sessionError,
-    setSessionError,
-  ] = useState("");
-
-  const [
-    showAllSessions,
-    setShowAllSessions,
-  ] = useState(false);
-
-  const [
-    showBooking,
-    setShowBooking,
-  ] = useState(false);
-
-
-  /* =======================================================
-     FETCH CLASS
-  ======================================================= */
+  const [classData, setClassData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
-    const fetchClass =
-      async () => {
-        if (!classId) {
-          if (mounted) {
-            setError(
-              "Class ID is missing."
-            );
-            setLoading(false);
-          }
+    const fetchClass = async () => {
+      if (!classId) {
+        setError("Class ID is missing.");
+        setLoading(false);
+        return;
+      }
 
-          return;
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await getClassById(classId);
+
+        let data =
+          response?.data?.data ??
+          response?.data?.class ??
+          response?.data ??
+          response?.class ??
+          response;
+
+        if (data?.data && typeof data.data === "object") {
+          data = data.data;
         }
 
-        try {
-          setLoading(true);
-          setError("");
+        if (!data || typeof data !== "object") {
+          throw new Error("Class data was not returned by the server.");
+        }
 
-          const response =
-            await getClassById(
-              classId
-            );
+        if (mounted) setClassData(data);
+      } catch (err) {
+        console.error("CLASS DETAIL ERROR:", err);
 
-          let data =
-            response?.data?.data ??
-            response?.data?.class ??
-            response?.data ??
-            response?.class ??
-            response;
-
-          if (
-            data?.data &&
-            typeof data.data ===
-              "object"
-          ) {
-            data =
-              data.data;
-          }
-
-          if (
-            !data ||
-            typeof data !==
-              "object"
-          ) {
-            throw new Error(
-              "Class data was not returned by the server."
-            );
-          }
-
-          if (mounted) {
-            setClassData(
-              data
-            );
-          }
-        } catch (err) {
-          console.error(
-            "CLASS DETAIL ERROR:",
-            err
+        if (mounted) {
+          setError(
+            err?.response?.data?.message ||
+              err?.response?.data?.error ||
+              err?.message ||
+              "Failed to load class details."
           );
-
-          if (mounted) {
-            setError(
-              err?.response
-                ?.data?.message ||
-                err?.response
-                  ?.data?.error ||
-                err?.message ||
-                "Failed to load class details."
-            );
-          }
-        } finally {
-          if (mounted) {
-            setLoading(false);
-          }
         }
-      };
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
 
     fetchClass();
 
@@ -6998,1862 +9150,258 @@ const WebsiteClassDetail = () => {
     };
   }, [classId]);
 
+  const title = getClassTitle(classData);
+  const image = getClassImage(classData);
+  const duration = getDuration(classData);
+  const level = getLevel(classData);
+  const students = getStudents(classData);
+  const price = getPrice(classData);
+  const trainerId = getTrainerId(classData);
+  const trainerName = getTrainerName(classData);
+  const trainerImage = getTrainerImage(classData);
+  const trainerRating = getTrainerRating(classData);
+  const availableDays = getAvailableDays(classData);
 
-  /* =======================================================
-     FETCH SESSIONS
-  ======================================================= */
+  const startDate = getValue(classData?.start_date, classData?.startDate);
+  const startTime = getValue(classData?.start_time, classData?.startTime);
 
-  useEffect(() => {
-    let mounted = true;
+  const formattedDays =
+    availableDays.length > 0
+      ? availableDays.map((day) => String(day).substring(0, 3)).join(" • ")
+      : "--";
 
-    const fetchSessions =
-      async () => {
-        if (!classId) {
-          return;
-        }
-
-        try {
-          setSessionsLoading(
-            true
-          );
-
-          setSessionError("");
-
-          const response =
-            await getClassSessions(
-              classId
-            );
-
-          let data =
-            response?.data?.data ??
-            response?.data?.sessions ??
-            response?.data ??
-            response?.sessions ??
-            response;
-
-          if (
-            !Array.isArray(data)
-          ) {
-            data = [];
-          }
-
-          if (mounted) {
-            setSessions(
-              data
-            );
-          }
-        } catch (err) {
-          console.error(
-            "SESSION FETCH ERROR:",
-            err
-          );
-
-          if (mounted) {
-            setSessions([]);
-
-            setSessionError(
-              err?.response
-                ?.data?.message ||
-                err?.message ||
-                "Unable to load sessions."
-            );
-          }
-        } finally {
-          if (mounted) {
-            setSessionsLoading(
-              false
-            );
-          }
-        }
-      };
-
-    fetchSessions();
-
-    return () => {
-      mounted = false;
-    };
-  }, [classId]);
-
-
-  /* =======================================================
-     DERIVED DATA
-  ======================================================= */
-
-  const title =
-    getClassTitle(
-      classData
-    );
-
-  const description =
-    getClassDescription(
-      classData
-    );
-
-  const image =
-    getClassImage(
-      classData
-    );
-
-  const trainerName =
-    getTrainerName(
-      classData
-    );
-
-  const trainerImage =
-    getTrainerImage(
-      classData
-    );
-
-  const instituteName =
-    getInstituteName(
-      classData
-    );
-
-  const categoryName =
-    getCategoryName(
-      classData
-    );
-
-  const subcategoryName =
-    getSubcategoryName(
-      classData
-    );
-
-  const level =
-    getLevel(
-      classData
-    );
-
-  const duration =
-    getDuration(
-      classData
-    );
-
-  const rating =
-    getRating(
-      classData
-    );
-
-  const students =
-    getStudents(
-      classData
-    );
-
-  const price =
-    getPrice(
-      classData
-    );
-
-  const availableDays =
-    getAvailableDays(
-      classData
-    );
-
-  const startDate =
-    getValue(
-      classData?.start_date,
-      classData?.startDate
-    );
-
-  const startTime =
-    getValue(
-      classData?.start_time,
-      classData?.startTime
-    );
-
-  const timezone =
-    getTimezone(
-      classData
-    );
-
-  const visibleSessions =
-    showAllSessions
-      ? sessions
-      : sessions.slice(
-          0,
-          5
-        );
-
-
-  /* =======================================================
-     SHARED STYLES
-  ======================================================= */
-
-  const headingStyle = {
-    color:
-      branding.headingColor,
-
-    fontFamily:
-      fontFamily(
-        branding.fontHeading
-      ),
-
-    fontWeight:
-      branding.headingWeight,
-
-    lineHeight:
-      branding.headingLineHeight,
-
-    letterSpacing:
-      branding.headingLetterSpacing,
+  const handleBook = () => {
+    if (!classData) return;
+    setShowBooking(true);
   };
 
+  const handleTrainerProfile = () => {
+    if (!trainerId) return;
 
-  const bodyStyle = {
-    color:
-      branding.textColor,
-
-    fontFamily:
-      fontFamily(
-        branding.fontBody
-      ),
-
-    fontWeight:
-      branding.bodyWeight,
-
-    lineHeight:
-      branding.bodyLineHeight,
-
-    letterSpacing:
-      branding.bodyLetterSpacing,
+    navigate(`/institute/website/preview/trainers/${trainerId}`);
   };
 
-
-  const buttonStyle = {
-    backgroundColor:
-      branding.buttonColor,
-
-    color:
-      branding.buttonTextColor,
-
-    borderRadius:
-      getButtonRadius(
-        branding,
-        true
-      ),
-
-    fontFamily:
-      fontFamily(
-        branding.fontBody
-      ),
-
-    fontWeight:
-      branding.bodyWeight,
+  const pageStyle = {
+    fontFamily: fontFamily(branding.fontBody),
+    background:
+      "radial-gradient(circle at 15% 15%, rgba(0,112,255,0.16), transparent 30%), radial-gradient(circle at 90% 80%, rgba(0,78,255,0.14), transparent 32%), #020812",
+    color: "#FFFFFF",
   };
-
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
 
   if (loading) {
     return (
-      <div
-        className="
-          flex
-          min-h-[550px]
-          items-center
-          justify-center
-        "
-        style={{
-          backgroundColor:
-            branding.pageBackgroundColor,
-        }}
-      >
+      <main className="flex min-h-screen items-center justify-center" style={pageStyle}>
         <div className="text-center">
-          <div
-            className="
-              mx-auto
-              mb-5
-              h-12
-              w-12
-              animate-spin
-              rounded-full
-              border-4
-            "
-            style={{
-              borderColor:
-                hexToRgba(
-                  branding.buttonColor,
-                  0.2
-                ),
-              borderTopColor:
-                branding.buttonColor,
-            }}
-          />
-
-          <p style={bodyStyle}>
-            Loading class details...
-          </p>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500" />
+          <p className="mt-5 text-slate-300">Loading class details...</p>
         </div>
-      </div>
+      </main>
     );
   }
 
-
-  /* =======================================================
-     ERROR
-  ======================================================= */
-
-  if (error) {
+  if (error || !classData) {
     return (
-      <div
-        className="
-          flex
-          min-h-[550px]
-          items-center
-          justify-center
-          px-6
-        "
-        style={{
-          backgroundColor:
-            branding.pageBackgroundColor,
-        }}
-      >
-        <div className="max-w-lg text-center">
-          <div
-            className="
-              mx-auto
-              flex
-              h-16
-              w-16
-              items-center
-              justify-center
-              text-2xl
-            "
-            style={{
-              backgroundColor:
-                "rgba(239,68,68,0.08)",
-              color:
-                "#EF4444",
-              borderRadius:
-                "50%",
-            }}
-          >
-            !
-          </div>
-
-          <h1
-            className="
-              mt-5
-              text-2xl
-            "
-            style={headingStyle}
-          >
-            Unable to Load Class
+      <main className="flex min-h-screen items-center justify-center px-6" style={pageStyle}>
+        <div className="rounded-3xl border border-blue-500/30 bg-slate-950/80 p-8 text-center shadow-[0_0_35px_rgba(0,112,255,0.12)]">
+          <h1 className="text-2xl font-bold text-white">
+            {error ? "Unable to Load Class" : "Class Not Found"}
           </h1>
-
-          <p
-            className="
-              mt-3
-              text-sm
-            "
-            style={{
-              ...bodyStyle,
-              opacity: 0.7,
-            }}
-          >
-            {error}
-          </p>
-
-          <p
-            className="
-              mt-2
-              text-xs
-            "
-            style={{
-              ...bodyStyle,
-              opacity: 0.5,
-            }}
-          >
-            Class ID: {classId}
-          </p>
+          {error && <p className="mt-3 text-sm text-slate-400">{error}</p>}
 
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                "/institute/website/preview/classes"
-              )
-            }
-            className="
-              mt-6
-              inline-flex
-              items-center
-              gap-2
-              px-6
-              py-3
-            "
-            style={buttonStyle}
+            onClick={() => navigate("/institute/website/preview/classes")}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-500 px-6 py-3 font-semibold text-white shadow-[0_0_25px_rgba(0,112,255,0.25)]"
           >
-            <FaArrowLeft />
-            {content.classDetail.navigation.backText}
+            <FaArrowLeft size={13} />
+            Back To Classes
           </button>
         </div>
-      </div>
+      </main>
     );
   }
-
-
-  /* =======================================================
-     NOT FOUND
-  ======================================================= */
-
-  if (!classData) {
-    return (
-      <div
-        className="
-          flex
-          min-h-[550px]
-          items-center
-          justify-center
-        "
-        style={{
-          backgroundColor:
-            branding.pageBackgroundColor,
-        }}
-      >
-        <div className="text-center">
-          <h1
-            className="text-3xl"
-            style={headingStyle}
-          >
-            Class Not Found
-          </h1>
-
-          <button
-            type="button"
-            onClick={() =>
-              navigate(
-                "/institute/website/preview/classes"
-              )
-            }
-            className="
-              mt-6
-              px-6
-              py-3
-            "
-            style={buttonStyle}
-          >
-            {content.classDetail.booking.backButtonText}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-
-  /* =======================================================
-     MAIN
-  ======================================================= */
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor:
-          branding.pageBackgroundColor,
-        ...bodyStyle,
-      }}
-    >
+    <main className="min-h-screen" style={pageStyle}>
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
 
-      {/* ===================================================
-          HERO
-      =================================================== */}
-
-      {sections.hero && (
-        <section
-          style={{
-            backgroundColor:
-              branding.navbarColor,
-          }}
+        {/* BACK */}
+        <button
+          type="button"
+          onClick={() => navigate("/institute/website/preview/classes")}
+          className="mb-5 inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-blue-400"
         >
+          <FaArrowLeft size={13} />
+          Back To Classes
+        </button>
+
+        {/* =====================================================
+            ROW 1 — 50%
+            LEFT: SINGLE IMAGE
+            RIGHT: DURATION / LEVEL / START TIME / START DATE / STUDENTS
+        ===================================================== */}
+        <section className="grid min-h-[50vh] grid-cols-1 gap-5 lg:grid-cols-2">
+
+          {/* SINGLE CLASS IMAGE */}
           <div
-            className="
-              mx-auto
-              max-w-7xl
-              px-4
-              py-6
-              sm:px-6
-              lg:px-8
-            "
+            className="relative min-h-[420px] overflow-hidden rounded-3xl border border-blue-500/50 bg-slate-950 shadow-[0_0_35px_rgba(0,112,255,0.18)]"
           >
+            {image ? (
+              <img
+                src={image}
+                alt={title}
+                className="h-full min-h-[420px] w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full min-h-[420px] items-center justify-center text-slate-500">
+                No Class Image
+              </div>
+            )}
 
-            <button
-              type="button"
-              onClick={() =>
-                navigate(
-                  "/institute/website/preview/classes"
-                )
-              }
-              className="
-                mb-5
-                inline-flex
-                items-center
-                gap-2
-                text-sm
-              "
-              style={{
-                color:
-                  branding.buttonTextColor,
-                fontFamily:
-                  fontFamily(
-                    branding.fontBody
-                  ),
-                fontWeight:
-                  branding.bodyWeight,
-              }}
-            >
-              <FaArrowLeft />
-              {content.classDetail.navigation.backText}
-            </button>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-blue-500/10" />
 
+            <div className="absolute bottom-5 left-5 right-5">
+              <div className="inline-flex rounded-full border border-blue-400/50 bg-black/60 px-4 py-2 text-sm font-semibold text-blue-300 backdrop-blur">
+                Class
+              </div>
+            </div>
+          </div>
 
-            <div
-              className="
-                overflow-hidden
-                border
-                shadow-sm
-              "
-              style={{
-                backgroundColor:
-                  branding.cardBackgroundColor,
-                borderColor:
-                  hexToRgba(
-                    branding.buttonTextColor,
-                    0.12
-                  ),
-                borderRadius:
-                  "18px",
-              }}
-            >
+          {/* CLASS INFORMATION */}
+          <div className="grid content-center gap-4 rounded-3xl border border-blue-500/40 bg-slate-950/75 p-4 shadow-[0_0_35px_rgba(0,112,255,0.12)] sm:p-6">
+            <DetailItem icon={FaClock} label="Duration" value={duration} />
+            <DetailItem icon={FaChartBar} label="Level" value={level} />
+            <DetailItem icon={FaClock} label="Start Time" value={formatTime(startTime)} />
+            <DetailItem icon={FaCalendarAlt} label="Start Date" value={formatDate(startDate)} />
+            <DetailItem icon={FaUsers} label="Students" value={`${students} Students`} />
+          </div>
+        </section>
 
-              <div
-                className="
-                  relative
-                  aspect-[16/7]
-                  min-h-[260px]
-                  overflow-hidden
-                "
+        {/* =====================================================
+            ROW 2 — 25%
+            CLASS NAME / PRICE ONCE / BOOK
+        ===================================================== */}
+        <section className="mt-5 min-h-[25vh] rounded-3xl border border-blue-500/40 bg-slate-950/80 p-6 shadow-[0_0_35px_rgba(0,112,255,0.12)] sm:p-8">
+          <div className="grid h-full items-center gap-8 lg:grid-cols-[1fr_300px]">
+
+            {/* CLASS NAME */}
+            <div>
+              <h1
+                className="text-3xl leading-tight text-white sm:text-4xl lg:text-5xl"
                 style={{
-                  backgroundColor:
-                    branding.navbarColor,
+                  fontFamily: fontFamily(branding.fontHeading),
+                  fontWeight: branding.headingWeight,
                 }}
               >
+                {title}
+              </h1>
+            </div>
 
-                {image ? (
-                  <img
-                    src={image}
-                    alt={title}
-                    className="
-                      h-full
-                      w-full
-                      object-cover
-                    "
-                  />
-                ) : (
-                  <div
-                    className="
-                      flex
-                      h-full
-                      w-full
-                      items-center
-                      justify-center
-                    "
-                    style={{
-                      color:
-                        branding.buttonTextColor,
-                    }}
+            {/* PRICE + BOOK */}
+            <div className="border-l-0 border-blue-500/30 lg:border-l lg:pl-8">
+              <p className="text-sm text-slate-400">Price</p>
+              <p className="mt-1 text-4xl font-extrabold text-blue-400">
+                ₹{price.toLocaleString("en-IN")}
+              </p>
+
+              <button
+                type="button"
+                onClick={handleBook}
+                className="mt-5 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-400 px-6 py-3.5 font-bold text-white shadow-[0_0_25px_rgba(0,112,255,0.28)] transition hover:scale-[1.01]"
+              >
+                Book Now
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================================
+            ROW 3 — 25%
+            LEFT: AVAILABLE DAYS
+            RIGHT: TRAINER
+        ===================================================== */}
+        <section className="mt-5 grid min-h-[25vh] grid-cols-1 gap-5 lg:grid-cols-2">
+
+          {/* AVAILABLE DAYS */}
+          <div className="rounded-3xl border border-blue-500/40 bg-slate-950/80 p-6 shadow-[0_0_35px_rgba(0,112,255,0.12)] sm:p-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+                <FaCalendarWeek size={22} />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-400">Available Days</p>
+                <h2 className="text-2xl font-bold text-white">Class Schedule</h2>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {availableDays.length > 0 ? (
+                availableDays.map((day, index) => (
+                  <span
+                    key={`${day}-${index}`}
+                    className="rounded-xl border border-blue-500/50 bg-blue-500/10 px-5 py-3 font-semibold text-blue-300"
                   >
-                    No Class Image
-                  </div>
-                )}
+                    {String(day).substring(0, 3)}
+                  </span>
+                ))
+              ) : (
+                <span className="rounded-xl border border-blue-500/30 px-5 py-3 text-slate-400">
+                  {formattedDays}
+                </span>
+              )}
+            </div>
+          </div>
 
+          {/* TRAINER */}
+          <div className="rounded-3xl border border-blue-500/40 bg-slate-950/80 p-6 shadow-[0_0_35px_rgba(0,112,255,0.12)] sm:p-8">
+            <div className="flex h-full flex-col justify-center gap-5 sm:flex-row sm:items-center">
 
-                <div
-                  className="
-                    absolute
-                    inset-0
-                  "
-                  style={{
-                    background:
-                      `linear-gradient(
-                        to top,
-                        rgba(0,0,0,0.78),
-                        rgba(0,0,0,0.18),
-                        transparent
-                      )`,
-                  }}
+              {trainerImage ? (
+                <img
+                  src={trainerImage}
+                  alt={trainerName}
+                  className="h-28 w-28 shrink-0 rounded-full border-2 border-blue-500 object-cover shadow-[0_0_25px_rgba(0,112,255,0.25)]"
                 />
+              ) : (
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-blue-500/10 text-3xl font-bold text-blue-400">
+                  {String(trainerName).charAt(0).toUpperCase()}
+                </div>
+              )}
 
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-slate-400">Trainer</p>
+                <h2 className="mt-1 truncate text-2xl font-bold text-white">
+                  {trainerName}
+                </h2>
 
-                <div
-                  className="
-                    absolute
-                    bottom-6
-                    left-5
-                    right-5
-                    sm:left-8
-                    sm:right-8
-                  "
-                >
-
-                  <div
-                    className="
-                      mb-3
-                      flex
-                      flex-wrap
-                      gap-2
-                    "
-                  >
-                    <span
-                      className="
-                        px-3
-                        py-1
-                        text-xs
-                      "
-                      style={{
-                        backgroundColor:
-                          branding.buttonColor,
-                        color:
-                          branding.buttonTextColor,
-                        borderRadius:
-                          getButtonRadius(
-                            branding
-                          ),
-                        fontFamily:
-                          fontFamily(
-                            branding.fontBody
-                          ),
-                        fontWeight:
-                          branding.bodyWeight,
-                      }}
-                    >
-                      {categoryName}
-                    </span>
-
-                    {subcategoryName && (
-                      <span
-                        className="
-                          px-3
-                          py-1
-                          text-xs
-                        "
-                        style={{
-                          backgroundColor:
-                            branding.cardBackgroundColor,
-                          color:
-                            branding.buttonColor,
-                          borderRadius:
-                            getButtonRadius(
-                              branding
-                            ),
-                          fontFamily:
-                            fontFamily(
-                              branding.fontBody
-                            ),
-                          fontWeight:
-                            branding.bodyWeight,
-                        }}
-                      >
-                        {subcategoryName}
-                      </span>
-                    )}
-
-                    <span
-                      className="
-                        px-3
-                        py-1
-                        text-xs
-                      "
-                      style={{
-                        backgroundColor:
-                          "rgba(0,0,0,0.6)",
-                        color:
-                          "#FFFFFF",
-                        borderRadius:
-                          getButtonRadius(
-                            branding
-                          ),
-                        fontFamily:
-                          fontFamily(
-                            branding.fontBody
-                          ),
-                        fontWeight:
-                          branding.bodyWeight,
-                      }}
-                    >
-                      {level}
-                    </span>
-                  </div>
-
-
-                  {content.classDetail.eyebrow && (
-                    <p
-                      className="
-                        mb-2
-                        text-xs
-                        uppercase
-                        tracking-[0.18em]
-                      "
-                      style={{
-                        color:
-                          branding.buttonTextColor,
-                        fontFamily:
-                          fontFamily(
-                            branding.fontSubheading
-                          ),
-                        fontWeight:
-                          branding.subheadingWeight,
-                        opacity: 0.85,
-                      }}
-                    >
-                      {content.classDetail.eyebrow}
-                    </p>
-                  )}
-
-
-                  <h1
-                    className="
-                      max-w-4xl
-                      text-3xl
-                      sm:text-4xl
-                      lg:text-5xl
-                    "
-                    style={{
-                      color:
-                        branding.buttonTextColor,
-                      fontFamily:
-                        fontFamily(
-                          branding.fontHeading
-                        ),
-                      fontWeight:
-                        branding.headingWeight,
-                      lineHeight:
-                        branding.headingLineHeight,
-                      letterSpacing:
-                        branding.headingLetterSpacing,
-                    }}
-                  >
-                    {title ||
-                      content.classDetail.heading}
-                  </h1>
-
-
-                  {content.classDetail.subheading && (
-                    <p
-                      className="
-                        mt-3
-                        max-w-2xl
-                        text-sm
-                        sm:text-base
-                      "
-                      style={{
-                        color:
-                          branding.buttonTextColor,
-                        fontFamily:
-                          fontFamily(
-                            branding.fontBody
-                          ),
-                        fontWeight:
-                          branding.bodyWeight,
-                        lineHeight:
-                          branding.bodyLineHeight,
-                        opacity: 0.88,
-                      }}
-                    >
-                      {content.classDetail.subheading}
-                    </p>
-                  )}
-
+                <div className="mt-2">
+                  <StarRating rating={trainerRating} />
                 </div>
 
+                <button
+                  type="button"
+                  onClick={handleTrainerProfile}
+                  disabled={!trainerId}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500 px-5 py-3 font-semibold text-blue-300 transition hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FaUser size={15} />
+                  View Trainer Profile
+                </button>
               </div>
             </div>
           </div>
         </section>
-      )}
-
-
-      {/* ===================================================
-          MAIN CONTENT
-      =================================================== */}
-
-      <section
-        className="
-          mx-auto
-          max-w-7xl
-          px-4
-          py-8
-          sm:px-6
-          lg:px-8
-        "
-      >
-
-        <div
-          className="
-            grid
-            grid-cols-1
-            gap-8
-            lg:grid-cols-[1fr_360px]
-          "
-        >
-
-          {/* =================================================
-              LEFT
-          ================================================= */}
-
-          <div className="space-y-8">
-
-            {/* ABOUT */}
-
-            {sections.about && (
-              <div
-                className="
-                  border
-                  p-6
-                  shadow-sm
-                  sm:p-8
-                "
-                style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
-                  borderColor:
-                    hexToRgba(
-                      branding.textColor,
-                      0.12
-                    ),
-                  borderRadius:
-                    "18px",
-                }}
-              >
-
-                <SectionHeader
-                  heading={
-                    content.classDetail.about.heading
-                  }
-                  subheading={
-                    content.classDetail.about.subheading
-                  }
-                  branding={
-                    branding
-                  }
-                />
-
-                <div
-                  className="
-                    mt-5
-                    whitespace-pre-line
-                    text-sm
-                  "
-                  style={{
-                    ...bodyStyle,
-                    opacity: 0.72,
-                  }}
-                >
-                  {description}
-                </div>
-
-              </div>
-            )}
-
-
-            {/* CLASS INFORMATION */}
-
-            {sections.information && (
-              <div
-                className="
-                  border
-                  p-6
-                  shadow-sm
-                  sm:p-8
-                "
-                style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
-                  borderColor:
-                    hexToRgba(
-                      branding.textColor,
-                      0.12
-                    ),
-                  borderRadius:
-                    "18px",
-                }}
-              >
-
-                <SectionHeader
-                  heading={
-                    content.classDetail.information.heading
-                  }
-                  subheading={
-                    content.classDetail.information.subheading
-                  }
-                  branding={
-                    branding
-                  }
-                />
-
-
-                <div
-                  className="
-                    mt-6
-                    grid
-                    grid-cols-1
-                    gap-5
-                    sm:grid-cols-2
-                  "
-                >
-
-                  <InfoItem
-                    icon={
-                      FaHourglassHalf
-                    }
-                    label="Level"
-                    value={
-                      level
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-                  <InfoItem
-                    icon={
-                      FaClock
-                    }
-                    label="Duration"
-                    value={
-                      duration
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-                  <InfoItem
-                    icon={
-                      FaUsers
-                    }
-                    label="Students"
-                    value={
-                      students
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-                  <InfoItem
-                    icon={
-                      FaGlobe
-                    }
-                    label="Timezone"
-                    value={
-                      timezone
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-                </div>
-              </div>
-            )}
-
-
-            {/* SCHEDULE */}
-
-            {sections.schedule && (
-              <div
-                className="
-                  border
-                  p-6
-                  shadow-sm
-                  sm:p-8
-                "
-                style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
-                  borderColor:
-                    hexToRgba(
-                      branding.textColor,
-                      0.12
-                    ),
-                  borderRadius:
-                    "18px",
-                }}
-              >
-
-                <SectionHeader
-                  heading={
-                    content.classDetail.schedule.heading
-                  }
-                  subheading={
-                    content.classDetail.schedule.subheading
-                  }
-                  branding={
-                    branding
-                  }
-                />
-
-
-                <div
-                  className="
-                    mt-6
-                    grid
-                    grid-cols-1
-                    gap-4
-                    sm:grid-cols-2
-                  "
-                >
-
-                  <InfoItem
-                    icon={
-                      FaCalendarWeek
-                    }
-                    label="Available Days"
-                    value={
-                      availableDays.length
-                        ? availableDays
-                            .map(
-                              (
-                                day
-                              ) =>
-                                String(
-                                  day
-                                ).substring(
-                                  0,
-                                  3
-                                )
-                            )
-                            .join(
-                              " • "
-                            )
-                        : "--"
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-
-                  <InfoItem
-                    icon={
-                      FaCalendarAlt
-                    }
-                    label="Start Date"
-                    value={formatDate(
-                      startDate
-                    )}
-                    branding={
-                      branding
-                    }
-                  />
-
-
-                  <InfoItem
-                    icon={
-                      FaClock
-                    }
-                    label="Start Time"
-                    value={
-                      startTime
-                        ? `${formatTime(
-                            startTime
-                          )} ${timezone}`
-                        : "--"
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-                </div>
-              </div>
-            )}
-
-
-            {/* SESSIONS */}
-
-            {sections.sessions && (
-              <div
-                className="
-                  border
-                  p-6
-                  shadow-sm
-                  sm:p-8
-                "
-                style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
-                  borderColor:
-                    hexToRgba(
-                      branding.textColor,
-                      0.12
-                    ),
-                  borderRadius:
-                    "18px",
-                }}
-              >
-
-                <SectionHeader
-                  heading={
-                    content.classDetail.sessions.heading
-                  }
-                  subheading={
-                    content.classDetail.sessions.subheading
-                  }
-                  branding={
-                    branding
-                  }
-                />
-
-
-                {sessions.length >
-                  0 && (
-                  <div className="mt-3">
-                    <span
-                      className="
-                        inline-flex
-                        px-3
-                        py-1
-                        text-xs
-                      "
-                      style={{
-                        backgroundColor:
-                          hexToRgba(
-                            branding.buttonColor,
-                            0.1
-                          ),
-                        color:
-                          branding.buttonColor,
-                        borderRadius:
-                          getButtonRadius(
-                            branding
-                          ),
-                        fontFamily:
-                          fontFamily(
-                            branding.fontBody
-                          ),
-                        fontWeight:
-                          branding.headingWeight,
-                      }}
-                    >
-                      {sessions.length}{" "}
-                      Sessions
-                    </span>
-                  </div>
-                )}
-
-
-                {sessionsLoading ? (
-                  <div
-                    className="
-                      flex
-                      items-center
-                      justify-center
-                      py-12
-                    "
-                  >
-                    <div
-                      className="
-                        h-8
-                        w-8
-                        animate-spin
-                        rounded-full
-                        border-4
-                      "
-                      style={{
-                        borderColor:
-                          hexToRgba(
-                            branding.buttonColor,
-                            0.2
-                          ),
-                        borderTopColor:
-                          branding.buttonColor,
-                      }}
-                    />
-                  </div>
-                ) : sessionError ? (
-                  <div
-                    className="
-                      mt-6
-                      p-5
-                      text-center
-                      text-sm
-                    "
-                    style={{
-                      backgroundColor:
-                        hexToRgba(
-                          branding.textColor,
-                          0.05
-                        ),
-                      color:
-                        branding.textColor,
-                      borderRadius:
-                        "12px",
-                      fontFamily:
-                        fontFamily(
-                          branding.fontBody
-                        ),
-                    }}
-                  >
-                    {sessionError}
-                  </div>
-                ) : sessions.length ===
-                  0 ? (
-                  <div
-                    className="
-                      mt-6
-                      border
-                      border-dashed
-                      p-8
-                      text-center
-                      text-sm
-                    "
-                    style={{
-                      borderColor:
-                        hexToRgba(
-                          branding.textColor,
-                          0.18
-                        ),
-                      color:
-                        branding.textColor,
-                      opacity: 0.7,
-                      borderRadius:
-                        "12px",
-                      fontFamily:
-                        fontFamily(
-                          branding.fontBody
-                        ),
-                    }}
-                  >
-                    No upcoming
-                    sessions available.
-                  </div>
-                ) : (
-                  <div className="mt-6 space-y-3">
-
-                    {visibleSessions.map(
-                      (
-                        session,
-                        index
-                      ) => (
-                        <SessionItem
-                          key={
-                            session?.id ||
-                            session?.session_id ||
-                            index
-                          }
-                          session={
-                            session
-                          }
-                          branding={
-                            branding
-                          }
-                        />
-                      )
-                    )}
-
-
-                    {sessions.length >
-                      5 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowAllSessions(
-                            (
-                              value
-                            ) =>
-                              !value
-                          )
-                        }
-                        className="
-                          mx-auto
-                          mt-4
-                          flex
-                          items-center
-                          gap-2
-                          text-sm
-                        "
-                        style={{
-                          color:
-                            branding.buttonColor,
-                          fontFamily:
-                            fontFamily(
-                              branding.fontBody
-                            ),
-                          fontWeight:
-                            branding.headingWeight,
-                        }}
-                      >
-                        {showAllSessions
-                          ? "Show Less"
-                          : "View All Sessions"}
-
-                        {showAllSessions ? (
-                          <FaChevronUp />
-                        ) : (
-                          <FaChevronDown />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-
-            {/* SKILLS */}
-
-            {sections.skills &&
-              Array.isArray(
-                classData?.skills
-              ) &&
-              classData.skills.length >
-                0 && (
-                <div
-                  className="
-                    border
-                    p-6
-                    shadow-sm
-                    sm:p-8
-                  "
-                  style={{
-                    backgroundColor:
-                      branding.cardBackgroundColor,
-                    borderColor:
-                      hexToRgba(
-                        branding.textColor,
-                        0.12
-                      ),
-                    borderRadius:
-                      "18px",
-                  }}
-                >
-
-                  <SectionHeader
-                    heading={
-                      content.classDetail.skills.heading
-                    }
-                    subheading={
-                      content.classDetail.skills.subheading
-                    }
-                    branding={
-                      branding
-                    }
-                  />
-
-
-                  <div
-                    className="
-                      mt-6
-                      grid
-                      grid-cols-1
-                      gap-4
-                      sm:grid-cols-2
-                    "
-                  >
-
-                    {classData.skills.map(
-                      (
-                        skill,
-                        index
-                      ) => (
-                        <div
-                          key={index}
-                          className="
-                            flex
-                            items-start
-                            gap-3
-                          "
-                        >
-                          <div
-                            className="
-                              mt-0.5
-                              flex
-                              h-6
-                              w-6
-                              shrink-0
-                              items-center
-                              justify-center
-                            "
-                            style={{
-                              backgroundColor:
-                                hexToRgba(
-                                  branding.buttonColor,
-                                  0.1
-                                ),
-                              color:
-                                branding.iconColor,
-                              borderRadius:
-                                "50%",
-                            }}
-                          >
-                            <FaCheck
-                              size={11}
-                            />
-                          </div>
-
-                          <span
-                            className="
-                              text-sm
-                            "
-                            style={{
-                              ...bodyStyle,
-                              opacity: 0.8,
-                            }}
-                          >
-                            {typeof skill ===
-                            "string"
-                              ? skill
-                              : skill?.name ||
-                                skill?.title ||
-                                "Skill"}
-                          </span>
-                        </div>
-                      )
-                    )}
-
-                  </div>
-                </div>
-              )}
-
-          </div>
-
-
-          {/* =================================================
-              RIGHT SIDEBAR
-          ================================================= */}
-
-          {sections.trainer && (
-            <aside
-              className="
-                h-fit
-                lg:sticky
-                lg:top-6
-              "
-            >
-
-              <div
-                className="
-                  overflow-hidden
-                  border
-                  shadow-sm
-                "
-                style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
-                  borderColor:
-                    hexToRgba(
-                      branding.textColor,
-                      0.12
-                    ),
-                  borderRadius:
-                    "18px",
-                }}
-              >
-
-                {/* FEE */}
-
-                <div
-                  className="
-                    border-b
-                    p-6
-                  "
-                  style={{
-                    backgroundColor:
-                      hexToRgba(
-                        branding.buttonColor,
-                        0.05
-                      ),
-                    borderColor:
-                      hexToRgba(
-                        branding.textColor,
-                        0.08
-                      ),
-                  }}
-                >
-
-                  <p
-                    className="
-                      text-xs
-                      uppercase
-                      tracking-wider
-                    "
-                    style={{
-                      color:
-                        branding.subheadingColor,
-                      fontFamily:
-                        fontFamily(
-                          branding.fontSubheading
-                        ),
-                      fontWeight:
-                        branding.subheadingWeight,
-                    }}
-                  >
-                    {content.classDetail.fee.eyebrow}
-                  </p>
-
-
-                  <div className="mt-2">
-                    <span
-                      className="text-3xl"
-                      style={{
-                        color:
-                          branding.buttonColor,
-                        fontFamily:
-                          fontFamily(
-                            branding.fontHeading
-                          ),
-                        fontWeight:
-                          branding.headingWeight,
-                      }}
-                    >
-                      ₹
-                      {price.toLocaleString(
-                        "en-IN"
-                      )}
-                    </span>
-
-                    <span
-                      className="
-                        ml-1
-                        text-sm
-                      "
-                      style={{
-                        ...bodyStyle,
-                        opacity: 0.65,
-                      }}
-                    >
-                      /month
-                    </span>
-                  </div>
-
-                </div>
-
-
-                {/* TRAINER */}
-
-                <div className="p-6">
-
-                  <p
-                    className="
-                      text-xs
-                      uppercase
-                      tracking-wider
-                    "
-                    style={{
-                      color:
-                        branding.subheadingColor,
-                      fontFamily:
-                        fontFamily(
-                          branding.fontSubheading
-                        ),
-                      fontWeight:
-                        branding.subheadingWeight,
-                    }}
-                  >
-                    {content.classDetail.trainer.eyebrow}
-                  </p>
-
-
-                  <div
-                    className="
-                      mt-4
-                      flex
-                      items-center
-                      gap-3
-                    "
-                  >
-
-                    {trainerImage ? (
-                      <img
-                        src={
-                          trainerImage
-                        }
-                        alt={
-                          trainerName
-                        }
-                        className="
-                          h-14
-                          w-14
-                          rounded-full
-                          object-cover
-                        "
-                        style={{
-                          boxShadow:
-                            `0 0 0 2px ${hexToRgba(
-                              branding.iconColor,
-                              0.3
-                            )}`,
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="
-                          flex
-                          h-14
-                          w-14
-                          items-center
-                          justify-center
-                          rounded-full
-                          text-lg
-                        "
-                        style={{
-                          backgroundColor:
-                            hexToRgba(
-                              branding.buttonColor,
-                              0.1
-                            ),
-                          color:
-                            branding.buttonColor,
-                          fontFamily:
-                            fontFamily(
-                              branding.fontHeading
-                            ),
-                          fontWeight:
-                            branding.headingWeight,
-                        }}
-                      >
-                        {String(
-                          trainerName
-                        )
-                          .charAt(
-                            0
-                          )
-                          .toUpperCase()}
-                      </div>
-                    )}
-
-
-                    <div className="min-w-0">
-
-                      <p
-                        className="
-                          truncate
-                          text-base
-                        "
-                        style={{
-                          color:
-                            branding.headingColor,
-                          fontFamily:
-                            fontFamily(
-                              branding.fontHeading
-                            ),
-                          fontWeight:
-                            branding.headingWeight,
-                        }}
-                      >
-                        {trainerName}
-                      </p>
-
-
-                      <p
-                        className="
-                          mt-1
-                          text-xs
-                        "
-                        style={{
-                          ...bodyStyle,
-                          opacity: 0.65,
-                        }}
-                      >
-                        {instituteName}
-                      </p>
-
-
-                      <div className="mt-1">
-                        <StarRating
-                          rating={
-                            rating
-                          }
-                          branding={
-                            branding
-                          }
-                        />
-                      </div>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* TRAINER DETAILS */}
-
-                  <div
-                    className="
-                      mt-6
-                      space-y-4
-                      border-t
-                      pt-5
-                    "
-                    style={{
-                      borderColor:
-                        hexToRgba(
-                          branding.textColor,
-                          0.1
-                        ),
-                    }}
-                  >
-
-                    <InfoItem
-                      icon={
-                        FaClock
-                      }
-                      label="Duration"
-                      value={
-                        duration
-                      }
-                      branding={
-                        branding
-                      }
-                    />
-
-                    <InfoItem
-                      icon={
-                        FaUsers
-                      }
-                      label="Students"
-                      value={`${students} Students`}
-                      branding={
-                        branding
-                      }
-                    />
-
-                    <InfoItem
-                      icon={
-                        FaCalendarAlt
-                      }
-                      label="Start Date"
-                      value={formatDate(
-                        startDate
-                      )}
-                      branding={
-                        branding
-                      }
-                    />
-
-                  </div>
-
-
-                  {/* BOOK BUTTON */}
-
-                  {sections.booking && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowBooking(
-                            true
-                          )
-                        }
-                        className="
-                          mt-7
-                          flex
-                          w-full
-                          items-center
-                          justify-center
-                          gap-2
-                          px-6
-                          py-3.5
-                          transition
-                        "
-                        style={
-                          buttonStyle
-                        }
-                      >
-                        {
-                          content
-                            .classDetail
-                            .booking
-                            .buttonText
-                        }
-
-                        <FaArrowRight
-                          size={13}
-                        />
-                      </button>
-
-
-                      <Link
-                        to="/institute/website/preview/classes"
-                        className="
-                          mt-3
-                          flex
-                          w-full
-                          items-center
-                          justify-center
-                          gap-2
-                          border
-                          px-6
-                          py-3.5
-                          text-sm
-                          transition
-                        "
-                        style={{
-                          backgroundColor:
-                            branding.cardBackgroundColor,
-                          color:
-                            branding.buttonColor,
-                          borderColor:
-                            branding.buttonColor,
-                          borderRadius:
-                            getButtonRadius(
-                              branding,
-                              true
-                            ),
-                          fontFamily:
-                            fontFamily(
-                              branding.fontBody
-                            ),
-                          fontWeight:
-                            branding.bodyWeight,
-                        }}
-                      >
-                        <FaArrowLeft
-                          size={12}
-                        />
-
-                        {
-                          content
-                            .classDetail
-                            .booking
-                            .backButtonText
-                        }
-                      </Link>
-                    </>
-                  )}
-
-                </div>
-              </div>
-            </aside>
-          )}
-
-        </div>
-      </section>
-
-
-      {/* ===================================================
-          BOOKING MODAL
-      =================================================== */}
-
-      {showBooking && (
-        <WebsiteBooking
-          classId={classId}
-          classData={classData}
-          sessions={sessions}
-          onClose={() =>
-            setShowBooking(
-              false
-            )
-          }
-        />
-      )}
-
-    </div>
+      </div>
+
+      {/* EXISTING BOOKING FLOW */}
+      <WebsiteBooking
+        isOpen={showBooking}
+        selectedClass={classData}
+        onClose={() => setShowBooking(false)}
+      />
+    </main>
   );
 };
-
 
 export default WebsiteClassDetail;

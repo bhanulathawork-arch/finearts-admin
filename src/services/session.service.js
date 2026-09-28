@@ -66,7 +66,7 @@
 //    ═══════════════════════════════════════════════════════════════════════════ */
 
 // const api = axios.create({
-//   baseURL: "https://finearts-backend.onrender.com/api",
+//   baseURL: "http://localhost:5000/api",
 // });
 
 // /* ── Auth: supports both user and admin tokens ── */
@@ -286,7 +286,7 @@ import { getTimezone } from "../utils/timezone";
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const api = axios.create({
-  baseURL: "https://finearts-backend.onrender.com/api",
+  baseURL: "http://localhost:5000/api",
 });
 
 /* ── Auth Token ── */

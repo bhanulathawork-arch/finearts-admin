@@ -9879,97 +9879,2349 @@
 
 
 
-import {
-  useState,
-  useMemo,
-  useEffect,
-} from "react";
+// import {
+//   useState,
+//   useMemo,
+//   useEffect,
+// } from "react";
 
-import {
-  FaSearch,
-  FaStar,
-  FaUsers,
-  FaComment,
-  FaArrowRight,
-  FaChevronDown,
-} from "react-icons/fa";
+// import {
+//   FaSearch,
+//   FaStar,
+//   FaUsers,
+//   FaComment,
+//   FaArrowRight,
+//   FaChevronDown,
+// } from "react-icons/fa";
 
-import {
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom";
+// import {
+//   useNavigate,
+//   useOutletContext,
+// } from "react-router-dom";
 
 
-/* =========================================================
-   DEFAULT CONTENT
-========================================================= */
+// /* =========================================================
+//    DEFAULT CONTENT
+// ========================================================= */
+
+// const DEFAULT_CONTENT = {
+//   trainers: {
+//     eyebrow: "OUR TEAM",
+//     heading: "Meet Our Expert Trainers",
+//     subheading:
+//       "Find the right trainer based on expertise, experience and specialty.",
+//   },
+// };
+
+
+// /* =========================================================
+//    DEFAULT SECTIONS
+// ========================================================= */
+
+// const DEFAULT_SECTIONS = {
+//   trainers: {
+//     visible: true,
+//   },
+// };
+
+
+// /* =========================================================
+//    DEFAULT BRANDING
+// ========================================================= */
+
+// const DEFAULT_BRANDING = {
+//   navbarColor: "#1F2937",
+
+//   headingColor: "#111827",
+//   subheadingColor: "#5B21B6",
+//   textColor: "#111827",
+
+//   iconColor: "#F59E0B",
+
+//   buttonColor: "#7C3AED",
+//   buttonTextColor: "#FFFFFF",
+
+//   pageBackgroundColor: "#FAFAF9",
+//   cardBackgroundColor: "#FFFFFF",
+
+//   footerBackgroundColor: "#1F2937",
+//   footerHeadingColor: "#FFFFFF",
+//   footerTextColor: "#FAFAF9",
+
+//   fontHeading: "Inter",
+//   fontSubheading: "Inter",
+//   fontBody: "Inter",
+
+//   headingWeight: 700,
+//   headingLineHeight: 1.15,
+//   headingLetterSpacing: 0,
+
+//   subheadingWeight: 600,
+//   subheadingLineHeight: 1.4,
+
+//   bodyWeight: 400,
+//   bodyLineHeight: 1.6,
+//   bodyLetterSpacing: 0,
+
+//   roundedButtons: true,
+// };
+
+
+// /* =========================================================
+//    HELPERS
+// ========================================================= */
+
+// const firstValue = (...values) =>
+//   values.find(
+//     (value) =>
+//       value !== undefined &&
+//       value !== null &&
+//       String(value).trim() !== ""
+//   );
+
+
+// const getBrandingValue = (
+//   branding,
+//   camelKey,
+//   snakeKey,
+//   fallback
+// ) => {
+//   const value =
+//     branding?.[camelKey] ??
+//     branding?.[snakeKey];
+
+//   return value !== undefined &&
+//     value !== null &&
+//     value !== ""
+//     ? value
+//     : fallback;
+// };
+
+
+// /* =========================================================
+//    NORMALIZE BRANDING
+// ========================================================= */
+
+// const normalizeBranding = (
+//   branding = {}
+// ) => ({
+//   navbarColor: getBrandingValue(
+//     branding,
+//     "navbarColor",
+//     "navbar_color",
+//     DEFAULT_BRANDING.navbarColor
+//   ),
+
+//   headingColor: getBrandingValue(
+//     branding,
+//     "headingColor",
+//     "heading_color",
+//     DEFAULT_BRANDING.headingColor
+//   ),
+
+//   subheadingColor: getBrandingValue(
+//     branding,
+//     "subheadingColor",
+//     "subheading_color",
+//     DEFAULT_BRANDING.subheadingColor
+//   ),
+
+//   textColor: getBrandingValue(
+//     branding,
+//     "textColor",
+//     "text_color",
+//     DEFAULT_BRANDING.textColor
+//   ),
+
+//   iconColor: getBrandingValue(
+//     branding,
+//     "iconColor",
+//     "icon_color",
+//     DEFAULT_BRANDING.iconColor
+//   ),
+
+//   buttonColor: getBrandingValue(
+//     branding,
+//     "buttonColor",
+//     "button_color",
+//     DEFAULT_BRANDING.buttonColor
+//   ),
+
+//   buttonTextColor: getBrandingValue(
+//     branding,
+//     "buttonTextColor",
+//     "button_text_color",
+//     DEFAULT_BRANDING.buttonTextColor
+//   ),
+
+//   pageBackgroundColor: getBrandingValue(
+//     branding,
+//     "pageBackgroundColor",
+//     "page_background_color",
+//     DEFAULT_BRANDING.pageBackgroundColor
+//   ),
+
+//   cardBackgroundColor: getBrandingValue(
+//     branding,
+//     "cardBackgroundColor",
+//     "card_background_color",
+//     DEFAULT_BRANDING.cardBackgroundColor
+//   ),
+
+//   footerBackgroundColor: getBrandingValue(
+//     branding,
+//     "footerBackgroundColor",
+//     "footer_background_color",
+//     DEFAULT_BRANDING.footerBackgroundColor
+//   ),
+
+//   footerHeadingColor: getBrandingValue(
+//     branding,
+//     "footerHeadingColor",
+//     "footer_heading_color",
+//     DEFAULT_BRANDING.footerHeadingColor
+//   ),
+
+//   footerTextColor: getBrandingValue(
+//     branding,
+//     "footerTextColor",
+//     "footer_text_color",
+//     DEFAULT_BRANDING.footerTextColor
+//   ),
+
+//   fontHeading: getBrandingValue(
+//     branding,
+//     "fontHeading",
+//     "font_heading",
+//     DEFAULT_BRANDING.fontHeading
+//   ),
+
+//   fontSubheading: getBrandingValue(
+//     branding,
+//     "fontSubheading",
+//     "font_subheading",
+//     DEFAULT_BRANDING.fontSubheading
+//   ),
+
+//   fontBody: getBrandingValue(
+//     branding,
+//     "fontBody",
+//     "font_body",
+//     DEFAULT_BRANDING.fontBody
+//   ),
+
+//   headingWeight: getBrandingValue(
+//     branding,
+//     "headingWeight",
+//     "heading_weight",
+//     DEFAULT_BRANDING.headingWeight
+//   ),
+
+//   headingLineHeight: getBrandingValue(
+//     branding,
+//     "headingLineHeight",
+//     "heading_line_height",
+//     DEFAULT_BRANDING.headingLineHeight
+//   ),
+
+//   headingLetterSpacing: getBrandingValue(
+//     branding,
+//     "headingLetterSpacing",
+//     "heading_letter_spacing",
+//     DEFAULT_BRANDING.headingLetterSpacing
+//   ),
+
+//   subheadingWeight: getBrandingValue(
+//     branding,
+//     "subheadingWeight",
+//     "subheading_weight",
+//     DEFAULT_BRANDING.subheadingWeight
+//   ),
+
+//   subheadingLineHeight: getBrandingValue(
+//     branding,
+//     "subheadingLineHeight",
+//     "subheading_line_height",
+//     DEFAULT_BRANDING.subheadingLineHeight
+//   ),
+
+//   bodyWeight: getBrandingValue(
+//     branding,
+//     "bodyWeight",
+//     "body_weight",
+//     DEFAULT_BRANDING.bodyWeight
+//   ),
+
+//   bodyLineHeight: getBrandingValue(
+//     branding,
+//     "bodyLineHeight",
+//     "body_line_height",
+//     DEFAULT_BRANDING.bodyLineHeight
+//   ),
+
+//   bodyLetterSpacing: getBrandingValue(
+//     branding,
+//     "bodyLetterSpacing",
+//     "body_letter_spacing",
+//     DEFAULT_BRANDING.bodyLetterSpacing
+//   ),
+
+//   roundedButtons: getBrandingValue(
+//     branding,
+//     "roundedButtons",
+//     "rounded_buttons",
+//     DEFAULT_BRANDING.roundedButtons
+//   ),
+// });
+
+
+// /* =========================================================
+//    NORMALIZE CONTENT
+// ========================================================= */
+
+// const normalizeContent = (
+//   content = {}
+// ) => {
+//   const source =
+//     content?.trainers ||
+//     content?.trainer ||
+//     content?.Trainers ||
+//     {};
+
+//   return {
+//     trainers: {
+//       eyebrow: firstValue(
+//         source?.eyebrow,
+//         source?.eyebrow_text,
+//         source?.label,
+//         DEFAULT_CONTENT.trainers.eyebrow
+//       ),
+
+//       heading: firstValue(
+//         source?.heading,
+//         source?.title,
+//         source?.page_heading,
+//         DEFAULT_CONTENT.trainers.heading
+//       ),
+
+//       subheading: firstValue(
+//         source?.subheading,
+//         source?.subtitle,
+//         source?.page_subheading,
+//         DEFAULT_CONTENT.trainers.subheading
+//       ),
+//     },
+//   };
+// };
+
+
+// /* =========================================================
+//    NORMALIZE SECTIONS
+// ========================================================= */
+
+// const normalizeSections = (
+//   sections = {}
+// ) => {
+//   const source =
+//     sections?.trainers ||
+//     sections?.trainer ||
+//     sections?.Trainers ||
+//     {};
+
+//   const visible =
+//     source?.visible ??
+//     source?.is_visible ??
+//     source?.isVisible ??
+//     sections?.trainers_visible ??
+//     sections?.trainer_visible;
+
+//   if (
+//     visible === false ||
+//     visible === 0 ||
+//     visible === "0" ||
+//     visible === "false"
+//   ) {
+//     return {
+//       trainers: {
+//         visible: false,
+//       },
+//     };
+//   }
+
+//   if (
+//     visible === true ||
+//     visible === 1 ||
+//     visible === "1" ||
+//     visible === "true"
+//   ) {
+//     return {
+//       trainers: {
+//         visible: true,
+//       },
+//     };
+//   }
+
+//   return DEFAULT_SECTIONS;
+// };
+
+
+// /* =========================================================
+//    FONT
+// ========================================================= */
+
+// const fontFamily = (
+//   font
+// ) =>
+//   font
+//     ? `'${font}', sans-serif`
+//     : "Inter, sans-serif";
+
+
+// /* =========================================================
+//    BUTTON RADIUS
+// ========================================================= */
+
+// const getButtonRadius = (
+//   branding,
+//   large = false
+// ) => {
+//   if (branding.roundedButtons) {
+//     return "9999px";
+//   }
+
+//   return large
+//     ? "12px"
+//     : "8px";
+// };
+
+
+// /* =========================================================
+//    HEX TO RGBA
+// ========================================================= */
+
+// const hexToRgba = (
+//   color,
+//   alpha
+// ) => {
+//   if (
+//     typeof color !== "string"
+//   ) {
+//     return color;
+//   }
+
+//   const hex =
+//     color.replace("#", "");
+
+//   if (
+//     !/^[0-9A-Fa-f]{6}$/.test(hex)
+//   ) {
+//     return color;
+//   }
+
+//   const r = parseInt(
+//     hex.substring(0, 2),
+//     16
+//   );
+
+//   const g = parseInt(
+//     hex.substring(2, 4),
+//     16
+//   );
+
+//   const b = parseInt(
+//     hex.substring(4, 6),
+//     16
+//   );
+
+//   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+// };
+
+
+// /* =========================================================
+//    ARRAY HELPER
+// ========================================================= */
+
+// const toArray = (
+//   value
+// ) => {
+//   if (
+//     Array.isArray(value)
+//   ) {
+//     return value;
+//   }
+
+//   if (
+//     typeof value === "string"
+//   ) {
+//     try {
+//       const parsed =
+//         JSON.parse(value);
+
+//       if (
+//         Array.isArray(parsed)
+//       ) {
+//         return parsed;
+//       }
+//     } catch {
+//       // fallback
+//     }
+
+//     return value
+//       .split(",")
+//       .map(
+//         (item) =>
+//           item.trim()
+//       )
+//       .filter(Boolean);
+//   }
+
+//   return [];
+// };
+
+
+// /* =========================================================
+//    CARD
+// ========================================================= */
+
+// const Card = ({
+//   children,
+//   className = "",
+//   style = {},
+//   ...props
+// }) => (
+//   <div
+//     className={className}
+//     style={style}
+//     {...props}
+//   >
+//     {children}
+//   </div>
+// );
+
+
+// /* =========================================================
+//    BUTTON
+// ========================================================= */
+
+// const Button = ({
+//   children,
+//   variant = "solid",
+//   fullWidth = false,
+//   size = "md",
+//   className = "",
+//   type = "button",
+//   branding,
+//   style = {},
+//   ...props
+// }) => {
+
+//   const sizes = {
+//     sm: "px-4 py-2 text-sm",
+//     md: "px-5 py-2.5 text-sm",
+//     lg: "px-6 py-3 text-base",
+//   };
+
+//   const sizeClass =
+//     sizes[size] || sizes.md;
+
+//   const baseStyle = {
+//     display:
+//       "inline-flex",
+
+//     alignItems:
+//       "center",
+
+//     justifyContent:
+//       "center",
+
+//     width:
+//       fullWidth
+//         ? "100%"
+//         : undefined,
+
+//     borderRadius:
+//       getButtonRadius(
+//         branding,
+//         size === "lg"
+//       ),
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontBody
+//       ),
+
+//     fontWeight:
+//       branding.bodyWeight,
+
+//     lineHeight:
+//       branding.bodyLineHeight,
+
+//     letterSpacing:
+//       branding.bodyLetterSpacing,
+
+//     transition:
+//       "all 0.3s ease",
+
+//     cursor:
+//       "pointer",
+
+//     ...(variant ===
+//     "outline"
+//       ? {
+//           backgroundColor:
+//             branding.cardBackgroundColor,
+
+//           color:
+//             branding.buttonColor,
+
+//           border:
+//             `1px solid ${branding.buttonColor}`,
+//         }
+//       : {
+//           backgroundColor:
+//             branding.buttonColor,
+
+//           color:
+//             branding.buttonTextColor,
+
+//           border:
+//             `1px solid ${branding.buttonColor}`,
+//         }),
+
+//     ...style,
+//   };
+
+//   return (
+//     <button
+//       type={type}
+//       className={[
+//         "font-semibold",
+//         sizeClass,
+//         className,
+//       ].join(" ")}
+//       style={baseStyle}
+//       {...props}
+//     >
+//       {children}
+//     </button>
+//   );
+// };
+
+
+// /* =========================================================
+//    MAIN COMPONENT
+// ========================================================= */
+
+// const WebsiteTrainers = () => {
+
+//   const outletContext =
+//     useOutletContext() || {};
+
+//   const navigate =
+//     useNavigate();
+
+//   /* =======================================================
+//      CONTENT
+//   ======================================================= */
+
+//   const content =
+//     useMemo(
+//       () =>
+//         normalizeContent(
+//           outletContext?.content ||
+//             outletContext?.websiteContent ||
+//             outletContext?.contents ||
+//             {}
+//         ),
+//       [
+//         outletContext?.content,
+//         outletContext?.websiteContent,
+//         outletContext?.contents,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      SECTIONS
+//   ======================================================= */
+
+//   const sections =
+//     useMemo(
+//       () =>
+//         normalizeSections(
+//           outletContext?.sections ||
+//             outletContext?.websiteSections ||
+//             {}
+//         ),
+//       [
+//         outletContext?.sections,
+//         outletContext?.websiteSections,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      BRANDING
+//   ======================================================= */
+
+//   const branding =
+//     useMemo(
+//       () =>
+//         normalizeBranding(
+//           outletContext?.branding ||
+//             outletContext?.websiteBranding ||
+//             outletContext?.brand ||
+//             {}
+//         ),
+//       [
+//         outletContext?.branding,
+//         outletContext?.websiteBranding,
+//         outletContext?.brand,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      SECTION VISIBILITY
+//   ======================================================= */
+
+//   const trainersVisible =
+//     sections?.trainers?.visible !==
+//     false;
+
+
+//   /* =======================================================
+//      DATA
+//   ======================================================= */
+
+//   const outletTrainers =
+//     outletContext?.trainers ||
+//     [];
+
+//   const outletBanners =
+//     outletContext?.banners ||
+//     [];
+
+
+//   const [
+//     trainers,
+//     setTrainers,
+//   ] = useState([]);
+
+
+//   const [
+//     banners,
+//     setBanners,
+//   ] = useState([]);
+
+
+//   const [
+//     loading,
+//     setLoading,
+//   ] = useState(true);
+
+
+//   const [
+//     searchQuery,
+//     setSearchQuery,
+//   ] = useState("");
+
+
+//   const [
+//     filterSpecialty,
+//     setFilterSpecialty,
+//   ] = useState("all");
+
+
+//   /* =======================================================
+//      SYNC
+//   ======================================================= */
+
+//   useEffect(() => {
+
+//     setTrainers(
+//       Array.isArray(
+//         outletTrainers
+//       )
+//         ? outletTrainers
+//         : []
+//     );
+
+//     setBanners(
+//       Array.isArray(
+//         outletBanners
+//       )
+//         ? outletBanners
+//         : []
+//     );
+
+//     setLoading(false);
+
+//   }, [
+//     outletTrainers,
+//     outletBanners,
+//   ]);
+
+
+//   /* =======================================================
+//      SKILLS
+//   ======================================================= */
+
+//   const getSkills = (
+//     trainer
+//   ) =>
+//     toArray(
+//       trainer?.skills
+//     );
+
+
+//   /* =======================================================
+//      SPECIALTIES
+//   ======================================================= */
+
+//   const specialties =
+//     useMemo(
+//       () => {
+
+//         const values =
+//           trainers.flatMap(
+//             (trainer) =>
+//               getSkills(
+//                 trainer
+//               )
+//           );
+
+//         return [
+//           "all",
+//           ...Array.from(
+//             new Set(
+//               values
+//                 .map(
+//                   (skill) =>
+//                     String(
+//                       skill
+//                     ).trim()
+//                 )
+//                 .filter(
+//                   Boolean
+//                 )
+//             )
+//           ),
+//         ];
+//       },
+//       [
+//         trainers,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      FILTERED TRAINERS
+//   ======================================================= */
+
+//   const filteredTrainers =
+//     useMemo(
+//       () => {
+
+//         const query =
+//           searchQuery
+//             .trim()
+//             .toLowerCase();
+
+//         const filtered =
+//           trainers.filter(
+//             (trainer) => {
+
+//               const fullName =
+//                 String(
+//                   trainer?.full_name ||
+//                     ""
+//                 ).toLowerCase();
+
+//               const bio =
+//                 String(
+//                   trainer?.bio ||
+//                     ""
+//                 ).toLowerCase();
+
+//               const skills =
+//                 getSkills(
+//                   trainer
+//                 ).map(
+//                   (skill) =>
+//                     String(
+//                       skill
+//                     )
+//                       .trim()
+//                       .toLowerCase()
+//                 );
+
+
+//               const matchesSearch =
+//                 !query ||
+//                 fullName.includes(
+//                   query
+//                 ) ||
+//                 bio.includes(
+//                   query
+//                 ) ||
+//                 skills.some(
+//                   (skill) =>
+//                     skill.includes(
+//                       query
+//                     )
+//                 );
+
+
+//               const matchesSpecialty =
+//                 filterSpecialty ===
+//                   "all" ||
+//                 skills.includes(
+//                   String(
+//                     filterSpecialty
+//                   ).toLowerCase()
+//                 );
+
+
+//               return (
+//                 matchesSearch &&
+//                 matchesSpecialty
+//               );
+//             }
+//           );
+
+//         // IMPORTANT:
+//         // Website Trainers page must display
+//         // all trainers with 4 trainers per row on desktop.
+//         return filtered;
+
+//       },
+//       [
+//         trainers,
+//         searchQuery,
+//         filterSpecialty,
+//       ]
+//     );
+
+
+//   /* =======================================================
+//      STYLES
+//   ======================================================= */
+
+//   const headingStyle = {
+//     color:
+//       branding.headingColor,
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontHeading
+//       ),
+
+//     fontWeight:
+//       branding.headingWeight,
+
+//     lineHeight:
+//       branding.headingLineHeight,
+
+//     letterSpacing:
+//       branding.headingLetterSpacing,
+//   };
+
+
+//   const subheadingStyle = {
+//     color:
+//       branding.subheadingColor,
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontSubheading
+//       ),
+
+//     fontWeight:
+//       branding.subheadingWeight,
+
+//     lineHeight:
+//       branding.subheadingLineHeight,
+//   };
+
+
+//   const bodyStyle = {
+//     color:
+//       branding.textColor,
+
+//     fontFamily:
+//       fontFamily(
+//         branding.fontBody
+//       ),
+
+//     fontWeight:
+//       branding.bodyWeight,
+
+//     lineHeight:
+//       branding.bodyLineHeight,
+
+//     letterSpacing:
+//       branding.bodyLetterSpacing,
+//   };
+
+
+//   /* =======================================================
+//      HIDDEN
+//   ======================================================= */
+
+//   if (
+//     !trainersVisible
+//   ) {
+//     return null;
+//   }
+
+
+//   /* =======================================================
+//      LOADING
+//   ======================================================= */
+
+//   if (loading) {
+
+//     return (
+//       <div
+//         className="
+//           min-h-screen
+//           flex
+//           items-center
+//           justify-center
+//         "
+//         style={{
+//           backgroundColor:
+//             branding.pageBackgroundColor,
+//         }}
+//       >
+
+//         <div
+//           className="
+//             h-10
+//             w-10
+//             animate-spin
+//             rounded-full
+//             border-4
+//           "
+//           style={{
+//             borderColor:
+//               hexToRgba(
+//                 branding.buttonColor,
+//                 0.20
+//               ),
+
+//             borderTopColor:
+//               branding.buttonColor,
+//           }}
+//         />
+
+//       </div>
+//     );
+//   }
+
+
+//   /* =======================================================
+//      PAGE
+//   ======================================================= */
+
+//   return (
+//     <div
+//       className="
+//         min-h-screen
+//         pb-20
+//       "
+//       style={{
+//         backgroundColor:
+//           branding.pageBackgroundColor,
+
+//         color:
+//           branding.textColor,
+
+//         fontFamily:
+//           fontFamily(
+//             branding.fontBody
+//           ),
+//       }}
+//     >
+
+//       {/* ===================================================
+//           BANNER
+//       =================================================== */}
+
+//       {banners.length >
+//         0 &&
+//         (() => {
+
+//           const trainerBanner =
+//             banners.find(
+//               (banner) => {
+
+//                 const value =
+//                   String(
+//                     firstValue(
+//                       banner?.page,
+//                       banner?.page_name,
+//                       banner?.pageName,
+//                       banner?.page_type,
+//                       banner?.pageType,
+//                       banner?.section,
+//                       banner?.banner_type,
+//                       banner?.bannerType
+//                     ) || ""
+//                   ).toLowerCase();
+
+//                 return (
+//                   value.includes(
+//                     "trainer"
+//                   ) ||
+//                   value.includes(
+//                     "teacher"
+//                   ) ||
+//                   value.includes(
+//                     "faculty"
+//                   )
+//                 );
+//               }
+//             ) ||
+//             banners[0];
+
+
+//           const image =
+//             firstValue(
+//               trainerBanner?.image_url,
+//               trainerBanner?.imageUrl,
+//               trainerBanner?.banner_url,
+//               trainerBanner?.bannerUrl,
+//               trainerBanner?.desktop_image_url,
+//               trainerBanner?.desktopImageUrl,
+//               trainerBanner?.image,
+//               trainerBanner?.url
+//             );
+
+
+//           if (!image) {
+//             return null;
+//           }
+
+
+//           return (
+//             <section
+//               className="
+//                 relative
+//                 h-[430px]
+//                 overflow-hidden
+//                 md:h-[430px]
+//               "
+//             >
+
+//               <img
+//                 src={image}
+//                 alt="Trainers"
+//                 className="
+//                   absolute
+//                   inset-0
+//                   h-full
+//                   w-full
+//                   object-cover
+//                 "
+//                 onError={(
+//                   event
+//                 ) => {
+
+//                   event.currentTarget.style.display =
+//                     "none";
+
+//                 }}
+//               />
+
+//             </section>
+//           );
+
+//         })()}
+
+
+//       {/* ===================================================
+//           TRAINERS CONTENT
+//       =================================================== */}
+
+//       <section
+//         id="trainers"
+//         className="
+//           mx-auto
+//           max-w-7xl
+//           px-4
+//           pt-12
+//           sm:px-6
+//           lg:px-8
+//         "
+//       >
+// {/* =================================================
+//     DYNAMIC CONTENT
+// ================================================= */}
+
+// <div className="mb-8 text-center">
+
+//   {/* HEADING */}
+//   <h1
+//     className="
+//       text-3xl
+//       md:text-4xl
+//     "
+//     style={headingStyle}
+//   >
+//     {content?.trainers?.heading || "Our Trainers"}
+//   </h1>
+
+//   {/* SUBHEADING */}
+//   {content?.trainers?.subheading && (
+//     <p
+//       className="
+//         mx-auto
+//         mt-3
+//         max-w-2xl
+//       "
+//       style={{
+//         ...bodyStyle,
+//         opacity: 0.65,
+//       }}
+//     >
+//       {content.trainers.subheading}
+//     </p>
+//   )}
+
+// </div>
+
+
+//         {/* =================================================
+//             SEARCH / FILTER
+//         ================================================= */}
+
+//         <div
+//           className="
+//             mb-10
+//             flex
+//             flex-col
+//             gap-4
+//             lg:flex-row
+//           "
+//         >
+
+//           {/* SEARCH */}
+
+//           <div
+//             className="
+//               relative
+//               flex-1
+//             "
+//           >
+
+//             <FaSearch
+//               className="
+//                 absolute
+//                 left-4
+//                 top-1/2
+//                 -translate-y-1/2
+//               "
+//               style={{
+//                 color:
+//                   hexToRgba(
+//                     branding.textColor,
+//                     0.45
+//                   ),
+//               }}
+//             />
+
+
+//             <input
+//               type="text"
+//               value={
+//                 searchQuery
+//               }
+//               onChange={(
+//                 event
+//               ) =>
+//                 setSearchQuery(
+//                   event.target.value
+//                 )
+//               }
+//               placeholder="Search trainers..."
+//               className="
+//                 h-14
+//                 w-full
+//                 border
+//                 px-12
+//                 pr-4
+//                 outline-none
+//               "
+//               style={{
+//                 backgroundColor:
+//                   branding.cardBackgroundColor,
+
+//                 color:
+//                   branding.textColor,
+
+//                 borderColor:
+//                   hexToRgba(
+//                     branding.textColor,
+//                     0.15
+//                   ),
+
+//                 borderRadius:
+//                   "12px",
+
+//                 fontFamily:
+//                   fontFamily(
+//                     branding.fontBody
+//                   ),
+//               }}
+//             />
+
+//           </div>
+
+
+//           {/* FILTER */}
+
+//           <div
+//             className="
+//               relative
+//               lg:w-[260px]
+//             "
+//           >
+
+//             <select
+//               value={
+//                 filterSpecialty
+//               }
+//               onChange={(
+//                 event
+//               ) =>
+//                 setFilterSpecialty(
+//                   event.target.value
+//                 )
+//               }
+//               className="
+//                 h-14
+//                 w-full
+//                 appearance-none
+//                 border
+//                 px-4
+//                 pr-10
+//                 outline-none
+//                 cursor-pointer
+//               "
+//               style={{
+//                 backgroundColor:
+//                   branding.cardBackgroundColor,
+
+//                 color:
+//                   branding.textColor,
+
+//                 borderColor:
+//                   hexToRgba(
+//                     branding.textColor,
+//                     0.15
+//                   ),
+
+//                 borderRadius:
+//                   "12px",
+
+//                 fontFamily:
+//                   fontFamily(
+//                     branding.fontBody
+//                   ),
+//               }}
+//             >
+
+//               {specialties.map(
+//                 (
+//                   specialty
+//                 ) => (
+
+//                   <option
+//                     key={
+//                       specialty
+//                     }
+//                     value={
+//                       specialty
+//                     }
+//                   >
+//                     {specialty ===
+//                     "all"
+//                       ? "All Specialties"
+//                       : specialty}
+//                   </option>
+
+//                 )
+//               )}
+
+//             </select>
+
+
+//             <FaChevronDown
+//               className="
+//                 pointer-events-none
+//                 absolute
+//                 right-4
+//                 top-1/2
+//                 -translate-y-1/2
+//               "
+//               style={{
+//                 color:
+//                   hexToRgba(
+//                     branding.textColor,
+//                     0.45
+//                   ),
+//               }}
+//             />
+
+//           </div>
+
+//         </div>
+
+
+//         {/* =================================================
+//             NO RESULTS
+//         ================================================= */}
+
+//         {filteredTrainers.length ===
+//         0 ? (
+
+//           <div
+//             className="
+//               rounded-2xl
+//               border
+//               py-20
+//               text-center
+//             "
+//             style={{
+//               backgroundColor:
+//                 branding.cardBackgroundColor,
+
+//               borderColor:
+//                 hexToRgba(
+//                   branding.textColor,
+//                   0.12
+//                 ),
+//             }}
+//           >
+
+//             <h2
+//               className="
+//                 text-xl
+//               "
+//               style={
+//                 headingStyle
+//               }
+//             >
+//               No trainers found
+//             </h2>
+
+
+//             <p
+//               className="
+//                 mt-2
+//               "
+//               style={{
+//                 ...bodyStyle,
+//                 opacity: 0.65,
+//               }}
+//             >
+//               Try another search
+//               term or specialty.
+//             </p>
+
+
+//             <Button
+//               branding={
+//                 branding
+//               }
+//               size="md"
+//               className="mt-5"
+//               onClick={() => {
+
+//                 setSearchQuery(
+//                   ""
+//                 );
+
+//                 setFilterSpecialty(
+//                   "all"
+//                 );
+
+//               }}
+//             >
+//               Clear Filters
+//             </Button>
+
+//           </div>
+
+//         ) : (
+
+//           /* =================================================
+//              TRAINER GRID
+//              Show all trainers with 4 trainers per row on desktop.
+//           ================================================= */
+
+//           <div className="w-full">
+
+//             <div
+//               className="
+//                 grid
+//                 w-full
+//                 grid-cols-1
+//                 gap-6
+//                 sm:grid-cols-2
+//                 lg:grid-cols-4
+//               "
+//             >
+
+//               {filteredTrainers.map(
+//                 (trainer) => {
+
+//                   const skills =
+//                     getSkills(
+//                       trainer
+//                     );
+
+//                   const rating =
+//                     Number(
+//                       trainer?.rating ||
+//                         0
+//                     );
+
+//                   const experience =
+//                     Number(
+//                       trainer?.experience_years ||
+//                         0
+//                     );
+
+//                   const students =
+//                     Number(
+//                       trainer?.total_students ||
+//                         0
+//                     );
+
+//                   const reviews =
+//                     Number(
+//                       trainer?.total_reviews ||
+//                         0
+//                     );
+
+//                   const trainerId =
+//                     trainer?.id ||
+//                     trainer?._id;
+
+
+//                   return (
+//                     <div
+//                       key={trainerId}
+//                       className="
+//                         w-full
+//                       "
+//                     >
+
+//                       <Card
+//                         className="
+//                           group
+//                           flex
+//                           h-full
+//                           min-h-[430px]
+//                           flex-col
+//                           overflow-hidden
+//                           p-0
+//                           transition-all
+//                           duration-500
+//                           hover:-translate-y-1
+//                         "
+//                         style={{
+//                           backgroundColor:
+//                             branding.cardBackgroundColor,
+
+//                           border:
+//                             `1px solid ${hexToRgba(
+//                               branding.textColor,
+//                               0.08
+//                             )}`,
+
+//                           borderRadius:
+//                             "18px",
+
+//                           boxShadow:
+//                             "0 10px 30px rgba(0,0,0,0.06)",
+//                         }}
+//                       >
+
+//                         {/* =================================================
+//                             SECTION 1: TRAINER IMAGE
+//                         ================================================= */}
+
+//                         <div
+//                           className="
+//                             relative
+//                             flex
+//                             items-center
+//                             justify-center
+//                             py-5
+//                           "
+//                           style={{
+//                             background:
+//                               `linear-gradient(to bottom, ${hexToRgba(
+//                                 branding.buttonColor,
+//                                 0.04
+//                               )}, transparent)`,
+//                           }}
+//                         >
+
+//                           <div
+//                             className="
+//                               absolute
+//                               h-28
+//                               w-28
+//                               rounded-full
+//                               blur-2xl
+//                               transition-all
+//                               duration-500
+//                               group-hover:scale-110
+//                             "
+//                             style={{
+//                               backgroundColor:
+//                                 hexToRgba(
+//                                   branding.buttonColor,
+//                                   0
+//                                 ),
+//                             }}
+//                           />
+
+//                           <div
+//                             className="
+//                               relative
+//                               h-24
+//                               w-24
+//                               overflow-hidden
+//                               rounded-full
+//                               transition-all
+//                               duration-500
+//                               lg:h-28
+//                               lg:w-28
+//                             "
+//                             style={{
+//                               border:
+//                                 `3px solid ${hexToRgba(
+//                                   branding.textColor,
+//                                   0.10
+//                                 )}`,
+//                             }}
+//                           >
+
+//                             <img
+//                               src={
+//                                 trainer?.profile_image ||
+//                                 "https://placehold.co/400x400/png?text=Trainer"
+//                               }
+//                               alt={
+//                                 trainer?.full_name ||
+//                                 "Trainer"
+//                               }
+//                               onError={(
+//                                 event
+//                               ) => {
+
+//                                 event.currentTarget.onerror =
+//                                   null;
+
+//                                 event.currentTarget.src =
+//                                   "https://placehold.co/400x400/png?text=Trainer";
+
+//                               }}
+//                               className="
+//                                 h-full
+//                                 w-full
+//                                 object-cover
+//                                 transition-transform
+//                                 duration-700
+//                                 group-hover:scale-110
+//                               "
+//                               loading="lazy"
+//                             />
+
+//                           </div>
+
+
+//                           {/* EXPERIENCE */}
+
+//                           <div
+//                             className="
+//                               absolute
+//                               right-3
+//                               top-3
+//                             "
+//                           >
+
+//                             <span
+//                               className="
+//                                 rounded-md
+//                                 px-2
+//                                 py-0.5
+//                                 text-[8px]
+//                                 font-bold
+//                                 uppercase
+//                                 tracking-widest
+//                               "
+//                               style={{
+//                                 backgroundColor:
+//                                   hexToRgba(
+//                                     branding.textColor,
+//                                     0.08
+//                                   ),
+
+//                                 color:
+//                                   branding.textColor,
+
+//                                 border:
+//                                   `1px solid ${hexToRgba(
+//                                     branding.textColor,
+//                                     0.10
+//                                   )}`,
+
+//                                 backdropFilter:
+//                                   "blur(8px)",
+
+//                                 fontFamily:
+//                                   fontFamily(
+//                                     branding.fontBody
+//                                   ),
+//                               }}
+//                             >
+//                               {experience} yrs
+//                             </span>
+
+//                           </div>
+
+//                         </div>
+
+
+//                         {/* =================================================
+//                             SECTION 2: NAME + SKILLS
+//                         ================================================= */}
+
+//                         <div
+//                           className="
+//                             border-b
+//                             border-t
+//                             px-4
+//                             py-3
+//                           "
+//                           style={{
+//                             borderColor:
+//                               hexToRgba(
+//                                 branding.textColor,
+//                                 0.06
+//                               ),
+
+//                             backgroundColor:
+//                               hexToRgba(
+//                                 branding.textColor,
+//                                 0.01
+//                               ),
+//                           }}
+//                         >
+
+//                           <h3
+//                             className="
+//                               truncate
+//                               text-center
+//                               text-base
+//                               font-black
+//                               tracking-tight
+//                               transition-colors
+//                               duration-300
+//                             "
+//                             style={{
+//                               color:
+//                                 branding.headingColor,
+
+//                               fontFamily:
+//                                 fontFamily(
+//                                   branding.fontHeading
+//                                 ),
+
+//                               fontWeight:
+//                                 branding.headingWeight,
+
+//                               lineHeight:
+//                                 branding.headingLineHeight,
+
+//                               letterSpacing:
+//                                 branding.headingLetterSpacing,
+//                             }}
+//                           >
+//                             {trainer?.full_name || "Trainer"}
+//                           </h3>
+
+
+//                           <div
+//                             className="
+//                               mt-2
+//                               flex
+//                               min-h-[22px]
+//                               flex-wrap
+//                               items-center
+//                               justify-center
+//                               gap-1.5
+//                             "
+//                           >
+
+//                             {skills.length > 0
+//                               ? skills
+//                                   .slice(0, 2)
+//                                   .map(
+//                                     (
+//                                       skill,
+//                                       index
+//                                     ) => (
+
+//                                       <span
+//                                         key={`${skill}-${index}`}
+//                                         className="
+//                                           inline-block
+//                                           rounded-md
+//                                           px-2
+//                                           py-0.5
+//                                           text-[9px]
+//                                           font-semibold
+//                                           uppercase
+//                                           tracking-wider
+//                                         "
+//                                         style={{
+//                                           backgroundColor:
+//                                             hexToRgba(
+//                                               branding.buttonColor,
+//                                               0.10
+//                                             ),
+
+//                                           border:
+//                                             `1px solid ${hexToRgba(
+//                                               branding.buttonColor,
+//                                               0.15
+//                                             )}`,
+
+//                                           color:
+//                                             branding.buttonColor,
+
+//                                           fontFamily:
+//                                             fontFamily(
+//                                               branding.fontBody
+//                                             ),
+//                                         }}
+//                                       >
+//                                         {String(
+//                                           skill
+//                                         ).trim()}
+//                                       </span>
+
+//                                     )
+//                                   )
+//                               : (
+//                                   <span
+//                                     className="
+//                                       text-[10px]
+//                                       font-medium
+//                                       uppercase
+//                                       tracking-wider
+//                                     "
+//                                     style={{
+//                                       color:
+//                                         branding.buttonColor,
+
+//                                       fontFamily:
+//                                         fontFamily(
+//                                           branding.fontBody
+//                                         ),
+//                                     }}
+//                                   >
+//                                     Professional Trainer
+//                                   </span>
+//                                 )}
+
+//                           </div>
+
+//                         </div>
+
+
+//                         {/* =================================================
+//                             SECTION 3: DETAILS
+//                         ================================================= */}
+
+//                         <div
+//                           className="
+//                             flex
+//                             flex-1
+//                             flex-col
+//                             space-y-2.5
+//                             border-b
+//                             px-4
+//                             py-3
+//                           "
+//                           style={{
+//                             borderColor:
+//                               hexToRgba(
+//                                 branding.textColor,
+//                                 0.06
+//                               ),
+//                           }}
+//                         >
+
+//                           {/* BIO */}
+
+//                           <p
+//                             className="
+//                               min-h-[34px]
+//                               line-clamp-2
+//                               text-xs
+//                             "
+//                             style={{
+//                               color:
+//                                 branding.textColor,
+
+//                               fontFamily:
+//                                 fontFamily(
+//                                   branding.fontBody
+//                                 ),
+
+//                               fontWeight:
+//                                 branding.bodyWeight,
+
+//                               lineHeight:
+//                                 branding.bodyLineHeight,
+
+//                               letterSpacing:
+//                                 branding.bodyLetterSpacing,
+
+//                               opacity:
+//                                 0.75,
+//                             }}
+//                           >
+//                             {
+//                               trainer?.bio ||
+//                               "No bio available for this trainer."
+//                             }
+//                           </p>
+
+
+//                           {/* RATING */}
+
+//                           <div
+//                             className="
+//                               space-y-1
+//                             "
+//                           >
+
+//                             <div
+//                               className="
+//                                 flex
+//                                 items-center
+//                                 justify-between
+//                               "
+//                             >
+
+//                               <div
+//                                 className="
+//                                   flex
+//                                   items-center
+//                                   gap-0.5
+//                                 "
+//                               >
+
+//                                 {[1, 2, 3, 4, 5].map(
+//                                   (
+//                                     star
+//                                   ) => (
+
+//                                     <FaStar
+//                                       key={
+//                                         star
+//                                       }
+//                                       className="
+//                                         text-[10px]
+//                                       "
+//                                       style={{
+//                                         color:
+//                                           star <=
+//                                           Math.round(
+//                                             rating
+//                                           )
+//                                             ? branding.iconColor
+//                                             : hexToRgba(
+//                                                 branding.textColor,
+//                                                 0.15
+//                                               ),
+//                                       }}
+//                                     />
+
+//                                   )
+//                                 )}
+
+//                               </div>
+
+//                               <span
+//                                 className="
+//                                   text-xs
+//                                   font-bold
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.iconColor,
+
+//                                   fontFamily:
+//                                     fontFamily(
+//                                       branding.fontBody
+//                                     ),
+//                                 }}
+//                               >
+//                                 {rating.toFixed(1)}
+//                               </span>
+
+//                             </div>
+
+
+//                             {/* RATING BAR */}
+
+//                             <div
+//                               className="
+//                                 h-1
+//                                 w-full
+//                                 overflow-hidden
+//                                 rounded-full
+//                               "
+//                               style={{
+//                                 backgroundColor:
+//                                   hexToRgba(
+//                                     branding.textColor,
+//                                     0.05
+//                                   ),
+//                               }}
+//                             >
+
+//                               <div
+//                                 className="
+//                                   h-full
+//                                   rounded-full
+//                                   transition-all
+//                                   duration-700
+//                                 "
+//                                 style={{
+//                                   width:
+//                                     `${Math.min(
+//                                       Math.max(
+//                                         (rating / 5) *
+//                                           100,
+//                                         0
+//                                       ),
+//                                       100
+//                                     )}%`,
+
+//                                   background:
+//                                     `linear-gradient(to right, ${branding.iconColor}, ${branding.buttonColor})`,
+//                                 }}
+//                               />
+
+//                             </div>
+
+//                           </div>
+
+
+//                           {/* STUDENTS + REVIEWS */}
+
+//                           <div
+//                             className="
+//                               grid
+//                               grid-cols-2
+//                               gap-2
+//                             "
+//                           >
+
+//                             {/* STUDENTS */}
+
+//                             <div
+//                               className="
+//                                 flex
+//                                 items-center
+//                                 justify-center
+//                                 gap-1
+//                                 rounded-lg
+//                                 px-2.5
+//                                 py-2
+//                               "
+//                               style={{
+//                                 backgroundColor:
+//                                   hexToRgba(
+//                                     branding.textColor,
+//                                     0.03
+//                                   ),
+
+//                                 border:
+//                                   `1px solid ${hexToRgba(
+//                                     branding.textColor,
+//                                     0.05
+//                                   )}`,
+//                               }}
+//                             >
+
+//                               <FaUsers
+//                                 className="
+//                                   text-[10px]
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.buttonColor,
+//                                 }}
+//                               />
+
+//                               <span
+//                                 className="
+//                                   text-xs
+//                                   font-bold
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.textColor,
+
+//                                   fontFamily:
+//                                     fontFamily(
+//                                       branding.fontBody
+//                                     ),
+//                                 }}
+//                               >
+//                                 {students.toLocaleString()}
+//                               </span>
+
+//                               <span
+//                                 className="
+//                                   text-[10px]
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.textColor,
+
+//                                   opacity:
+//                                     0.75,
+
+//                                   fontFamily:
+//                                     fontFamily(
+//                                       branding.fontBody
+//                                     ),
+//                                 }}
+//                               >
+//                                 Students
+//                               </span>
+
+//                             </div>
+
+
+//                             {/* REVIEWS */}
+
+//                             <div
+//                               className="
+//                                 flex
+//                                 items-center
+//                                 justify-center
+//                                 gap-1
+//                                 rounded-lg
+//                                 px-2.5
+//                                 py-2
+//                               "
+//                               style={{
+//                                 backgroundColor:
+//                                   hexToRgba(
+//                                     branding.textColor,
+//                                     0.03
+//                                   ),
+
+//                                 border:
+//                                   `1px solid ${hexToRgba(
+//                                     branding.textColor,
+//                                     0.05
+//                                   )}`,
+//                               }}
+//                             >
+
+//                               <FaComment
+//                                 className="
+//                                   text-[10px]
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.buttonColor,
+//                                 }}
+//                               />
+
+//                               <span
+//                                 className="
+//                                   text-xs
+//                                   font-bold
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.textColor,
+
+//                                   fontFamily:
+//                                     fontFamily(
+//                                       branding.fontBody
+//                                     ),
+//                                 }}
+//                               >
+//                                 {reviews.toLocaleString()}
+//                               </span>
+
+//                               <span
+//                                 className="
+//                                   text-[10px]
+//                                 "
+//                                 style={{
+//                                   color:
+//                                     branding.textColor,
+
+//                                   opacity:
+//                                     0.75,
+
+//                                   fontFamily:
+//                                     fontFamily(
+//                                       branding.fontBody
+//                                     ),
+//                                 }}
+//                               >
+//                                 Reviews
+//                               </span>
+
+//                             </div>
+
+//                           </div>
+
+//                         </div>
+
+
+//                         {/* =================================================
+//                             SECTION 4: CTA
+//                         ================================================= */}
+
+//                         <div
+//                           className="
+//                             mt-auto
+//                             px-4
+//                             py-3
+//                           "
+//                         >
+
+//                           <Button
+//                             branding={
+//                               branding
+//                             }
+//                             variant="outline"
+//                             fullWidth
+//                             size="sm"
+//                             onClick={() => {
+
+//                               if (!trainerId) {
+
+//                                 console.error(
+//                                   "Trainer ID is missing.",
+//                                   trainer
+//                                 );
+
+//                                 return;
+//                               }
+
+//                               navigate(
+//                                 `/institute/website/preview/trainers/${trainerId}`
+//                               );
+
+//                             }}
+//                           >
+
+//                             <span
+//                               className="
+//                                 flex
+//                                 items-center
+//                                 justify-center
+//                                 gap-2
+//                               "
+//                             >
+//                               View Profile
+
+//                               <FaArrowRight
+//                                 className="
+//                                   text-[10px]
+//                                 "
+//                               />
+//                             </span>
+
+//                           </Button>
+
+//                         </div>
+
+//                       </Card>
+
+//                     </div>
+//                   );
+//                 }
+//               )}
+
+//             </div>
+
+
+//           </div>
+
+//         )}
+
+//       </section>
+
+//     </div>
+//   );
+// };
+
+
+// export default WebsiteTrainers;
+
+
+import { useMemo, useEffect, useState } from "react";
+import { FaSearch, FaStar, FaUsers, FaComment, FaArrowRight } from "react-icons/fa";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const DEFAULT_CONTENT = {
   trainers: {
-    eyebrow: "OUR TEAM",
-    heading: "Meet Our Expert Trainers",
+    eyebrow: "OUR TRAINERS",
+    heading: "Find Your Perfect Trainer",
     subheading:
-      "Find the right trainer based on expertise, experience and specialty.",
+      "Search for trainers by name and discover the right mentor for your creative journey.",
   },
 };
-
-
-/* =========================================================
-   DEFAULT SECTIONS
-========================================================= */
 
 const DEFAULT_SECTIONS = {
-  trainers: {
-    visible: true,
-  },
+  trainers: { visible: true },
 };
 
-
-/* =========================================================
-   DEFAULT BRANDING
-========================================================= */
-
 const DEFAULT_BRANDING = {
-  navbarColor: "#1F2937",
-
-  headingColor: "#111827",
-  subheadingColor: "#5B21B6",
-  textColor: "#111827",
-
-  iconColor: "#F59E0B",
-
-  buttonColor: "#7C3AED",
-  buttonTextColor: "#FFFFFF",
-
-  pageBackgroundColor: "#FAFAF9",
-  cardBackgroundColor: "#FFFFFF",
-
-  footerBackgroundColor: "#1F2937",
-  footerHeadingColor: "#FFFFFF",
-  footerTextColor: "#FAFAF9",
-
+  buttonColor: "#1688ff",
+  buttonTextColor: "#ffffff",
+  pageBackgroundColor: "#020b16",
+  cardBackgroundColor: "#041525",
+  textColor: "#e8f3ff",
+  headingColor: "#ffffff",
+  subheadingColor: "#1688ff",
+  iconColor: "#1688ff",
   fontHeading: "Inter",
   fontSubheading: "Inter",
   fontBody: "Inter",
-
-  headingWeight: 700,
+  headingWeight: 800,
   headingLineHeight: 1.15,
   headingLetterSpacing: 0,
-
-  subheadingWeight: 600,
-  subheadingLineHeight: 1.4,
-
+  subheadingWeight: 500,
+  subheadingLineHeight: 1.5,
   bodyWeight: 400,
-  bodyLineHeight: 1.6,
+  bodyLineHeight: 1.55,
   bodyLetterSpacing: 0,
-
   roundedButtons: true,
 };
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 const firstValue = (...values) =>
   values.find(
@@ -9979,209 +12231,84 @@ const firstValue = (...values) =>
       String(value).trim() !== ""
   );
 
-
-const getBrandingValue = (
-  branding,
-  camelKey,
-  snakeKey,
-  fallback
-) => {
-  const value =
-    branding?.[camelKey] ??
-    branding?.[snakeKey];
-
-  return value !== undefined &&
-    value !== null &&
-    value !== ""
+const getBrandingValue = (branding, camelKey, snakeKey, fallback) => {
+  const value = branding?.[camelKey] ?? branding?.[snakeKey];
+  return value !== undefined && value !== null && value !== ""
     ? value
     : fallback;
 };
 
-
-/* =========================================================
-   NORMALIZE BRANDING
-========================================================= */
-
-const normalizeBranding = (
-  branding = {}
-) => ({
-  navbarColor: getBrandingValue(
-    branding,
-    "navbarColor",
-    "navbar_color",
-    DEFAULT_BRANDING.navbarColor
-  ),
-
-  headingColor: getBrandingValue(
-    branding,
-    "headingColor",
-    "heading_color",
-    DEFAULT_BRANDING.headingColor
-  ),
-
-  subheadingColor: getBrandingValue(
-    branding,
-    "subheadingColor",
-    "subheading_color",
-    DEFAULT_BRANDING.subheadingColor
-  ),
-
-  textColor: getBrandingValue(
-    branding,
-    "textColor",
-    "text_color",
-    DEFAULT_BRANDING.textColor
-  ),
-
-  iconColor: getBrandingValue(
-    branding,
-    "iconColor",
-    "icon_color",
-    DEFAULT_BRANDING.iconColor
-  ),
-
+const normalizeBranding = (branding = {}) => ({
+  ...DEFAULT_BRANDING,
   buttonColor: getBrandingValue(
     branding,
     "buttonColor",
     "button_color",
     DEFAULT_BRANDING.buttonColor
   ),
-
   buttonTextColor: getBrandingValue(
     branding,
     "buttonTextColor",
     "button_text_color",
     DEFAULT_BRANDING.buttonTextColor
   ),
-
   pageBackgroundColor: getBrandingValue(
     branding,
     "pageBackgroundColor",
     "page_background_color",
     DEFAULT_BRANDING.pageBackgroundColor
   ),
-
   cardBackgroundColor: getBrandingValue(
     branding,
     "cardBackgroundColor",
     "card_background_color",
     DEFAULT_BRANDING.cardBackgroundColor
   ),
-
-  footerBackgroundColor: getBrandingValue(
+  textColor: getBrandingValue(
     branding,
-    "footerBackgroundColor",
-    "footer_background_color",
-    DEFAULT_BRANDING.footerBackgroundColor
+    "textColor",
+    "text_color",
+    DEFAULT_BRANDING.textColor
   ),
-
-  footerHeadingColor: getBrandingValue(
+  headingColor: getBrandingValue(
     branding,
-    "footerHeadingColor",
-    "footer_heading_color",
-    DEFAULT_BRANDING.footerHeadingColor
+    "headingColor",
+    "heading_color",
+    DEFAULT_BRANDING.headingColor
   ),
-
-  footerTextColor: getBrandingValue(
+  subheadingColor: getBrandingValue(
     branding,
-    "footerTextColor",
-    "footer_text_color",
-    DEFAULT_BRANDING.footerTextColor
+    "subheadingColor",
+    "subheading_color",
+    DEFAULT_BRANDING.subheadingColor
   ),
-
+  iconColor: getBrandingValue(
+    branding,
+    "iconColor",
+    "icon_color",
+    DEFAULT_BRANDING.iconColor
+  ),
   fontHeading: getBrandingValue(
     branding,
     "fontHeading",
     "font_heading",
     DEFAULT_BRANDING.fontHeading
   ),
-
   fontSubheading: getBrandingValue(
     branding,
     "fontSubheading",
     "font_subheading",
     DEFAULT_BRANDING.fontSubheading
   ),
-
   fontBody: getBrandingValue(
     branding,
     "fontBody",
     "font_body",
     DEFAULT_BRANDING.fontBody
   ),
-
-  headingWeight: getBrandingValue(
-    branding,
-    "headingWeight",
-    "heading_weight",
-    DEFAULT_BRANDING.headingWeight
-  ),
-
-  headingLineHeight: getBrandingValue(
-    branding,
-    "headingLineHeight",
-    "heading_line_height",
-    DEFAULT_BRANDING.headingLineHeight
-  ),
-
-  headingLetterSpacing: getBrandingValue(
-    branding,
-    "headingLetterSpacing",
-    "heading_letter_spacing",
-    DEFAULT_BRANDING.headingLetterSpacing
-  ),
-
-  subheadingWeight: getBrandingValue(
-    branding,
-    "subheadingWeight",
-    "subheading_weight",
-    DEFAULT_BRANDING.subheadingWeight
-  ),
-
-  subheadingLineHeight: getBrandingValue(
-    branding,
-    "subheadingLineHeight",
-    "subheading_line_height",
-    DEFAULT_BRANDING.subheadingLineHeight
-  ),
-
-  bodyWeight: getBrandingValue(
-    branding,
-    "bodyWeight",
-    "body_weight",
-    DEFAULT_BRANDING.bodyWeight
-  ),
-
-  bodyLineHeight: getBrandingValue(
-    branding,
-    "bodyLineHeight",
-    "body_line_height",
-    DEFAULT_BRANDING.bodyLineHeight
-  ),
-
-  bodyLetterSpacing: getBrandingValue(
-    branding,
-    "bodyLetterSpacing",
-    "body_letter_spacing",
-    DEFAULT_BRANDING.bodyLetterSpacing
-  ),
-
-  roundedButtons: getBrandingValue(
-    branding,
-    "roundedButtons",
-    "rounded_buttons",
-    DEFAULT_BRANDING.roundedButtons
-  ),
 });
 
-
-/* =========================================================
-   NORMALIZE CONTENT
-========================================================= */
-
-const normalizeContent = (
-  content = {}
-) => {
+const normalizeContent = (content = {}) => {
   const source =
     content?.trainers ||
     content?.trainer ||
@@ -10196,14 +12323,12 @@ const normalizeContent = (
         source?.label,
         DEFAULT_CONTENT.trainers.eyebrow
       ),
-
       heading: firstValue(
         source?.heading,
         source?.title,
         source?.page_heading,
         DEFAULT_CONTENT.trainers.heading
       ),
-
       subheading: firstValue(
         source?.subheading,
         source?.subtitle,
@@ -10214,14 +12339,7 @@ const normalizeContent = (
   };
 };
 
-
-/* =========================================================
-   NORMALIZE SECTIONS
-========================================================= */
-
-const normalizeSections = (
-  sections = {}
-) => {
+const normalizeSections = (sections = {}) => {
   const source =
     sections?.trainers ||
     sections?.trainer ||
@@ -10241,1943 +12359,410 @@ const normalizeSections = (
     visible === "0" ||
     visible === "false"
   ) {
-    return {
-      trainers: {
-        visible: false,
-      },
-    };
+    return { trainers: { visible: false } };
   }
 
-  if (
-    visible === true ||
-    visible === 1 ||
-    visible === "1" ||
-    visible === "true"
-  ) {
-    return {
-      trainers: {
-        visible: true,
-      },
-    };
-  }
-
-  return DEFAULT_SECTIONS;
+  return { trainers: { visible: true } };
 };
 
+const fontFamily = (font) => (font ? `'${font}', sans-serif` : "Inter, sans-serif");
 
-/* =========================================================
-   FONT
-========================================================= */
-
-const fontFamily = (
-  font
-) =>
-  font
-    ? `'${font}', sans-serif`
-    : "Inter, sans-serif";
-
-
-/* =========================================================
-   BUTTON RADIUS
-========================================================= */
-
-const getButtonRadius = (
-  branding,
-  large = false
-) => {
-  if (branding.roundedButtons) {
-    return "9999px";
-  }
-
-  return large
-    ? "12px"
-    : "8px";
-};
-
-
-/* =========================================================
-   HEX TO RGBA
-========================================================= */
-
-const hexToRgba = (
-  color,
-  alpha
-) => {
-  if (
-    typeof color !== "string"
-  ) {
-    return color;
-  }
-
-  const hex =
-    color.replace("#", "");
-
-  if (
-    !/^[0-9A-Fa-f]{6}$/.test(hex)
-  ) {
-    return color;
-  }
-
-  const r = parseInt(
-    hex.substring(0, 2),
-    16
-  );
-
-  const g = parseInt(
-    hex.substring(2, 4),
-    16
-  );
-
-  const b = parseInt(
-    hex.substring(4, 6),
-    16
-  );
-
+const hexToRgba = (color, alpha) => {
+  if (typeof color !== "string") return color;
+  const hex = color.replace("#", "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(hex)) return color;
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+const toArray = (value) => {
+  if (Array.isArray(value)) return value;
 
-/* =========================================================
-   ARRAY HELPER
-========================================================= */
-
-const toArray = (
-  value
-) => {
-  if (
-    Array.isArray(value)
-  ) {
-    return value;
-  }
-
-  if (
-    typeof value === "string"
-  ) {
+  if (typeof value === "string") {
     try {
-      const parsed =
-        JSON.parse(value);
-
-      if (
-        Array.isArray(parsed)
-      ) {
-        return parsed;
-      }
-    } catch {
-      // fallback
-    }
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
 
     return value
       .split(",")
-      .map(
-        (item) =>
-          item.trim()
-      )
+      .map((item) => item.trim())
       .filter(Boolean);
   }
 
   return [];
 };
 
-
-/* =========================================================
-   CARD
-========================================================= */
-
-const Card = ({
-  children,
-  className = "",
-  style = {},
-  ...props
-}) => (
-  <div
-    className={className}
-    style={style}
-    {...props}
-  >
-    {children}
-  </div>
-);
-
-
-/* =========================================================
-   BUTTON
-========================================================= */
-
-const Button = ({
-  children,
-  variant = "solid",
-  fullWidth = false,
-  size = "md",
-  className = "",
-  type = "button",
-  branding,
-  style = {},
-  ...props
-}) => {
-
-  const sizes = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-5 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
-  };
-
-  const sizeClass =
-    sizes[size] || sizes.md;
-
-  const baseStyle = {
-    display:
-      "inline-flex",
-
-    alignItems:
-      "center",
-
-    justifyContent:
-      "center",
-
-    width:
-      fullWidth
-        ? "100%"
-        : undefined,
-
-    borderRadius:
-      getButtonRadius(
-        branding,
-        size === "lg"
-      ),
-
-    fontFamily:
-      fontFamily(
-        branding.fontBody
-      ),
-
-    fontWeight:
-      branding.bodyWeight,
-
-    lineHeight:
-      branding.bodyLineHeight,
-
-    letterSpacing:
-      branding.bodyLetterSpacing,
-
-    transition:
-      "all 0.3s ease",
-
-    cursor:
-      "pointer",
-
-    ...(variant ===
-    "outline"
-      ? {
-          backgroundColor:
-            branding.cardBackgroundColor,
-
-          color:
-            branding.buttonColor,
-
-          border:
-            `1px solid ${branding.buttonColor}`,
-        }
-      : {
-          backgroundColor:
-            branding.buttonColor,
-
-          color:
-            branding.buttonTextColor,
-
-          border:
-            `1px solid ${branding.buttonColor}`,
-        }),
-
-    ...style,
-  };
-
-  return (
-    <button
-      type={type}
-      className={[
-        "font-semibold",
-        sizeClass,
-        className,
-      ].join(" ")}
-      style={baseStyle}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
+const getSkills = (trainer) => toArray(trainer?.skills);
 
 const WebsiteTrainers = () => {
+  const outletContext = useOutletContext() || {};
+  const navigate = useNavigate();
 
-  const outletContext =
-    useOutletContext() || {};
+  const content = useMemo(
+    () =>
+      normalizeContent(
+        outletContext?.content ||
+          outletContext?.websiteContent ||
+          outletContext?.contents ||
+          {}
+      ),
+    [
+      outletContext?.content,
+      outletContext?.websiteContent,
+      outletContext?.contents,
+    ]
+  );
 
-  const navigate =
-    useNavigate();
+  const sections = useMemo(
+    () =>
+      normalizeSections(
+        outletContext?.sections ||
+          outletContext?.websiteSections ||
+          {}
+      ),
+    [outletContext?.sections, outletContext?.websiteSections]
+  );
 
-  /* =======================================================
-     CONTENT
-  ======================================================= */
+  const branding = useMemo(
+    () =>
+      normalizeBranding(
+        outletContext?.branding ||
+          outletContext?.websiteBranding ||
+          outletContext?.brand ||
+          {}
+      ),
+    [
+      outletContext?.branding,
+      outletContext?.websiteBranding,
+      outletContext?.brand,
+    ]
+  );
 
-  const content =
-    useMemo(
-      () =>
-        normalizeContent(
-          outletContext?.content ||
-            outletContext?.websiteContent ||
-            outletContext?.contents ||
-            {}
-        ),
-      [
-        outletContext?.content,
-        outletContext?.websiteContent,
-        outletContext?.contents,
-      ]
-    );
+  const trainersFromContext = outletContext?.trainers || [];
+  const bannersFromContext = outletContext?.banners || [];
 
-
-  /* =======================================================
-     SECTIONS
-  ======================================================= */
-
-  const sections =
-    useMemo(
-      () =>
-        normalizeSections(
-          outletContext?.sections ||
-            outletContext?.websiteSections ||
-            {}
-        ),
-      [
-        outletContext?.sections,
-        outletContext?.websiteSections,
-      ]
-    );
-
-
-  /* =======================================================
-     BRANDING
-  ======================================================= */
-
-  const branding =
-    useMemo(
-      () =>
-        normalizeBranding(
-          outletContext?.branding ||
-            outletContext?.websiteBranding ||
-            outletContext?.brand ||
-            {}
-        ),
-      [
-        outletContext?.branding,
-        outletContext?.websiteBranding,
-        outletContext?.brand,
-      ]
-    );
-
-
-  /* =======================================================
-     SECTION VISIBILITY
-  ======================================================= */
-
-  const trainersVisible =
-    sections?.trainers?.visible !==
-    false;
-
-
-  /* =======================================================
-     DATA
-  ======================================================= */
-
-  const outletTrainers =
-    outletContext?.trainers ||
-    [];
-
-  const outletBanners =
-    outletContext?.banners ||
-    [];
-
-
-  const [
-    trainers,
-    setTrainers,
-  ] = useState([]);
-
-
-  const [
-    banners,
-    setBanners,
-  ] = useState([]);
-
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-
-  const [
-    searchQuery,
-    setSearchQuery,
-  ] = useState("");
-
-
-  const [
-    filterSpecialty,
-    setFilterSpecialty,
-  ] = useState("all");
-
-
-  /* =======================================================
-     SYNC
-  ======================================================= */
+  const [trainers, setTrainers] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-
-    setTrainers(
-      Array.isArray(
-        outletTrainers
-      )
-        ? outletTrainers
-        : []
-    );
-
-    setBanners(
-      Array.isArray(
-        outletBanners
-      )
-        ? outletBanners
-        : []
-    );
-
+    setTrainers(Array.isArray(trainersFromContext) ? trainersFromContext : []);
+    setBanners(Array.isArray(bannersFromContext) ? bannersFromContext : []);
     setLoading(false);
+  }, [trainersFromContext, bannersFromContext]);
 
-  }, [
-    outletTrainers,
-    outletBanners,
-  ]);
+  const filteredTrainers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
 
+    if (!query) return trainers;
 
-  /* =======================================================
-     SKILLS
-  ======================================================= */
+    return trainers.filter((trainer) => {
+      const name = String(trainer?.full_name || "").toLowerCase();
+      return name.includes(query);
+    });
+  }, [trainers, searchQuery]);
 
-  const getSkills = (
-    trainer
-  ) =>
-    toArray(
-      trainer?.skills
-    );
-
-
-  /* =======================================================
-     SPECIALTIES
-  ======================================================= */
-
-  const specialties =
-    useMemo(
-      () => {
-
-        const values =
-          trainers.flatMap(
-            (trainer) =>
-              getSkills(
-                trainer
-              )
-          );
-
-        return [
-          "all",
-          ...Array.from(
-            new Set(
-              values
-                .map(
-                  (skill) =>
-                    String(
-                      skill
-                    ).trim()
-                )
-                .filter(
-                  Boolean
-                )
-            )
-          ),
-        ];
-      },
-      [
-        trainers,
-      ]
-    );
-
-
-  /* =======================================================
-     FILTERED TRAINERS
-  ======================================================= */
-
-  const filteredTrainers =
-    useMemo(
-      () => {
-
-        const query =
-          searchQuery
-            .trim()
-            .toLowerCase();
-
-        const filtered =
-          trainers.filter(
-            (trainer) => {
-
-              const fullName =
-                String(
-                  trainer?.full_name ||
-                    ""
-                ).toLowerCase();
-
-              const bio =
-                String(
-                  trainer?.bio ||
-                    ""
-                ).toLowerCase();
-
-              const skills =
-                getSkills(
-                  trainer
-                ).map(
-                  (skill) =>
-                    String(
-                      skill
-                    )
-                      .trim()
-                      .toLowerCase()
-                );
-
-
-              const matchesSearch =
-                !query ||
-                fullName.includes(
-                  query
-                ) ||
-                bio.includes(
-                  query
-                ) ||
-                skills.some(
-                  (skill) =>
-                    skill.includes(
-                      query
-                    )
-                );
-
-
-              const matchesSpecialty =
-                filterSpecialty ===
-                  "all" ||
-                skills.includes(
-                  String(
-                    filterSpecialty
-                  ).toLowerCase()
-                );
-
-
-              return (
-                matchesSearch &&
-                matchesSpecialty
-              );
-            }
-          );
-
-        // IMPORTANT:
-        // Website Trainers page must display
-        // all trainers with 4 trainers per row on desktop.
-        return filtered;
-
-      },
-      [
-        trainers,
-        searchQuery,
-        filterSpecialty,
-      ]
-    );
-
-
-  /* =======================================================
-     STYLES
-  ======================================================= */
-
-  const headingStyle = {
-    color:
-      branding.headingColor,
-
-    fontFamily:
-      fontFamily(
-        branding.fontHeading
-      ),
-
-    fontWeight:
-      branding.headingWeight,
-
-    lineHeight:
-      branding.headingLineHeight,
-
-    letterSpacing:
-      branding.headingLetterSpacing,
-  };
-
-
-  const subheadingStyle = {
-    color:
-      branding.subheadingColor,
-
-    fontFamily:
-      fontFamily(
-        branding.fontSubheading
-      ),
-
-    fontWeight:
-      branding.subheadingWeight,
-
-    lineHeight:
-      branding.subheadingLineHeight,
-  };
-
-
-  const bodyStyle = {
-    color:
-      branding.textColor,
-
-    fontFamily:
-      fontFamily(
-        branding.fontBody
-      ),
-
-    fontWeight:
-      branding.bodyWeight,
-
-    lineHeight:
-      branding.bodyLineHeight,
-
-    letterSpacing:
-      branding.bodyLetterSpacing,
-  };
-
-
-  /* =======================================================
-     HIDDEN
-  ======================================================= */
-
-  if (
-    !trainersVisible
-  ) {
-    return null;
-  }
-
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
+  if (sections?.trainers?.visible === false) return null;
 
   if (loading) {
-
     return (
-      <div
-        className="
-          min-h-screen
-          flex
-          items-center
-          justify-center
-        "
-        style={{
-          backgroundColor:
-            branding.pageBackgroundColor,
-        }}
-      >
-
-        <div
-          className="
-            h-10
-            w-10
-            animate-spin
-            rounded-full
-            border-4
-          "
-          style={{
-            borderColor:
-              hexToRgba(
-                branding.buttonColor,
-                0.20
-              ),
-
-            borderTopColor:
-              branding.buttonColor,
-          }}
-        />
-
+      <div className="min-h-screen bg-[#020b16] flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#1688ff]/20 border-t-[#1688ff]" />
       </div>
     );
   }
 
+  const trainerBanner =
+    banners.find((banner) => {
+      const value = String(
+        firstValue(
+          banner?.page,
+          banner?.page_name,
+          banner?.pageName,
+          banner?.page_type,
+          banner?.pageType,
+          banner?.section,
+          banner?.banner_type,
+          banner?.bannerType
+        ) || ""
+      ).toLowerCase();
 
-  /* =======================================================
-     PAGE
-  ======================================================= */
+      return (
+        value.includes("trainer") ||
+        value.includes("teacher") ||
+        value.includes("faculty")
+      );
+    }) || banners[0];
+
+  const bannerImage = firstValue(
+    trainerBanner?.image_url,
+    trainerBanner?.imageUrl,
+    trainerBanner?.banner_url,
+    trainerBanner?.bannerUrl,
+    trainerBanner?.desktop_image_url,
+    trainerBanner?.desktopImageUrl,
+    trainerBanner?.image,
+    trainerBanner?.url
+  );
 
   return (
-    <div
-      className="
-        min-h-screen
-        pb-20
-      "
+    <main
+      className="min-h-screen overflow-hidden"
       style={{
-        backgroundColor:
-          branding.pageBackgroundColor,
-
-        color:
-          branding.textColor,
-
-        fontFamily:
-          fontFamily(
-            branding.fontBody
-          ),
+        background: branding.pageBackgroundColor,
+        color: branding.textColor,
+        fontFamily: fontFamily(branding.fontBody),
       }}
     >
+      {/* Banner: image only */}
+      {bannerImage && (
+        <section className="relative h-[260px] overflow-hidden border-b border-[#1688ff]/70 sm:h-[330px] lg:h-[430px]">
+          <img
+            src={bannerImage}
+            alt="Trainers"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020b16]/55 via-[#020b16]/15 to-[#020b16]/45" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(22,136,255,.20),transparent_35%)]" />
+        </section>
+      )}
 
-      {/* ===================================================
-          BANNER
-      =================================================== */}
-
-      {banners.length >
-        0 &&
-        (() => {
-
-          const trainerBanner =
-            banners.find(
-              (banner) => {
-
-                const value =
-                  String(
-                    firstValue(
-                      banner?.page,
-                      banner?.page_name,
-                      banner?.pageName,
-                      banner?.page_type,
-                      banner?.pageType,
-                      banner?.section,
-                      banner?.banner_type,
-                      banner?.bannerType
-                    ) || ""
-                  ).toLowerCase();
-
-                return (
-                  value.includes(
-                    "trainer"
-                  ) ||
-                  value.includes(
-                    "teacher"
-                  ) ||
-                  value.includes(
-                    "faculty"
-                  )
-                );
-              }
-            ) ||
-            banners[0];
-
-
-          const image =
-            firstValue(
-              trainerBanner?.image_url,
-              trainerBanner?.imageUrl,
-              trainerBanner?.banner_url,
-              trainerBanner?.bannerUrl,
-              trainerBanner?.desktop_image_url,
-              trainerBanner?.desktopImageUrl,
-              trainerBanner?.image,
-              trainerBanner?.url
-            );
-
-
-          if (!image) {
-            return null;
-          }
-
-
-          return (
-            <section
-              className="
-                relative
-                h-[430px]
-                overflow-hidden
-                md:h-[430px]
-              "
-            >
-
-              <img
-                src={image}
-                alt="Trainers"
-                className="
-                  absolute
-                  inset-0
-                  h-full
-                  w-full
-                  object-cover
-                "
-                onError={(
-                  event
-                ) => {
-
-                  event.currentTarget.style.display =
-                    "none";
-
-                }}
-              />
-
-            </section>
-          );
-
-        })()}
-
-
-      {/* ===================================================
-          TRAINERS CONTENT
-      =================================================== */}
-
+      {/* Trainers */}
       <section
         id="trainers"
-        className="
-          mx-auto
-          max-w-7xl
-          px-4
-          pt-12
-          sm:px-6
-          lg:px-8
-        "
+        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16"
       >
-{/* =================================================
-    DYNAMIC CONTENT
-================================================= */}
-
-<div className="mb-8 text-center">
-
-  {/* HEADING */}
-  <h1
-    className="
-      text-3xl
-      md:text-4xl
-    "
-    style={headingStyle}
-  >
-    {content?.trainers?.heading || "Our Trainers"}
-  </h1>
-
-  {/* SUBHEADING */}
-  {content?.trainers?.subheading && (
-    <p
-      className="
-        mx-auto
-        mt-3
-        max-w-2xl
-      "
-      style={{
-        ...bodyStyle,
-        opacity: 0.65,
-      }}
-    >
-      {content.trainers.subheading}
-    </p>
-  )}
-
-</div>
-
-
-        {/* =================================================
-            SEARCH / FILTER
-        ================================================= */}
-
-        <div
-          className="
-            mb-10
-            flex
-            flex-col
-            gap-4
-            lg:flex-row
-          "
-        >
-
-          {/* SEARCH */}
-
+        <div className="mb-8 text-center">
           <div
-            className="
-              relative
-              flex-1
-            "
+            className="mb-3 text-xs font-bold uppercase tracking-[0.35em]"
+            style={{ color: branding.buttonColor }}
           >
+            {content.trainers.eyebrow}
+          </div>
 
+          <h1
+            className="text-3xl font-extrabold sm:text-4xl lg:text-5xl"
+            style={{
+              color: branding.headingColor,
+              fontFamily: fontFamily(branding.fontHeading),
+            }}
+          >
+            {content.trainers.heading}
+          </h1>
+
+          <p
+            className="mx-auto mt-3 max-w-3xl text-sm sm:text-base"
+            style={{
+              color: branding.textColor,
+              opacity: 0.78,
+              fontFamily: fontFamily(branding.fontSubheading),
+            }}
+          >
+            {content.trainers.subheading}
+          </p>
+        </div>
+
+        {/* Search trainer name */}
+        <div className="mx-auto mb-10 max-w-4xl">
+          <div
+            className="relative flex h-14 items-center overflow-hidden rounded-2xl border shadow-[0_0_25px_rgba(22,136,255,.15)]"
+            style={{
+              background: "rgba(4,21,37,.92)",
+              borderColor: hexToRgba(branding.buttonColor, 0.75),
+            }}
+          >
             <FaSearch
-              className="
-                absolute
-                left-4
-                top-1/2
-                -translate-y-1/2
-              "
-              style={{
-                color:
-                  hexToRgba(
-                    branding.textColor,
-                    0.45
-                  ),
-              }}
+              className="absolute left-5 text-lg"
+              style={{ color: branding.buttonColor }}
             />
-
 
             <input
               type="text"
-              value={
-                searchQuery
-              }
-              onChange={(
-                event
-              ) =>
-                setSearchQuery(
-                  event.target.value
-                )
-              }
-              placeholder="Search trainers..."
-              className="
-                h-14
-                w-full
-                border
-                px-12
-                pr-4
-                outline-none
-              "
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search trainer name..."
+              className="h-full w-full bg-transparent px-14 pr-5 text-sm outline-none placeholder:text-slate-500"
               style={{
-                backgroundColor:
-                  branding.cardBackgroundColor,
-
-                color:
-                  branding.textColor,
-
-                borderColor:
-                  hexToRgba(
-                    branding.textColor,
-                    0.15
-                  ),
-
-                borderRadius:
-                  "12px",
-
-                fontFamily:
-                  fontFamily(
-                    branding.fontBody
-                  ),
+                color: branding.textColor,
+                fontFamily: fontFamily(branding.fontBody),
               }}
             />
-
           </div>
-
-
-          {/* FILTER */}
-
-          <div
-            className="
-              relative
-              lg:w-[260px]
-            "
-          >
-
-            <select
-              value={
-                filterSpecialty
-              }
-              onChange={(
-                event
-              ) =>
-                setFilterSpecialty(
-                  event.target.value
-                )
-              }
-              className="
-                h-14
-                w-full
-                appearance-none
-                border
-                px-4
-                pr-10
-                outline-none
-                cursor-pointer
-              "
-              style={{
-                backgroundColor:
-                  branding.cardBackgroundColor,
-
-                color:
-                  branding.textColor,
-
-                borderColor:
-                  hexToRgba(
-                    branding.textColor,
-                    0.15
-                  ),
-
-                borderRadius:
-                  "12px",
-
-                fontFamily:
-                  fontFamily(
-                    branding.fontBody
-                  ),
-              }}
-            >
-
-              {specialties.map(
-                (
-                  specialty
-                ) => (
-
-                  <option
-                    key={
-                      specialty
-                    }
-                    value={
-                      specialty
-                    }
-                  >
-                    {specialty ===
-                    "all"
-                      ? "All Specialties"
-                      : specialty}
-                  </option>
-
-                )
-              )}
-
-            </select>
-
-
-            <FaChevronDown
-              className="
-                pointer-events-none
-                absolute
-                right-4
-                top-1/2
-                -translate-y-1/2
-              "
-              style={{
-                color:
-                  hexToRgba(
-                    branding.textColor,
-                    0.45
-                  ),
-              }}
-            />
-
-          </div>
-
         </div>
 
-
-        {/* =================================================
-            NO RESULTS
-        ================================================= */}
-
-        {filteredTrainers.length ===
-        0 ? (
-
+        {filteredTrainers.length === 0 ? (
           <div
-            className="
-              rounded-2xl
-              border
-              py-20
-              text-center
-            "
+            className="rounded-2xl border px-6 py-20 text-center"
             style={{
-              backgroundColor:
-                branding.cardBackgroundColor,
-
-              borderColor:
-                hexToRgba(
-                  branding.textColor,
-                  0.12
-                ),
+              background: branding.cardBackgroundColor,
+              borderColor: hexToRgba(branding.buttonColor, 0.35),
             }}
           >
-
-            <h2
-              className="
-                text-xl
-              "
-              style={
-                headingStyle
-              }
-            >
+            <h2 className="text-xl font-bold" style={{ color: branding.headingColor }}>
               No trainers found
             </h2>
-
-
-            <p
-              className="
-                mt-2
-              "
-              style={{
-                ...bodyStyle,
-                opacity: 0.65,
-              }}
-            >
-              Try another search
-              term or specialty.
+            <p className="mt-2 text-sm opacity-70">
+              Try another trainer name.
             </p>
-
-
-            <Button
-              branding={
-                branding
-              }
-              size="md"
-              className="mt-5"
-              onClick={() => {
-
-                setSearchQuery(
-                  ""
-                );
-
-                setFilterSpecialty(
-                  "all"
-                );
-
-              }}
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="mt-5 rounded-full px-6 py-3 font-semibold text-white"
+              style={{ background: branding.buttonColor }}
             >
-              Clear Filters
-            </Button>
-
+              Clear Search
+            </button>
           </div>
-
         ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTrainers.map((trainer) => {
+              const trainerId = trainer?.id || trainer?._id;
+              const skills = getSkills(trainer);
+              const subcategory =
+                skills.length > 0
+                  ? skills[0]
+                  : trainer?.subcategory_name ||
+                    trainer?.subcategory ||
+                    "Professional Trainer";
 
-          /* =================================================
-             TRAINER GRID
-             Show all trainers with 4 trainers per row on desktop.
-          ================================================= */
+              const rating = Number(trainer?.rating || 0);
+              const experience = Number(trainer?.experience_years || 0);
+              const students = Number(trainer?.total_students || 0);
+              const reviews = Number(trainer?.total_reviews || 0);
 
-          <div className="w-full">
+              return (
+                <article
+                  key={trainerId || trainer?.full_name}
+                  className="group overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_35px_rgba(22,136,255,.25)]"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(5,25,43,.98), rgba(2,13,24,.98))",
+                    borderColor: hexToRgba(branding.buttonColor, 0.55),
+                    boxShadow: "0 10px 35px rgba(0,0,0,.30)",
+                  }}
+                >
+                  {/* Trainer image */}
+                  <div className="relative h-56 overflow-hidden sm:h-60">
+                    <img
+                      src={
+                        trainer?.profile_image ||
+                        "https://placehold.co/700x500/png?text=Trainer"
+                      }
+                      alt={trainer?.full_name || "Trainer"}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src =
+                          "https://placehold.co/700x500/png?text=Trainer";
+                      }}
+                    />
 
-            <div
-              className="
-                grid
-                w-full
-                grid-cols-1
-                gap-6
-                sm:grid-cols-2
-                lg:grid-cols-4
-              "
-            >
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#020b16] via-transparent to-transparent" />
 
-              {filteredTrainers.map(
-                (trainer) => {
-
-                  const skills =
-                    getSkills(
-                      trainer
-                    );
-
-                  const rating =
-                    Number(
-                      trainer?.rating ||
-                        0
-                    );
-
-                  const experience =
-                    Number(
-                      trainer?.experience_years ||
-                        0
-                    );
-
-                  const students =
-                    Number(
-                      trainer?.total_students ||
-                        0
-                    );
-
-                  const reviews =
-                    Number(
-                      trainer?.total_reviews ||
-                        0
-                    );
-
-                  const trainerId =
-                    trainer?.id ||
-                    trainer?._id;
-
-
-                  return (
                     <div
-                      key={trainerId}
-                      className="
-                        w-full
-                      "
+                      className="absolute right-3 top-3 flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold"
+                      style={{
+                        background: "rgba(2,11,22,.86)",
+                        borderColor: hexToRgba(branding.buttonColor, 0.5),
+                        color: "#ffffff",
+                      }}
                     >
+                      <FaStar style={{ color: "#facc15" }} />
+                      {rating.toFixed(1)}
+                    </div>
+                  </div>
 
-                      <Card
-                        className="
-                          group
-                          flex
-                          h-full
-                          min-h-[430px]
-                          flex-col
-                          overflow-hidden
-                          p-0
-                          transition-all
-                          duration-500
-                          hover:-translate-y-1
-                        "
+                  {/* Trainer details */}
+                  <div className="p-5">
+                    <h2
+                      className="text-xl font-extrabold"
+                      style={{
+                        color: branding.headingColor,
+                        fontFamily: fontFamily(branding.fontHeading),
+                      }}
+                    >
+                      {trainer?.full_name || "Trainer"}
+                    </h2>
+
+                    <div
+                      className="mt-1 text-sm font-semibold"
+                      style={{ color: branding.buttonColor }}
+                    >
+                      {subcategory}
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-[#1688ff]/20 bg-[#1688ff]/5 p-3">
+                        <div className="text-xs opacity-60">Experience</div>
+                        <div className="mt-1 font-bold">
+                          {experience}+ Years
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-[#1688ff]/20 bg-[#1688ff]/5 p-3">
+                        <div className="text-xs opacity-60">Students</div>
+                        <div className="mt-1 font-bold">
+                          {students.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p
+                      className="mt-5 min-h-[72px] line-clamp-3 text-sm"
+                      style={{
+                        color: branding.textColor,
+                        opacity: 0.78,
+                        lineHeight: branding.bodyLineHeight,
+                      }}
+                    >
+                      {trainer?.bio || "No description available for this trainer."}
+                    </p>
+
+                    <div className="mt-5 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <FaComment style={{ color: branding.buttonColor }} />
+                        <span className="font-semibold">
+                          {reviews.toLocaleString()}
+                        </span>
+                        <span className="opacity-60">Reviews</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!trainerId) return;
+                          navigate(
+                            `/institute/website/preview/trainers/${trainerId}`
+                          );
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.03]"
                         style={{
-                          backgroundColor:
-                            branding.cardBackgroundColor,
-
-                          border:
-                            `1px solid ${hexToRgba(
-                              branding.textColor,
-                              0.08
-                            )}`,
-
-                          borderRadius:
-                            "18px",
-
-                          boxShadow:
-                            "0 10px 30px rgba(0,0,0,0.06)",
+                          background:
+                            "linear-gradient(135deg, #1688ff 0%, #0066ff 100%)",
+                          boxShadow: "0 0 22px rgba(22,136,255,.25)",
                         }}
                       >
-
-                        {/* =================================================
-                            SECTION 1: TRAINER IMAGE
-                        ================================================= */}
-
-                        <div
-                          className="
-                            relative
-                            flex
-                            items-center
-                            justify-center
-                            py-5
-                          "
-                          style={{
-                            background:
-                              `linear-gradient(to bottom, ${hexToRgba(
-                                branding.buttonColor,
-                                0.04
-                              )}, transparent)`,
-                          }}
-                        >
-
-                          <div
-                            className="
-                              absolute
-                              h-28
-                              w-28
-                              rounded-full
-                              blur-2xl
-                              transition-all
-                              duration-500
-                              group-hover:scale-110
-                            "
-                            style={{
-                              backgroundColor:
-                                hexToRgba(
-                                  branding.buttonColor,
-                                  0
-                                ),
-                            }}
-                          />
-
-                          <div
-                            className="
-                              relative
-                              h-24
-                              w-24
-                              overflow-hidden
-                              rounded-full
-                              transition-all
-                              duration-500
-                              lg:h-28
-                              lg:w-28
-                            "
-                            style={{
-                              border:
-                                `3px solid ${hexToRgba(
-                                  branding.textColor,
-                                  0.10
-                                )}`,
-                            }}
-                          >
-
-                            <img
-                              src={
-                                trainer?.profile_image ||
-                                "https://placehold.co/400x400/png?text=Trainer"
-                              }
-                              alt={
-                                trainer?.full_name ||
-                                "Trainer"
-                              }
-                              onError={(
-                                event
-                              ) => {
-
-                                event.currentTarget.onerror =
-                                  null;
-
-                                event.currentTarget.src =
-                                  "https://placehold.co/400x400/png?text=Trainer";
-
-                              }}
-                              className="
-                                h-full
-                                w-full
-                                object-cover
-                                transition-transform
-                                duration-700
-                                group-hover:scale-110
-                              "
-                              loading="lazy"
-                            />
-
-                          </div>
-
-
-                          {/* EXPERIENCE */}
-
-                          <div
-                            className="
-                              absolute
-                              right-3
-                              top-3
-                            "
-                          >
-
-                            <span
-                              className="
-                                rounded-md
-                                px-2
-                                py-0.5
-                                text-[8px]
-                                font-bold
-                                uppercase
-                                tracking-widest
-                              "
-                              style={{
-                                backgroundColor:
-                                  hexToRgba(
-                                    branding.textColor,
-                                    0.08
-                                  ),
-
-                                color:
-                                  branding.textColor,
-
-                                border:
-                                  `1px solid ${hexToRgba(
-                                    branding.textColor,
-                                    0.10
-                                  )}`,
-
-                                backdropFilter:
-                                  "blur(8px)",
-
-                                fontFamily:
-                                  fontFamily(
-                                    branding.fontBody
-                                  ),
-                              }}
-                            >
-                              {experience} yrs
-                            </span>
-
-                          </div>
-
-                        </div>
-
-
-                        {/* =================================================
-                            SECTION 2: NAME + SKILLS
-                        ================================================= */}
-
-                        <div
-                          className="
-                            border-b
-                            border-t
-                            px-4
-                            py-3
-                          "
-                          style={{
-                            borderColor:
-                              hexToRgba(
-                                branding.textColor,
-                                0.06
-                              ),
-
-                            backgroundColor:
-                              hexToRgba(
-                                branding.textColor,
-                                0.01
-                              ),
-                          }}
-                        >
-
-                          <h3
-                            className="
-                              truncate
-                              text-center
-                              text-base
-                              font-black
-                              tracking-tight
-                              transition-colors
-                              duration-300
-                            "
-                            style={{
-                              color:
-                                branding.headingColor,
-
-                              fontFamily:
-                                fontFamily(
-                                  branding.fontHeading
-                                ),
-
-                              fontWeight:
-                                branding.headingWeight,
-
-                              lineHeight:
-                                branding.headingLineHeight,
-
-                              letterSpacing:
-                                branding.headingLetterSpacing,
-                            }}
-                          >
-                            {trainer?.full_name || "Trainer"}
-                          </h3>
-
-
-                          <div
-                            className="
-                              mt-2
-                              flex
-                              min-h-[22px]
-                              flex-wrap
-                              items-center
-                              justify-center
-                              gap-1.5
-                            "
-                          >
-
-                            {skills.length > 0
-                              ? skills
-                                  .slice(0, 2)
-                                  .map(
-                                    (
-                                      skill,
-                                      index
-                                    ) => (
-
-                                      <span
-                                        key={`${skill}-${index}`}
-                                        className="
-                                          inline-block
-                                          rounded-md
-                                          px-2
-                                          py-0.5
-                                          text-[9px]
-                                          font-semibold
-                                          uppercase
-                                          tracking-wider
-                                        "
-                                        style={{
-                                          backgroundColor:
-                                            hexToRgba(
-                                              branding.buttonColor,
-                                              0.10
-                                            ),
-
-                                          border:
-                                            `1px solid ${hexToRgba(
-                                              branding.buttonColor,
-                                              0.15
-                                            )}`,
-
-                                          color:
-                                            branding.buttonColor,
-
-                                          fontFamily:
-                                            fontFamily(
-                                              branding.fontBody
-                                            ),
-                                        }}
-                                      >
-                                        {String(
-                                          skill
-                                        ).trim()}
-                                      </span>
-
-                                    )
-                                  )
-                              : (
-                                  <span
-                                    className="
-                                      text-[10px]
-                                      font-medium
-                                      uppercase
-                                      tracking-wider
-                                    "
-                                    style={{
-                                      color:
-                                        branding.buttonColor,
-
-                                      fontFamily:
-                                        fontFamily(
-                                          branding.fontBody
-                                        ),
-                                    }}
-                                  >
-                                    Professional Trainer
-                                  </span>
-                                )}
-
-                          </div>
-
-                        </div>
-
-
-                        {/* =================================================
-                            SECTION 3: DETAILS
-                        ================================================= */}
-
-                        <div
-                          className="
-                            flex
-                            flex-1
-                            flex-col
-                            space-y-2.5
-                            border-b
-                            px-4
-                            py-3
-                          "
-                          style={{
-                            borderColor:
-                              hexToRgba(
-                                branding.textColor,
-                                0.06
-                              ),
-                          }}
-                        >
-
-                          {/* BIO */}
-
-                          <p
-                            className="
-                              min-h-[34px]
-                              line-clamp-2
-                              text-xs
-                            "
-                            style={{
-                              color:
-                                branding.textColor,
-
-                              fontFamily:
-                                fontFamily(
-                                  branding.fontBody
-                                ),
-
-                              fontWeight:
-                                branding.bodyWeight,
-
-                              lineHeight:
-                                branding.bodyLineHeight,
-
-                              letterSpacing:
-                                branding.bodyLetterSpacing,
-
-                              opacity:
-                                0.75,
-                            }}
-                          >
-                            {
-                              trainer?.bio ||
-                              "No bio available for this trainer."
-                            }
-                          </p>
-
-
-                          {/* RATING */}
-
-                          <div
-                            className="
-                              space-y-1
-                            "
-                          >
-
-                            <div
-                              className="
-                                flex
-                                items-center
-                                justify-between
-                              "
-                            >
-
-                              <div
-                                className="
-                                  flex
-                                  items-center
-                                  gap-0.5
-                                "
-                              >
-
-                                {[1, 2, 3, 4, 5].map(
-                                  (
-                                    star
-                                  ) => (
-
-                                    <FaStar
-                                      key={
-                                        star
-                                      }
-                                      className="
-                                        text-[10px]
-                                      "
-                                      style={{
-                                        color:
-                                          star <=
-                                          Math.round(
-                                            rating
-                                          )
-                                            ? branding.iconColor
-                                            : hexToRgba(
-                                                branding.textColor,
-                                                0.15
-                                              ),
-                                      }}
-                                    />
-
-                                  )
-                                )}
-
-                              </div>
-
-                              <span
-                                className="
-                                  text-xs
-                                  font-bold
-                                "
-                                style={{
-                                  color:
-                                    branding.iconColor,
-
-                                  fontFamily:
-                                    fontFamily(
-                                      branding.fontBody
-                                    ),
-                                }}
-                              >
-                                {rating.toFixed(1)}
-                              </span>
-
-                            </div>
-
-
-                            {/* RATING BAR */}
-
-                            <div
-                              className="
-                                h-1
-                                w-full
-                                overflow-hidden
-                                rounded-full
-                              "
-                              style={{
-                                backgroundColor:
-                                  hexToRgba(
-                                    branding.textColor,
-                                    0.05
-                                  ),
-                              }}
-                            >
-
-                              <div
-                                className="
-                                  h-full
-                                  rounded-full
-                                  transition-all
-                                  duration-700
-                                "
-                                style={{
-                                  width:
-                                    `${Math.min(
-                                      Math.max(
-                                        (rating / 5) *
-                                          100,
-                                        0
-                                      ),
-                                      100
-                                    )}%`,
-
-                                  background:
-                                    `linear-gradient(to right, ${branding.iconColor}, ${branding.buttonColor})`,
-                                }}
-                              />
-
-                            </div>
-
-                          </div>
-
-
-                          {/* STUDENTS + REVIEWS */}
-
-                          <div
-                            className="
-                              grid
-                              grid-cols-2
-                              gap-2
-                            "
-                          >
-
-                            {/* STUDENTS */}
-
-                            <div
-                              className="
-                                flex
-                                items-center
-                                justify-center
-                                gap-1
-                                rounded-lg
-                                px-2.5
-                                py-2
-                              "
-                              style={{
-                                backgroundColor:
-                                  hexToRgba(
-                                    branding.textColor,
-                                    0.03
-                                  ),
-
-                                border:
-                                  `1px solid ${hexToRgba(
-                                    branding.textColor,
-                                    0.05
-                                  )}`,
-                              }}
-                            >
-
-                              <FaUsers
-                                className="
-                                  text-[10px]
-                                "
-                                style={{
-                                  color:
-                                    branding.buttonColor,
-                                }}
-                              />
-
-                              <span
-                                className="
-                                  text-xs
-                                  font-bold
-                                "
-                                style={{
-                                  color:
-                                    branding.textColor,
-
-                                  fontFamily:
-                                    fontFamily(
-                                      branding.fontBody
-                                    ),
-                                }}
-                              >
-                                {students.toLocaleString()}
-                              </span>
-
-                              <span
-                                className="
-                                  text-[10px]
-                                "
-                                style={{
-                                  color:
-                                    branding.textColor,
-
-                                  opacity:
-                                    0.75,
-
-                                  fontFamily:
-                                    fontFamily(
-                                      branding.fontBody
-                                    ),
-                                }}
-                              >
-                                Students
-                              </span>
-
-                            </div>
-
-
-                            {/* REVIEWS */}
-
-                            <div
-                              className="
-                                flex
-                                items-center
-                                justify-center
-                                gap-1
-                                rounded-lg
-                                px-2.5
-                                py-2
-                              "
-                              style={{
-                                backgroundColor:
-                                  hexToRgba(
-                                    branding.textColor,
-                                    0.03
-                                  ),
-
-                                border:
-                                  `1px solid ${hexToRgba(
-                                    branding.textColor,
-                                    0.05
-                                  )}`,
-                              }}
-                            >
-
-                              <FaComment
-                                className="
-                                  text-[10px]
-                                "
-                                style={{
-                                  color:
-                                    branding.buttonColor,
-                                }}
-                              />
-
-                              <span
-                                className="
-                                  text-xs
-                                  font-bold
-                                "
-                                style={{
-                                  color:
-                                    branding.textColor,
-
-                                  fontFamily:
-                                    fontFamily(
-                                      branding.fontBody
-                                    ),
-                                }}
-                              >
-                                {reviews.toLocaleString()}
-                              </span>
-
-                              <span
-                                className="
-                                  text-[10px]
-                                "
-                                style={{
-                                  color:
-                                    branding.textColor,
-
-                                  opacity:
-                                    0.75,
-
-                                  fontFamily:
-                                    fontFamily(
-                                      branding.fontBody
-                                    ),
-                                }}
-                              >
-                                Reviews
-                              </span>
-
-                            </div>
-
-                          </div>
-
-                        </div>
-
-
-                        {/* =================================================
-                            SECTION 4: CTA
-                        ================================================= */}
-
-                        <div
-                          className="
-                            mt-auto
-                            px-4
-                            py-3
-                          "
-                        >
-
-                          <Button
-                            branding={
-                              branding
-                            }
-                            variant="outline"
-                            fullWidth
-                            size="sm"
-                            onClick={() => {
-
-                              if (!trainerId) {
-
-                                console.error(
-                                  "Trainer ID is missing.",
-                                  trainer
-                                );
-
-                                return;
-                              }
-
-                              navigate(
-                                `/institute/website/preview/trainers/${trainerId}`
-                              );
-
-                            }}
-                          >
-
-                            <span
-                              className="
-                                flex
-                                items-center
-                                justify-center
-                                gap-2
-                              "
-                            >
-                              View Profile
-
-                              <FaArrowRight
-                                className="
-                                  text-[10px]
-                                "
-                              />
-                            </span>
-
-                          </Button>
-
-                        </div>
-
-                      </Card>
-
+                        View Profile
+                        <FaArrowRight className="text-xs" />
+                      </button>
                     </div>
-                  );
-                }
-              )}
-
-            </div>
-
-
+                  </div>
+                </article>
+              );
+            })}
           </div>
-
         )}
-
       </section>
-
-    </div>
+    </main>
   );
 };
-
 
 export default WebsiteTrainers;

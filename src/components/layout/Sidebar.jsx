@@ -1387,6 +1387,8 @@ import {
   HiOutlineDocumentText,
   HiOutlineInformationCircle,
   HiX,
+  HiOutlineClipboardList,
+  HiOutlineVideoCamera,
   HiOutlinePhotograph,
   HiOutlineClock,
   HiOutlineCurrencyRupee,
@@ -1479,6 +1481,30 @@ const adminMenuItems = [
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
+   {
+    path: "/admin/lms",
+    icon: HiOutlineAcademicCap,
+    label: "LMS",
+  },
+
+  {
+    path: "/admin/attendance",
+    icon: HiOutlineClipboardList,
+    label: "Attendance",
+  },
+
+  {
+    path: "/admin/assignments",
+    icon: HiOutlineDocumentText,
+    label: "Assignments",
+  },
+
+  {
+    path: "/admin/recordings",
+    icon: HiOutlineVideoCamera,
+    label: "Recordings",
+  },
+ 
   {
     path: "/students",
     icon: HiOutlineUsers,
@@ -1495,72 +1521,264 @@ const adminMenuItems = [
    INSTITUTE MENU
 ========================================================= */
 
+// const instituteMenuItems = [
+//   {
+//     path: "/institute/dashboard",
+//     icon: HiOutlineHome,
+//     label: "Dashboard",
+//   },
+//   {
+//     path: "/institute/trainers",
+//     icon: HiOutlineUserGroup,
+//     label: "Trainers",
+//   },
+//   {
+//     path: "/institute/classes",
+//     icon: HiOutlineAcademicCap,
+//     label: "Classes",
+//   },
+//   {
+//     path: "/institute/sessions",
+//     icon: HiOutlineAcademicCap,
+//     label: "Sessions",
+//   },
+//   {
+//     path: "/institute/banners",
+//     icon: HiOutlinePhotograph,
+//     label: "Banners",
+//   },
+//   {
+//     path: "/institute/bookings",
+//     icon: HiOutlineCalendar,
+//     label: "Bookings",
+//   },
+//   {
+//     path: "/institute/testimonials",
+//     icon: HiOutlineChatAlt,
+//     label: "Testimonials",
+//   },
+//   {
+//     path: "/institute/profile",
+//     icon: HiOutlineOfficeBuilding,
+//     label: "Institute Profile",
+//   },
+//   {
+//     path: "/institute/batches",
+//     icon: HiOutlineCollection,
+//     label: "Batches",
+//   },
+//   {
+//     path: "/institute/payments",
+//     icon: HiOutlineCurrencyRupee,
+//     label: "Payments",
+//   },
+//   {
+//     path: "/institute/students",
+//     icon: HiOutlineUsers,
+//     label: "Students",
+//   },
+//   {
+//     path: "/institute/about",
+//     icon: HiOutlineInformationCircle,
+//     label: "About",
+//   },
+//   {
+//     path: "/institute/footer",
+//     icon: HiOutlineDocumentText,
+//     label: "Footer",
+//   },
+//   {
+//     path: "/institute/website",
+//     icon: HiOutlineGlobeAlt,
+//     label: "Website",
+//   },
+// ];
+
+// /* =========================================================
+//    TRAINER MENU
+// ========================================================= */
+
+// const trainerMenuItems = [
+//   {
+//     path: "/trainer/dashboard",
+//     icon: HiOutlineHome,
+//     label: "Dashboard",
+//   },
+//   {
+//     path: "/trainer/classes",
+//     icon: HiOutlineAcademicCap,
+//     label: "My Classes",
+//   },
+//   {
+//     path: "/trainer/sessions",
+//     icon: HiOutlineAcademicCap,
+//     label: "Sessions",
+//   },
+//   {
+//     path: "/trainer/bookings",
+//     icon: HiOutlineCalendar,
+//     label: "Bookings",
+//   },
+//   {
+//     path: "/trainer/profile",
+//     icon: HiOutlineUserGroup,
+//     label: "Profile",
+//   },
+// ];
+
+// const trainerMenuItems = [
+//   {
+//     path: "/trainer/dashboard",
+//     icon: HiOutlineHome,
+//     label: "Dashboard",
+//   },
+//   {
+//     path: "/trainer/classes",
+//     icon: HiOutlineAcademicCap,
+//     label: "My Classes",
+//   },
+//   {
+//     path: "/trainer/sessions",
+//     icon: HiOutlineAcademicCap,
+//     label: "Sessions",
+//   },
+//   {
+//     path: "/trainer/attendance",
+//     icon: HiOutlineCalendar,
+//     label: "Attendance",
+//   },
+//   {
+//     path: "/trainer/assignments",
+//     icon: HiOutlineAcademicCap,
+//     label: "Assignments",
+//   },
+//   {
+//     path: "/trainer/recordings",
+//     icon: HiOutlineAcademicCap,
+//     label: "Recordings",
+//   },
+//   {
+//     path: "/trainer/bookings",
+//     icon: HiOutlineCalendar,
+//     label: "Bookings",
+//   },
+//   {
+//     path: "/trainer/profile",
+//     icon: HiOutlineUserGroup,
+//     label: "Profile",
+//   },
+// ];
 const instituteMenuItems = [
   {
     path: "/institute/dashboard",
     icon: HiOutlineHome,
     label: "Dashboard",
   },
+
   {
     path: "/institute/trainers",
     icon: HiOutlineUserGroup,
     label: "Trainers",
   },
+
   {
     path: "/institute/classes",
     icon: HiOutlineAcademicCap,
     label: "Classes",
   },
+
   {
     path: "/institute/sessions",
     icon: HiOutlineAcademicCap,
     label: "Sessions",
   },
+
+  // =====================================================
+  // LMS
+  // =====================================================
+
+  {
+    path: "/institute/lms",
+    icon: HiOutlineAcademicCap,
+    label: "LMS",
+  },
+
+  {
+    path: "/institute/attendance",
+    icon: HiOutlineCalendar,
+    label: "Attendance",
+  },
+
+  {
+    path: "/institute/assignments",
+    icon: HiOutlineDocumentText,
+    label: "Assignments",
+  },
+
+  {
+    path: "/institute/recordings",
+    icon: HiOutlineVideoCamera,
+    label: "Recordings",
+  },
+
+  // =====================================================
+  // INSTITUTE MANAGEMENT
+  // =====================================================
+
   {
     path: "/institute/banners",
     icon: HiOutlinePhotograph,
     label: "Banners",
   },
+
   {
     path: "/institute/bookings",
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
+
   {
     path: "/institute/testimonials",
     icon: HiOutlineChatAlt,
     label: "Testimonials",
   },
+
   {
     path: "/institute/profile",
     icon: HiOutlineOfficeBuilding,
     label: "Institute Profile",
   },
+
   {
     path: "/institute/batches",
     icon: HiOutlineCollection,
     label: "Batches",
   },
+
   {
     path: "/institute/payments",
     icon: HiOutlineCurrencyRupee,
     label: "Payments",
   },
+
   {
     path: "/institute/students",
     icon: HiOutlineUsers,
     label: "Students",
   },
+
   {
     path: "/institute/about",
     icon: HiOutlineInformationCircle,
     label: "About",
   },
+
   {
     path: "/institute/footer",
     icon: HiOutlineDocumentText,
     label: "Footer",
   },
+
   {
     path: "/institute/website",
     icon: HiOutlineGlobeAlt,
@@ -1568,9 +1786,6 @@ const instituteMenuItems = [
   },
 ];
 
-/* =========================================================
-   TRAINER MENU
-========================================================= */
 
 const trainerMenuItems = [
   {
@@ -1578,27 +1793,56 @@ const trainerMenuItems = [
     icon: HiOutlineHome,
     label: "Dashboard",
   },
+
   {
     path: "/trainer/classes",
     icon: HiOutlineAcademicCap,
     label: "My Classes",
   },
+
+  {
+    path: "/trainer/lms",
+    icon: HiOutlineAcademicCap,
+    label: "LMS",
+  },
+
   {
     path: "/trainer/sessions",
     icon: HiOutlineAcademicCap,
     label: "Sessions",
   },
+
+  {
+    path: "/trainer/attendance",
+    icon: HiOutlineCalendar,
+    label: "Attendance",
+  },
+
+  {
+    path: "/trainer/assignments",
+    icon: HiOutlineAcademicCap,
+    label: "Assignments",
+  },
+
+  {
+    path: "/trainer/recordings",
+    icon: HiOutlineAcademicCap,
+    label: "Recordings",
+  },
+
   {
     path: "/trainer/bookings",
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
+
   {
     path: "/trainer/profile",
     icon: HiOutlineUserGroup,
     label: "Profile",
   },
 ];
+
 
 /* =========================================================
    GET STORED INSTITUTE DATA

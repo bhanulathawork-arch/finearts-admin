@@ -1,0 +1,5 @@
+// Add alongside your existing Trainer routes in App.jsx / router file.
+import TrainerLMS from "./trainer/TrainerLMS";
+
+// If TrainerLayout is the parent route:
+<Route path="/trainer/lms/:classId" element={<TrainerLMS />} />

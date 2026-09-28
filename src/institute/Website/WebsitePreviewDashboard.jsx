@@ -21,7 +21,7 @@ import { auth } from "../../config/firebase";
 
 const API =
   import.meta.env.VITE_API_URL ||
-  "https://finearts-backend.onrender.com/api";
+  "http://localhost:5000/api";
 
 const STUDENT_ROLE = "STUDENT";
 
