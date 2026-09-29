@@ -154,11 +154,1785 @@ import TrainerLMS from "./trainer/TrainerLMS";
    HELPERS
 ========================================================= */
 
+// const getStoredRole = () => {
+//   return String(localStorage.getItem("role") || "")
+//     .trim()
+//     .toUpperCase();
+// };
+
+// /* =========================================================
+//    ADMIN PROTECTED ROUTE
+// ========================================================= */
+
+// function AdminProtectedRoute() {
+//   const adminToken = localStorage.getItem("adminToken");
+//   const role = getStoredRole();
+
+//   if (!adminToken || role !== "ADMIN") {
+//     return (
+//       <Navigate
+//         to="/admin-login"
+//         replace
+//       />
+//     );
+//   }
+
+//   return <Layout />;
+// }
+
+// /* =========================================================
+//    INSTITUTE PROTECTED ROUTE
+// ========================================================= */
+
+// function InstituteProtectedRoute() {
+//   const [loading, setLoading] = useState(true);
+//   const [user, setUser] = useState(null);
+
+//   useEffect(() => {
+//     const auth = getAuth();
+
+//     const unsubscribe = onAuthStateChanged(
+//       auth,
+//       (firebaseUser) => {
+//         setUser(firebaseUser);
+//         setLoading(false);
+//       }
+//     );
+
+//     return () => unsubscribe();
+//   }, []);
+
+//   const role = getStoredRole();
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center bg-background-dark text-white">
+//         Loading...
+//       </div>
+//     );
+//   }
+
+//   if (!user || role !== "INSTITUTE") {
+//     return (
+//       <Navigate
+//         to="/institute-login"
+//         replace
+//       />
+//     );
+//   }
+
+//   return <Outlet />;
+// }
+
+// /* =========================================================
+//    TRAINER PROTECTED ROUTE
+// ========================================================= */
+
+// function TrainerProtectedRoute() {
+//   const [loading, setLoading] = useState(true);
+//   const [user, setUser] = useState(null);
+
+//   useEffect(() => {
+//     const auth = getAuth();
+
+//     const unsubscribe = onAuthStateChanged(
+//       auth,
+//       (firebaseUser) => {
+//         setUser(firebaseUser);
+//         setLoading(false);
+//       }
+//     );
+
+//     return () => unsubscribe();
+//   }, []);
+
+//   const role = getStoredRole();
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center bg-background-dark text-white">
+//         Loading...
+//       </div>
+//     );
+//   }
+
+//   if (!user || role !== "TRAINER") {
+//     return (
+//       <Navigate
+//         to="/trainer-login"
+//         replace
+//       />
+//     );
+//   }
+
+//   return <Outlet />;
+// }
+
+// /* =========================================================
+//    WEBSITE STUDENT PROTECTED ROUTE
+// ========================================================= */
+
+// function StudentProtectedRoute() {
+//   const [loading, setLoading] = useState(true);
+//   const [firebaseUser, setFirebaseUser] = useState(null);
+//   const [studentSession, setStudentSession] = useState(false);
+
+//   const checkStudentSession = () => {
+//     const studentRole = String(
+//       localStorage.getItem("studentRole") || ""
+//     )
+//       .trim()
+//       .toUpperCase();
+
+//     const studentLoggedIn =
+//       localStorage.getItem("studentLoggedIn") === "true";
+
+//     const studentToken =
+//       localStorage.getItem("studentToken");
+
+//     const studentUser =
+//       localStorage.getItem("studentUser");
+
+//     const studentInstituteId =
+//       localStorage.getItem("studentInstituteId");
+
+//     const validSession =
+//       studentRole === "STUDENT" &&
+//       studentLoggedIn === true &&
+//       !!studentUser &&
+//       !!studentInstituteId &&
+//       !!studentToken;
+
+//     setStudentSession(validSession);
+//   };
+
+//   /* =======================================================
+//      FIREBASE AUTH STATE
+//   ======================================================= */
+
+//   useEffect(() => {
+//     const auth = getAuth();
+
+//     if (auth.currentUser) {
+//       setFirebaseUser(auth.currentUser);
+//     }
+
+//     const unsubscribe = onAuthStateChanged(
+//       auth,
+//       (user) => {
+//         setFirebaseUser(user);
+
+//         setTimeout(() => {
+//           checkStudentSession();
+//           setLoading(false);
+//         }, 0);
+//       }
+//     );
+
+//     return () => unsubscribe();
+//   }, []);
+
+// //   /* =======================================================
+// //      SAME TAB / STORAGE SESSION CHANGES
+// //   ======================================================= */
+
+// //   useEffect(() => {
+// //     const refreshStudentSession = () => {
+// //       checkStudentSession();
+// //     };
+
+// //     window.addEventListener(
+// //       "websiteStudentLogin",
+// //       refreshStudentSession
+// //     );
+
+// //     window.addEventListener(
+// //       "studentAuthChanged",
+// //       refreshStudentSession
+// //     );
+
+// //     window.addEventListener(
+// //       "storage",
+// //       refreshStudentSession
+// //     );
+
+// //     return () => {
+// //       window.removeEventListener(
+// //         "websiteStudentLogin",
+// //         refreshStudentSession
+// //       );
+
+// //       window.removeEventListener(
+// //         "studentAuthChanged",
+// //         refreshStudentSession
+// //       );
+
+// //       window.removeEventListener(
+// //         "storage",
+// //         refreshStudentSession
+// //       );
+// //     };
+// //   }, []);
+
+// //   if (loading) {
+// //     return (
+// //       <div className="min-h-screen flex items-center justify-center bg-background-dark text-white">
+// //         Loading student dashboard...
+// //       </div>
+// //     );
+// //   }
+
+// //   if (!studentSession) {
+// //     return (
+// //       <Navigate
+// //         to="/institute/website/preview/login"
+// //         replace
+// //       />
+// //     );
+// //   }
+
+// //   if (!firebaseUser) {
+// //     return (
+// //       <Navigate
+// //         to="/institute/website/preview/login"
+// //         replace
+// //       />
+// //     );
+// //   }
+
+// //   return <Outlet />;
+// // }
+
+// // /* =========================================================
+// //    PUBLIC WEBSITE PREVIEW LAYOUT
+// // ========================================================= */
+
+// // function PublicWebsitePreviewLayout() {
+// //   return (
+// //     <WebsitePreview>
+// //       <WebsiteNavbar />
+// //       <Outlet />
+// //     </WebsitePreview>
+// //   );
+// // }
+
+// // /* =========================================================
+// //    APP
+// // ========================================================= */
+
+// // function App() {
+// //   return (
+// //     <Router>
+// //       <SidebarProvider>
+// //         <div className="min-h-screen bg-background-dark">
+
+// //           <Routes>
+
+// //             {/* =================================================
+// //                 ROOT
+// //             ================================================= */}
+
+// //             <Route
+// //               path="/"
+// //               element={<LoginMenu />}
+// //             />
+
+// //             {/* =================================================
+// //                 ADMIN LOGIN
+// //             ================================================= */}
+
+// //             <Route
+// //               path="/admin-login"
+// //               element={<Login />}
+// //             />
+
+// //             {/* =================================================
+// //                 INSTITUTE LOGIN
+// //             ================================================= */}
+
+// //             <Route
+// //               path="/institute-login"
+// //               element={<InstituteLogin />}
+// //             />
+
+// //             {/* =================================================
+// //                 TRAINER LOGIN
+// //             ================================================= */}
+
+// //             <Route
+// //               path="/trainer-login"
+// //               element={<TrainerLogin />}
+// //             />
+
+// //             {/* =================================================
+// //                 ADMIN ROUTES
+// //             ================================================= */}
+
+// //             <Route element={<AdminProtectedRoute />}>
+
+// //               <Route
+// //                 path="/dashboard"
+// //                 element={<Dashboard />}
+// //               />
+
+// //               <Route
+// //                 path="/categories"
+// //                 element={<Categories />}
+// //               />
+
+// //               <Route
+// //                 path="/subcategories"
+// //                 element={<Subcategories />}
+// //               />
+
+// //               <Route
+// //                 path="/classes"
+// //                 element={<Classes />}
+// //               />
+
+// //               <Route
+// //                 path="/sessions"
+// //                 element={<Sessions />}
+// //               />
+
+// //               <Route
+// //                 path="/trainers"
+// //                 element={<Trainers />}
+// //               />
+
+// //               <Route
+// //                 path="/trainers/pending"
+// //                 element={<PendingTrainersAdmin />}
+// //               />
+
+// //               <Route
+// //                 path="/trainers/rejected"
+// //                 element={<RejectedTrainersAdmin />}
+// //               />
+
+// //               <Route
+// //                 path="/institutes"
+// //                 element={<Institutes />}
+// //               />
+
+// //               <Route
+// //                 path="/institutes/pending"
+// //                 element={<PendingInstitutesAdmin />}
+// //               />
+
+// //               <Route
+// //                 path="/institutes/rejected"
+// //                 element={<RejectedInstitutesAdmin />}
+// //               />
+
+// //               <Route
+// //                 path="/bookings"
+// //                 element={<Bookings />}
+// //               />
+
+// //               <Route
+// //                 path="/students"
+// //                 element={<Students />}
+// //               />
+// //                <Route
+// //                 path="/admin/attendance"
+// //                 element={<AdminAttendance />}
+// //               />
+// //                <Route
+// //                 path="/admin/assignments"
+// //                 element={<AdminAssignments />}
+// //               />
+// //                <Route
+// //                 path="/admin/lms"
+// //                 element={<AdminLMS />}
+// //               />
+// //                <Route
+// //                 path="/admin/recordings"
+// //                 element={<AdminRecordings />}
+// //               />
+
+
+// //               <Route
+// //                 path="/testimonials"
+// //                 element={<Testimonials />}
+// //               />
+
+// //               <Route
+// //                 path="/banners"
+// //                 element={<BannerManagement />}
+// //               />
+
+// //               <Route
+// //                 path="/admin/website-templates"
+// //                 element={<WebsiteTemplates />}
+// //               />
+
+// //               <Route
+// //                 path="/admin/website-templates/create"
+// //                 element={<CreateWebsiteTemplate />}
+// //               />
+
+// //               <Route
+// //                 path="/admin/website-templates/:id/edit"
+// //                 element={<EditWebsiteTemplate />}
+// //               />
+
+// //             </Route>
+
+// //             {/* =================================================
+// //                 PUBLIC WEBSITE PREVIEW
+// //             ================================================= */}
+
+// //             <Route
+// //               path="/institute/website/preview"
+// //               element={<PublicWebsitePreviewLayout />}
+// //             >
+
+// //               <Route
+// //                 index
+// //                 element={<WebsiteHome />}
+// //               />
+
+// //               <Route
+// //                 path="about"
+// //                 element={<WebsiteAbout />}
+// //               />
+
+// //               <Route
+// //                 path="classes"
+// //                 element={<WebsiteClasses />}
+// //               />
+
+// //               <Route
+// //                 path="classes/:classId"
+// //                 element={<WebsiteClassesDetail />}
+// //               />
+
+// //               <Route
+// //                 path="trainers"
+// //                 element={<WebsiteTrainers />}
+// //               />
+
+// //               <Route
+// //                 path="trainers/:trainerId"
+// //                 element={<WebsiteTrainerProfile />}
+// //               />
+
+// //               <Route
+// //                 path="sessions"
+// //                 element={<WebsiteSessions />}
+// //               />
+
+// //               <Route
+// //                 path="testimonials"
+// //                 element={<WebsiteTestimonials />}
+// //               />
+
+// //               <Route
+// //                 path="login"
+// //                 element={<WebsiteLogin />}
+// //               />
+
+// //               <Route element={<StudentProtectedRoute />}>
+
+// //                 <Route
+// //                   path="dashboard"
+// //                   element={<WebsitePreviewDashboard />}
+// //                 />
+// //                   <Route
+// //   path="dashboard"
+// //   element={<WebsitePreviewDashboard />}
+// // />
+
+// // <Route
+// //   path="lms/my-learning"
+// //   element={<WebsiteMyLearning />}
+// // />
+
+// // <Route
+// //   path="lms/my-learning/:classId"
+// //   element={<WebsiteLearningCourse />}
+// // />
+
+// // <Route
+// //   path="lms/live-sessions"
+// //   element={<WebsiteSessions />}
+// // />
+
+// // <Route
+// //   path="lms/recordings"
+// //   element={<WebsiteRecordings />}
+// // />
+
+// // <Route
+// //   path="lms/my-bookings"
+// //   element={<WebsiteMyBookings />}
+// // />
+
+// // <Route
+// //   path="lms/assignments"
+// //   element={<WebsiteAssignments />}
+// // />
+
+// // <Route
+// //   path="lms/assignments/submit"
+// //   element={<WebsiteAssignmentSubmit />}
+// // />
+
+// // <Route
+// //   path="lms/attendance"
+// //   element={<WebsiteAttendance />}
+// // />
+
+// // <Route
+// //   path="lms/payment-details"
+// //   element={<WebsitePaymentDetails />}
+// // />
+
+// // <Route
+// //   path="lms/profile"
+// //   element={<WebsiteProfile />}
+// // />
+
+// //               </Route>
+
+// //             </Route>
+
+// //             {/* =================================================
+// //                 INSTITUTE ROUTES
+// //             ================================================= */}
+
+// //           <Route element={<InstituteProtectedRoute />}>
+
+// //   <Route
+// //     path="/institute/create-profile"
+// //     element={<InstituteCreateProfile />}
+// //   />
+
+// //   <Route
+// //     path="/institute/pending"
+// //     element={<InstitutePending />}
+// //   />
+
+// //   <Route
+// //     path="/institute"
+// //     element={<InstituteLayout />}
+// //   >
+
+// //     <Route
+// //       index
+// //       element={
+// //         <Navigate
+// //           to="dashboard"
+// //           replace
+// //         />
+// //       }
+// //     />
+
+// //     <Route
+// //       path="dashboard"
+// //       element={<DashboardInstitute />}
+// //     />
+
+// //     <Route
+// //       path="trainers"
+// //       element={<TrainersInstitute />}
+// //     />
+
+// //     <Route
+// //       path="classes"
+// //       element={<ClassesInstitute />}
+// //     />
+
+// //     <Route
+// //       path="sessions"
+// //       element={<SessionInstitute />}
+// //     />
+
+// //     <Route
+// //       path="bookings"
+// //       element={<BookingsInstitute />}
+// //     />
+
+// //     <Route
+// //       path="testimonials"
+// //       element={<TestimonialsInstitute />}
+// //     />
+
+// //     <Route
+// //       path="profile"
+// //       element={<ProfileInstitute />}
+// //     />
+
+// //     <Route
+// //       path="Banners"
+// //       element={<BannersInstitute />}
+// //     />
+
+// //     <Route
+// //       path="About"
+// //       element={<AboutInstitute />}
+// //     />
+
+// //     <Route
+// //       path="footer"
+// //       element={<FooterInstitute />}
+// //     />
+
+// //     <Route
+// //       path="assignments"
+// //       element={<AssignmentsInstitute />}
+// //     />
+
+// //     <Route
+// //       path="attendance"
+// //       element={<AttendanceInstitute />}
+// //     />
+
+// //     {/* LMS */}
+// //     <Route
+// //       path="lms"
+// //       element={<LMSInstitute />}
+// //     />
+
+// //     <Route
+// //       path="lms/:classId"
+// //       element={<LMSInstitute />}
+// //     />
+
+// //     <Route
+// //       path="recordings"
+// //       element={<RecordingsInstitute />}
+// //     />
+
+// //     {/* STUDENTS */}
+// //     <Route
+// //       path="students"
+// //       element={<StudentsList />}
+// //     />
+
+// //     <Route
+// //       path="students/register"
+// //       element={<StudentRegistration />}
+// //     />
+
+// //     <Route
+// //       path="students/:id"
+// //       element={<StudentDetails />}
+// //     />
+
+// //     <Route
+// //       path="students/:id/edit"
+// //       element={<StudentEdit />}
+// //     />
+
+// //     {/* BATCHES */}
+// //     <Route
+// //       path="batches"
+// //       element={<BatchList />}
+// //     />
+
+// //     <Route
+// //       path="batches/create"
+// //       element={<CreateBatch />}
+// //     />
+
+// //     <Route
+// //       path="batches/:id"
+// //       element={<BatchDetails />}
+// //     />
+
+// //     <Route
+// //       path="batches/:id/edit"
+// //       element={<EditBatch />}
+// //     />
+
+// //     <Route
+// //       path="batches/assign"
+// //       element={<BatchStudentAssignment />}
+// //     />
+
+// //     {/* PAYMENTS */}
+// //     <Route
+// //       path="payments"
+// //       element={<PaymentList />}
+// //     />
+
+// //     <Route
+// //       path="payments/dashboard"
+// //       element={<PaymentDashboard />}
+// //     />
+
+// //     <Route
+// //       path="payments/collect"
+// //       element={<CollectPayment />}
+// //     />
+
+// //     <Route
+// //       path="payments/history/:studentId"
+// //       element={<PaymentHistory />}
+// //     />
+
+// //     {/* WEBSITE */}
+// //     <Route
+// //       path="website"
+// //       element={<WebsiteDashboard />}
+// //     />
+
+// //     <Route
+// //       path="website/template"
+// //       element={<WebsiteTemplate />}
+// //     />
+
+// //     <Route
+// //       path="website/sections"
+// //       element={<WebsiteSections />}
+// //     />
+
+// //     <Route
+// //       path="website/content"
+// //       element={<WebsiteContent />}
+// //     />
+
+// //     <Route
+// //       path="website/branding"
+// //       element={<WebsiteBranding />}
+// //     />
+
+// //     <Route
+// //       path="website/publish"
+// //       element={<WebsitePublish />}
+// //     />
+
+// //   </Route>
+
+// // </Route>
+// //             {/* =================================================
+// //                 TRAINER ROUTES
+// //             ================================================= */}
+
+// //             <Route element={<TrainerProtectedRoute />}>
+
+// //               {/* Trainer profile creation */}
+// //               <Route
+// //                 path="/trainer/create-profile"
+// //                 element={<TrainerCreateProfile />}
+// //               />
+
+// //               {/* Trainer pending */}
+// //               <Route
+// //                 path="/trainer/pending"
+// //                 element={<TrainerPending />}
+// //               />
+
+// //               {/* =================================================
+// //                   TRAINER MAIN LAYOUT
+// //               ================================================= */}
+
+// //               <Route
+// //                 path="/trainer"
+// //                 element={<TrainerLayout />}
+// //               >
+
+// //                 {/* =================================================
+// //                     TRAINER DEFAULT
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   index
+// //                   element={
+// //                     <Navigate
+// //                       to="dashboard"
+// //                       replace
+// //                     />
+// //                   }
+// //                 />
+
+// //                 {/* =================================================
+// //                     DASHBOARD
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="dashboard"
+// //                   element={<TrainerDashboard />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     MY CLASSES
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="classes"
+// //                   element={<TrainerClasses />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     LMS MAIN PAGE
+
+// //                     IMPORTANT FIX:
+
+// //                     Sidebar LMS:
+// //                     /trainer/lms
+
+// //                     This MUST open TrainerLMS directly.
+
+// //                     It must NOT redirect to /trainer/classes.
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="lms"
+// //                   element={<TrainerLMS />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     LMS CLASS DETAIL
+
+// //                     Manage LMS button from My Classes:
+// //                     /trainer/lms/:classId
+
+// //                     Example:
+// //                     /trainer/lms/27
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="lms/:classId"
+// //                   element={<TrainerLMS />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     BOOKINGS
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="bookings"
+// //                   element={<TrainerBookings />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     STUDENTS
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="students"
+// //                   element={<TrainerStudents />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     PROFILE
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="profile"
+// //                   element={<TrainerProfile />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     SESSIONS
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="sessions"
+// //                   element={<TrainerSession />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     ATTENDANCE
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="attendance"
+// //                   element={<TrainerAttendance />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     ASSIGNMENTS
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="assignments"
+// //                   element={<TrainerAssignments />}
+// //                 />
+
+// //                 {/* =================================================
+// //                     RECORDINGS
+// //                 ================================================= */}
+
+// //                 <Route
+// //                   path="recordings"
+// //                   element={<TrainerRecordings />}
+// //                 />
+
+// //               </Route>
+
+// //             </Route>
+
+// //             {/* =================================================
+// //                 FALLBACK
+// //             ================================================= */}
+
+// //             <Route
+// //               path="*"
+// //               element={
+// //                 <Navigate
+// //                   to="/"
+// //                   replace
+// //                 />
+// //               }
+// //             />
+
+// //           </Routes>
+
+// //           <Toaster
+// //             position="top-right"
+// //           />
+
+// //         </div>
+// //       </SidebarProvider>
+// //     </Router>
+// //   );
+// // }
+
+// // export default App;
+
+// // /* =========================================================
+// //    PUBLIC WEBSITE PREVIEW LAYOUT
+// // ========================================================= */
+
+// // function PublicWebsitePreviewLayout() {
+// //   return (
+// //     <WebsitePreview>
+// //       <WebsiteNavbar />
+// //       <Outlet />
+// //     </WebsitePreview>
+// //   );
+// // }
+
+
+// /* =========================================================
+//    STUDENT LMS WEBSITE LAYOUT
+// =========================================================
+
+//    IMPORTANT:
+
+//    This layout is ONLY for the logged-in student LMS.
+
+//    It intentionally does NOT render WebsiteNavbar.
+
+//    The public website uses:
+
+//       WebsitePreview
+//           ↓
+//       WebsiteNavbar
+//           ↓
+//       Public Website Pages
+
+//    The Student LMS uses:
+
+//       WebsitePreview
+//           ↓
+//       Student LMS Pages
+//           ↓
+//       LMS Sidebar / LMS Header
+
+// ========================================================= */
+
+// function StudentWebsitePreviewLayout() {
+//   return (
+//     <WebsitePreview>
+//       <Outlet />
+//     </WebsitePreview>
+//   );
+// }
+
+
+// /* =========================================================
+//    APP
+// ========================================================= */
+
+// function App() {
+//   return (
+//     <Router>
+//       <SidebarProvider>
+
+//         <div className="min-h-screen bg-background-dark">
+
+//           <Routes>
+
+//             {/* =================================================
+//                 ROOT
+//             ================================================= */}
+
+//             <Route
+//               path="/"
+//               element={<LoginMenu />}
+//             />
+
+
+//             {/* =================================================
+//                 ADMIN LOGIN
+//             ================================================= */}
+
+//             <Route
+//               path="/admin-login"
+//               element={<Login />}
+//             />
+
+
+//             {/* =================================================
+//                 INSTITUTE LOGIN
+//             ================================================= */}
+
+//             <Route
+//               path="/institute-login"
+//               element={<InstituteLogin />}
+//             />
+
+
+//             {/* =================================================
+//                 TRAINER LOGIN
+//             ================================================= */}
+
+//             <Route
+//               path="/trainer-login"
+//               element={<TrainerLogin />}
+//             />
+
+
+//             {/* =================================================
+//                 ADMIN ROUTES
+//             ================================================= */}
+
+//             <Route element={<AdminProtectedRoute />}>
+
+//               <Route
+//                 path="/dashboard"
+//                 element={<Dashboard />}
+//               />
+
+//               <Route
+//                 path="/categories"
+//                 element={<Categories />}
+//               />
+
+//               <Route
+//                 path="/subcategories"
+//                 element={<Subcategories />}
+//               />
+
+//               <Route
+//                 path="/classes"
+//                 element={<Classes />}
+//               />
+
+//               <Route
+//                 path="/sessions"
+//                 element={<Sessions />}
+//               />
+
+//               <Route
+//                 path="/trainers"
+//                 element={<Trainers />}
+//               />
+
+//               <Route
+//                 path="/trainers/pending"
+//                 element={<PendingTrainersAdmin />}
+//               />
+
+//               <Route
+//                 path="/trainers/rejected"
+//                 element={<RejectedTrainersAdmin />}
+//               />
+
+//               <Route
+//                 path="/institutes"
+//                 element={<Institutes />}
+//               />
+
+//               <Route
+//                 path="/institutes/pending"
+//                 element={<PendingInstitutesAdmin />}
+//               />
+
+//               <Route
+//                 path="/institutes/rejected"
+//                 element={<RejectedInstitutesAdmin />}
+//               />
+
+//               <Route
+//                 path="/bookings"
+//                 element={<Bookings />}
+//               />
+
+//               <Route
+//                 path="/students"
+//                 element={<Students />}
+//               />
+
+//               <Route
+//                 path="/admin/attendance"
+//                 element={<AdminAttendance />}
+//               />
+
+//               <Route
+//                 path="/admin/assignments"
+//                 element={<AdminAssignments />}
+//               />
+
+//               <Route
+//                 path="/admin/lms"
+//                 element={<AdminLMS />}
+//               />
+
+//               <Route
+//                 path="/admin/recordings"
+//                 element={<AdminRecordings />}
+//               />
+
+//               <Route
+//                 path="/testimonials"
+//                 element={<Testimonials />}
+//               />
+
+//               <Route
+//                 path="/banners"
+//                 element={<BannerManagement />}
+//               />
+
+//               <Route
+//                 path="/admin/website-templates"
+//                 element={<WebsiteTemplates />}
+//               />
+
+//               <Route
+//                 path="/admin/website-templates/create"
+//                 element={<CreateWebsiteTemplate />}
+//               />
+
+//               <Route
+//                 path="/admin/website-templates/:id/edit"
+//                 element={<EditWebsiteTemplate />}
+//               />
+
+//             </Route>
+
+
+//             {/* =================================================
+//                 PUBLIC WEBSITE PREVIEW
+//             =================================================
+
+//                 These are normal public website pages.
+
+//                 WebsiteNavbar IS required here.
+
+//             ================================================= */}
+
+//             <Route
+//               path="/institute/website/preview"
+//               element={<PublicWebsitePreviewLayout />}
+//             >
+
+//               {/* HOME */}
+
+//               <Route
+//                 index
+//                 element={<WebsiteHome />}
+//               />
+
+
+//               {/* ABOUT */}
+
+//               <Route
+//                 path="about"
+//                 element={<WebsiteAbout />}
+//               />
+
+
+//               {/* CLASSES */}
+
+//               <Route
+//                 path="classes"
+//                 element={<WebsiteClasses />}
+//               />
+
+//               <Route
+//                 path="classes/:classId"
+//                 element={<WebsiteClassesDetail />}
+//               />
+
+
+//               {/* TRAINERS */}
+
+//               <Route
+//                 path="trainers"
+//                 element={<WebsiteTrainers />}
+//               />
+
+//               <Route
+//                 path="trainers/:trainerId"
+//                 element={<WebsiteTrainerProfile />}
+//               />
+
+
+//               {/* SESSIONS */}
+
+//               <Route
+//                 path="sessions"
+//                 element={<WebsiteSessions />}
+//               />
+
+
+//               {/* TESTIMONIALS */}
+
+//               <Route
+//                 path="testimonials"
+//                 element={<WebsiteTestimonials />}
+//               />
+
+
+//               {/* STUDENT LOGIN */}
+
+//               <Route
+//                 path="login"
+//                 element={<WebsiteLogin />}
+//               />
+
+//             </Route>
+
+
+//             {/* =================================================
+//                 STUDENT LMS
+//             =================================================
+
+//                 IMPORTANT:
+
+//                 These routes are OUTSIDE the
+//                 PublicWebsitePreviewLayout.
+
+//                 Therefore:
+
+//                     WebsiteNavbar ❌
+
+//                 will NOT be rendered.
+
+//                 Instead:
+
+//                     StudentProtectedRoute
+//                             ↓
+//                     StudentWebsitePreviewLayout
+//                             ↓
+//                     WebsitePreview
+//                             ↓
+//                     Student LMS page
+
+//             ================================================= */}
+
+//             <Route element={<StudentProtectedRoute />}>
+
+//               <Route
+//                 element={<StudentWebsitePreviewLayout />}
+//               >
+
+//                 {/* =================================================
+//                     STUDENT DASHBOARD
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/dashboard"
+//                   element={<WebsitePreviewDashboard />}
+//                 />
+
+
+//                 {/* =================================================
+//                     MY LEARNING
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/my-learning"
+//                   element={<WebsiteMyLearning />}
+//                 />
+
+
+//                 {/* =================================================
+//                     LEARNING COURSE DETAIL
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/my-learning/:classId"
+//                   element={<WebsiteLearningCourse />}
+//                 />
+
+
+//                 {/* =================================================
+//                     LIVE SESSIONS
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/live-sessions"
+//                   element={<WebsiteSessions />}
+//                 />
+
+
+//                 {/* =================================================
+//                     RECORDINGS
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/recordings"
+//                   element={<WebsiteRecordings />}
+//                 />
+
+
+//                 {/* =================================================
+//                     MY BOOKINGS
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/my-bookings"
+//                   element={<WebsiteMyBookings />}
+//                 />
+
+
+//                 {/* =================================================
+//                     ASSIGNMENTS
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/assignments"
+//                   element={<WebsiteAssignments />}
+//                 />
+
+
+//                 {/* =================================================
+//                     ASSIGNMENT SUBMIT
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/assignments/submit"
+//                   element={<WebsiteAssignmentSubmit />}
+//                 />
+
+
+//                 {/* =================================================
+//                     ATTENDANCE
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/attendance"
+//                   element={<WebsiteAttendance />}
+//                 />
+
+
+//                 {/* =================================================
+//                     PAYMENT DETAILS
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/payment-details"
+//                   element={<WebsitePaymentDetails />}
+//                 />
+
+
+//                 {/* =================================================
+//                     PROFILE
+//                 ================================================= */}
+
+//                 <Route
+//                   path="/institute/website/preview/lms/profile"
+//                   element={<WebsiteProfile />}
+//                 />
+
+//               </Route>
+
+//             </Route>
+
+
+//             {/* =================================================
+//                 INSTITUTE ROUTES
+//             ================================================= */}
+
+//             <Route element={<InstituteProtectedRoute />}>
+
+//               <Route
+//                 path="/institute/create-profile"
+//                 element={<InstituteCreateProfile />}
+//               />
+
+//               <Route
+//                 path="/institute/pending"
+//                 element={<InstitutePending />}
+//               />
+
+//               <Route
+//                 path="/institute"
+//                 element={<InstituteLayout />}
+//               >
+
+//                 <Route
+//                   index
+//                   element={
+//                     <Navigate
+//                       to="dashboard"
+//                       replace
+//                     />
+//                   }
+//                 />
+
+//                 <Route
+//                   path="dashboard"
+//                   element={<DashboardInstitute />}
+//                 />
+
+//                 <Route
+//                   path="trainers"
+//                   element={<TrainersInstitute />}
+//                 />
+
+//                 <Route
+//                   path="classes"
+//                   element={<ClassesInstitute />}
+//                 />
+
+//                 <Route
+//                   path="sessions"
+//                   element={<SessionInstitute />}
+//                 />
+
+//                 <Route
+//                   path="bookings"
+//                   element={<BookingsInstitute />}
+//                 />
+
+//                 <Route
+//                   path="testimonials"
+//                   element={<TestimonialsInstitute />}
+//                 />
+
+//                 <Route
+//                   path="profile"
+//                   element={<ProfileInstitute />}
+//                 />
+
+//                 <Route
+//                   path="Banners"
+//                   element={<BannersInstitute />}
+//                 />
+
+//                 <Route
+//                   path="About"
+//                   element={<AboutInstitute />}
+//                 />
+
+//                 <Route
+//                   path="footer"
+//                   element={<FooterInstitute />}
+//                 />
+
+//                 <Route
+//                   path="assignments"
+//                   element={<AssignmentsInstitute />}
+//                 />
+
+//                 <Route
+//                   path="attendance"
+//                   element={<AttendanceInstitute />}
+//                 />
+
+//                 <Route
+//                   path="lms"
+//                   element={<LMSInstitute />}
+//                 />
+
+//                 <Route
+//                   path="lms/:classId"
+//                   element={<LMSInstitute />}
+//                 />
+
+//                 <Route
+//                   path="recordings"
+//                   element={<RecordingsInstitute />}
+//                 />
+
+//                 {/* STUDENTS */}
+
+//                 <Route
+//                   path="students"
+//                   element={<StudentsList />}
+//                 />
+
+//                 <Route
+//                   path="students/register"
+//                   element={<StudentRegistration />}
+//                 />
+
+//                 <Route
+//                   path="students/:id"
+//                   element={<StudentDetails />}
+//                 />
+
+//                 <Route
+//                   path="students/:id/edit"
+//                   element={<StudentEdit />}
+//                 />
+
+//                 {/* BATCHES */}
+
+//                 <Route
+//                   path="batches"
+//                   element={<BatchList />}
+//                 />
+
+//                 <Route
+//                   path="batches/create"
+//                   element={<CreateBatch />}
+//                 />
+
+//                 <Route
+//                   path="batches/:id"
+//                   element={<BatchDetails />}
+//                 />
+
+//                 <Route
+//                   path="batches/:id/edit"
+//                   element={<EditBatch />}
+//                 />
+
+//                 <Route
+//                   path="batches/assign"
+//                   element={<BatchStudentAssignment />}
+//                 />
+
+//                 {/* PAYMENTS */}
+
+//                 <Route
+//                   path="payments"
+//                   element={<PaymentList />}
+//                 />
+
+//                 <Route
+//                   path="payments/dashboard"
+//                   element={<PaymentDashboard />}
+//                 />
+
+//                 <Route
+//                   path="payments/collect"
+//                   element={<CollectPayment />}
+//                 />
+
+//                 <Route
+//                   path="payments/history/:studentId"
+//                   element={<PaymentHistory />}
+//                 />
+
+//                 {/* WEBSITE */}
+
+//                 <Route
+//                   path="website"
+//                   element={<WebsiteDashboard />}
+//                 />
+
+//                 <Route
+//                   path="website/template"
+//                   element={<WebsiteTemplate />}
+//                 />
+
+//                 <Route
+//                   path="website/sections"
+//                   element={<WebsiteSections />}
+//                 />
+
+//                 <Route
+//                   path="website/content"
+//                   element={<WebsiteContent />}
+//                 />
+
+//                 <Route
+//                   path="website/branding"
+//                   element={<WebsiteBranding />}
+//                 />
+
+//                 <Route
+//                   path="website/publish"
+//                   element={<WebsitePublish />}
+//                 />
+
+//               </Route>
+
+//             </Route>
+
+
+//             {/* =================================================
+//                 TRAINER ROUTES
+//             ================================================= */}
+
+//             <Route element={<TrainerProtectedRoute />}>
+
+//               {/* TRAINER PROFILE */}
+
+//               <Route
+//                 path="/trainer/create-profile"
+//                 element={<TrainerCreateProfile />}
+//               />
+
+//               {/* TRAINER PENDING */}
+
+//               <Route
+//                 path="/trainer/pending"
+//                 element={<TrainerPending />}
+//               />
+
+
+//               {/* TRAINER MAIN LAYOUT */}
+
+//               <Route
+//                 path="/trainer"
+//                 element={<TrainerLayout />}
+//               >
+
+//                 {/* DEFAULT */}
+
+//                 <Route
+//                   index
+//                   element={
+//                     <Navigate
+//                       to="dashboard"
+//                       replace
+//                     />
+//                   }
+//                 />
+
+
+//                 {/* DASHBOARD */}
+
+//                 <Route
+//                   path="dashboard"
+//                   element={<TrainerDashboard />}
+//                 />
+
+
+//                 {/* CLASSES */}
+
+//                 <Route
+//                   path="classes"
+//                   element={<TrainerClasses />}
+//                 />
+
+
+//                 {/* LMS */}
+
+//                 <Route
+//                   path="lms"
+//                   element={<TrainerLMS />}
+//                 />
+
+//                 <Route
+//                   path="lms/:classId"
+//                   element={<TrainerLMS />}
+//                 />
+
+
+//                 {/* BOOKINGS */}
+
+//                 <Route
+//                   path="bookings"
+//                   element={<TrainerBookings />}
+//                 />
+
+
+//                 {/* STUDENTS */}
+
+//                 <Route
+//                   path="students"
+//                   element={<TrainerStudents />}
+//                 />
+
+
+//                 {/* PROFILE */}
+
+//                 <Route
+//                   path="profile"
+//                   element={<TrainerProfile />}
+//                 />
+
+
+//                 {/* SESSIONS */}
+
+//                 <Route
+//                   path="sessions"
+//                   element={<TrainerSession />}
+//                 />
+
+
+//                 {/* ATTENDANCE */}
+
+//                 <Route
+//                   path="attendance"
+//                   element={<TrainerAttendance />}
+//                 />
+
+
+//                 {/* ASSIGNMENTS */}
+
+//                 <Route
+//                   path="assignments"
+//                   element={<TrainerAssignments />}
+//                 />
+
+
+//                 {/* RECORDINGS */}
+
+//                 <Route
+//                   path="recordings"
+//                   element={<TrainerRecordings />}
+//                 />
+
+//               </Route>
+
+//             </Route>
+
+
+//             {/* =================================================
+//                 FALLBACK
+//             ================================================= */}
+
+//             <Route
+//               path="*"
+//               element={
+//                 <Navigate
+//                   to="/"
+//                   replace
+//                 />
+//               }
+//             />
+
+//           </Routes>
+
+
+//           {/* =================================================
+//               TOASTER
+//           ================================================= */}
+
+//           <Toaster
+//             position="top-right"
+//           />
+
+//         </div>
+
+//       </SidebarProvider>
+//     </Router>
+//   );
+// }
+
+// export default App;
+
+
+
 const getStoredRole = () => {
   return String(localStorage.getItem("role") || "")
     .trim()
     .toUpperCase();
 };
+
 
 /* =========================================================
    ADMIN PROTECTED ROUTE
@@ -179,6 +1953,7 @@ function AdminProtectedRoute() {
 
   return <Layout />;
 }
+
 
 /* =========================================================
    INSTITUTE PROTECTED ROUTE
@@ -224,6 +1999,7 @@ function InstituteProtectedRoute() {
   return <Outlet />;
 }
 
+
 /* =========================================================
    TRAINER PROTECTED ROUTE
 ========================================================= */
@@ -268,6 +2044,7 @@ function TrainerProtectedRoute() {
   return <Outlet />;
 }
 
+
 /* =========================================================
    WEBSITE STUDENT PROTECTED ROUTE
 ========================================================= */
@@ -276,6 +2053,11 @@ function StudentProtectedRoute() {
   const [loading, setLoading] = useState(true);
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [studentSession, setStudentSession] = useState(false);
+
+
+  /* =======================================================
+     CHECK WEBSITE STUDENT SESSION
+  ======================================================= */
 
   const checkStudentSession = () => {
     const studentRole = String(
@@ -298,13 +2080,16 @@ function StudentProtectedRoute() {
 
     const validSession =
       studentRole === "STUDENT" &&
-      studentLoggedIn === true &&
+      studentLoggedIn &&
       !!studentUser &&
       !!studentInstituteId &&
       !!studentToken;
 
     setStudentSession(validSession);
+
+    return validSession;
   };
+
 
   /* =======================================================
      FIREBASE AUTH STATE
@@ -331,6 +2116,7 @@ function StudentProtectedRoute() {
 
     return () => unsubscribe();
   }, []);
+
 
   /* =======================================================
      SAME TAB / STORAGE SESSION CHANGES
@@ -374,6 +2160,11 @@ function StudentProtectedRoute() {
     };
   }, []);
 
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-dark text-white">
@@ -381,6 +2172,11 @@ function StudentProtectedRoute() {
       </div>
     );
   }
+
+
+  /* =======================================================
+     STUDENT SESSION CHECK
+  ======================================================= */
 
   if (!studentSession) {
     return (
@@ -391,6 +2187,11 @@ function StudentProtectedRoute() {
     );
   }
 
+
+  /* =======================================================
+     FIREBASE CHECK
+  ======================================================= */
+
   if (!firebaseUser) {
     return (
       <Navigate
@@ -400,8 +2201,10 @@ function StudentProtectedRoute() {
     );
   }
 
+
   return <Outlet />;
 }
+
 
 /* =========================================================
    PUBLIC WEBSITE PREVIEW LAYOUT
@@ -416,6 +2219,25 @@ function PublicWebsitePreviewLayout() {
   );
 }
 
+
+/* =========================================================
+   STUDENT LMS WEBSITE LAYOUT
+=========================================================
+
+   Student LMS intentionally does NOT render
+   WebsiteNavbar.
+
+========================================================= */
+
+function StudentWebsitePreviewLayout() {
+  return (
+    <WebsitePreview>
+      <Outlet />
+    </WebsitePreview>
+  );
+}
+
+
 /* =========================================================
    APP
 ========================================================= */
@@ -424,6 +2246,7 @@ function App() {
   return (
     <Router>
       <SidebarProvider>
+
         <div className="min-h-screen bg-background-dark">
 
           <Routes>
@@ -437,6 +2260,7 @@ function App() {
               element={<LoginMenu />}
             />
 
+
             {/* =================================================
                 ADMIN LOGIN
             ================================================= */}
@@ -445,6 +2269,7 @@ function App() {
               path="/admin-login"
               element={<Login />}
             />
+
 
             {/* =================================================
                 INSTITUTE LOGIN
@@ -455,6 +2280,7 @@ function App() {
               element={<InstituteLogin />}
             />
 
+
             {/* =================================================
                 TRAINER LOGIN
             ================================================= */}
@@ -463,6 +2289,7 @@ function App() {
               path="/trainer-login"
               element={<TrainerLogin />}
             />
+
 
             {/* =================================================
                 ADMIN ROUTES
@@ -534,23 +2361,26 @@ function App() {
                 path="/students"
                 element={<Students />}
               />
-               <Route
+
+              <Route
                 path="/admin/attendance"
                 element={<AdminAttendance />}
               />
-               <Route
+
+              <Route
                 path="/admin/assignments"
                 element={<AdminAssignments />}
               />
-               <Route
+
+              <Route
                 path="/admin/lms"
                 element={<AdminLMS />}
               />
-               <Route
+
+              <Route
                 path="/admin/recordings"
                 element={<AdminRecordings />}
               />
-
 
               <Route
                 path="/testimonials"
@@ -578,6 +2408,7 @@ function App() {
               />
 
             </Route>
+
 
             {/* =================================================
                 PUBLIC WEBSITE PREVIEW
@@ -633,310 +2464,116 @@ function App() {
                 element={<WebsiteLogin />}
               />
 
-              <Route element={<StudentProtectedRoute />}>
+            </Route>
+
+
+            {/* =================================================
+                STUDENT LMS
+            =================================================
+
+                Student LMS is intentionally OUTSIDE the
+                PublicWebsitePreviewLayout.
+
+                Therefore:
+
+                WebsiteNavbar ❌
+
+                StudentProtectedRoute
+                       ↓
+                StudentWebsitePreviewLayout
+                       ↓
+                WebsitePreview
+                       ↓
+                Student LMS Page
+
+            ================================================= */}
+
+            <Route element={<StudentProtectedRoute />}>
+
+              <Route
+                element={<StudentWebsitePreviewLayout />}
+              >
 
                 <Route
-                  path="dashboard"
+                  path="/institute/website/preview/dashboard"
                   element={<WebsitePreviewDashboard />}
                 />
-                  <Route
-  path="dashboard"
-  element={<WebsitePreviewDashboard />}
-/>
 
-<Route
-  path="lms/my-learning"
-  element={<WebsiteMyLearning />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/my-learning"
+                  element={<WebsiteMyLearning />}
+                />
 
-<Route
-  path="lms/my-learning/:classId"
-  element={<WebsiteLearningCourse />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/my-learning/:classId"
+                  element={<WebsiteLearningCourse />}
+                />
 
-<Route
-  path="lms/live-sessions"
-  element={<WebsiteSessions />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/live-sessions"
+                  element={<WebsiteSessions />}
+                />
 
-<Route
-  path="lms/recordings"
-  element={<WebsiteRecordings />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/recordings"
+                  element={<WebsiteRecordings />}
+                />
 
-<Route
-  path="lms/my-bookings"
-  element={<WebsiteMyBookings />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/my-bookings"
+                  element={<WebsiteMyBookings />}
+                />
 
-<Route
-  path="lms/assignments"
-  element={<WebsiteAssignments />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/assignments"
+                  element={<WebsiteAssignments />}
+                />
 
-<Route
-  path="lms/assignments/submit"
-  element={<WebsiteAssignmentSubmit />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/assignments/submit"
+                  element={<WebsiteAssignmentSubmit />}
+                />
 
-<Route
-  path="lms/attendance"
-  element={<WebsiteAttendance />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/attendance"
+                  element={<WebsiteAttendance />}
+                />
 
-<Route
-  path="lms/payment-details"
-  element={<WebsitePaymentDetails />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/payment-details"
+                  element={<WebsitePaymentDetails />}
+                />
 
-<Route
-  path="lms/profile"
-  element={<WebsiteProfile />}
-/>
+                <Route
+                  path="/institute/website/preview/lms/profile"
+                  element={<WebsiteProfile />}
+                />
 
               </Route>
 
             </Route>
 
+
             {/* =================================================
                 INSTITUTE ROUTES
             ================================================= */}
 
-          <Route element={<InstituteProtectedRoute />}>
+            <Route element={<InstituteProtectedRoute />}>
 
-  <Route
-    path="/institute/create-profile"
-    element={<InstituteCreateProfile />}
-  />
-
-  <Route
-    path="/institute/pending"
-    element={<InstitutePending />}
-  />
-
-  <Route
-    path="/institute"
-    element={<InstituteLayout />}
-  >
-
-    <Route
-      index
-      element={
-        <Navigate
-          to="dashboard"
-          replace
-        />
-      }
-    />
-
-    <Route
-      path="dashboard"
-      element={<DashboardInstitute />}
-    />
-
-    <Route
-      path="trainers"
-      element={<TrainersInstitute />}
-    />
-
-    <Route
-      path="classes"
-      element={<ClassesInstitute />}
-    />
-
-    <Route
-      path="sessions"
-      element={<SessionInstitute />}
-    />
-
-    <Route
-      path="bookings"
-      element={<BookingsInstitute />}
-    />
-
-    <Route
-      path="testimonials"
-      element={<TestimonialsInstitute />}
-    />
-
-    <Route
-      path="profile"
-      element={<ProfileInstitute />}
-    />
-
-    <Route
-      path="Banners"
-      element={<BannersInstitute />}
-    />
-
-    <Route
-      path="About"
-      element={<AboutInstitute />}
-    />
-
-    <Route
-      path="footer"
-      element={<FooterInstitute />}
-    />
-
-    <Route
-      path="assignments"
-      element={<AssignmentsInstitute />}
-    />
-
-    <Route
-      path="attendance"
-      element={<AttendanceInstitute />}
-    />
-
-    {/* LMS */}
-    <Route
-      path="lms"
-      element={<LMSInstitute />}
-    />
-
-    <Route
-      path="lms/:classId"
-      element={<LMSInstitute />}
-    />
-
-    <Route
-      path="recordings"
-      element={<RecordingsInstitute />}
-    />
-
-    {/* STUDENTS */}
-    <Route
-      path="students"
-      element={<StudentsList />}
-    />
-
-    <Route
-      path="students/register"
-      element={<StudentRegistration />}
-    />
-
-    <Route
-      path="students/:id"
-      element={<StudentDetails />}
-    />
-
-    <Route
-      path="students/:id/edit"
-      element={<StudentEdit />}
-    />
-
-    {/* BATCHES */}
-    <Route
-      path="batches"
-      element={<BatchList />}
-    />
-
-    <Route
-      path="batches/create"
-      element={<CreateBatch />}
-    />
-
-    <Route
-      path="batches/:id"
-      element={<BatchDetails />}
-    />
-
-    <Route
-      path="batches/:id/edit"
-      element={<EditBatch />}
-    />
-
-    <Route
-      path="batches/assign"
-      element={<BatchStudentAssignment />}
-    />
-
-    {/* PAYMENTS */}
-    <Route
-      path="payments"
-      element={<PaymentList />}
-    />
-
-    <Route
-      path="payments/dashboard"
-      element={<PaymentDashboard />}
-    />
-
-    <Route
-      path="payments/collect"
-      element={<CollectPayment />}
-    />
-
-    <Route
-      path="payments/history/:studentId"
-      element={<PaymentHistory />}
-    />
-
-    {/* WEBSITE */}
-    <Route
-      path="website"
-      element={<WebsiteDashboard />}
-    />
-
-    <Route
-      path="website/template"
-      element={<WebsiteTemplate />}
-    />
-
-    <Route
-      path="website/sections"
-      element={<WebsiteSections />}
-    />
-
-    <Route
-      path="website/content"
-      element={<WebsiteContent />}
-    />
-
-    <Route
-      path="website/branding"
-      element={<WebsiteBranding />}
-    />
-
-    <Route
-      path="website/publish"
-      element={<WebsitePublish />}
-    />
-
-  </Route>
-
-</Route>
-            {/* =================================================
-                TRAINER ROUTES
-            ================================================= */}
-
-            <Route element={<TrainerProtectedRoute />}>
-
-              {/* Trainer profile creation */}
               <Route
-                path="/trainer/create-profile"
-                element={<TrainerCreateProfile />}
+                path="/institute/create-profile"
+                element={<InstituteCreateProfile />}
               />
 
-              {/* Trainer pending */}
               <Route
-                path="/trainer/pending"
-                element={<TrainerPending />}
+                path="/institute/pending"
+                element={<InstitutePending />}
               />
 
-              {/* =================================================
-                  TRAINER MAIN LAYOUT
-              ================================================= */}
-
               <Route
-                path="/trainer"
-                element={<TrainerLayout />}
+                path="/institute"
+                element={<InstituteLayout />}
               >
-
-                {/* =================================================
-                    TRAINER DEFAULT
-                ================================================= */}
 
                 <Route
                   index
@@ -948,114 +2585,273 @@ function App() {
                   }
                 />
 
-                {/* =================================================
-                    DASHBOARD
-                ================================================= */}
+                <Route
+                  path="dashboard"
+                  element={<DashboardInstitute />}
+                />
+
+                <Route
+                  path="trainers"
+                  element={<TrainersInstitute />}
+                />
+
+                <Route
+                  path="classes"
+                  element={<ClassesInstitute />}
+                />
+
+                <Route
+                  path="sessions"
+                  element={<SessionInstitute />}
+                />
+
+                <Route
+                  path="bookings"
+                  element={<BookingsInstitute />}
+                />
+
+                <Route
+                  path="testimonials"
+                  element={<TestimonialsInstitute />}
+                />
+
+                <Route
+                  path="profile"
+                  element={<ProfileInstitute />}
+                />
+
+                <Route
+                  path="Banners"
+                  element={<BannersInstitute />}
+                />
+
+                <Route
+                  path="About"
+                  element={<AboutInstitute />}
+                />
+
+                <Route
+                  path="footer"
+                  element={<FooterInstitute />}
+                />
+
+                <Route
+                  path="assignments"
+                  element={<AssignmentsInstitute />}
+                />
+
+                <Route
+                  path="attendance"
+                  element={<AttendanceInstitute />}
+                />
+
+                <Route
+                  path="lms"
+                  element={<LMSInstitute />}
+                />
+
+                <Route
+                  path="lms/:classId"
+                  element={<LMSInstitute />}
+                />
+
+                <Route
+                  path="recordings"
+                  element={<RecordingsInstitute />}
+                />
+
+
+                {/* STUDENTS */}
+
+                <Route
+                  path="students"
+                  element={<StudentsList />}
+                />
+
+                <Route
+                  path="students/register"
+                  element={<StudentRegistration />}
+                />
+
+                <Route
+                  path="students/:id"
+                  element={<StudentDetails />}
+                />
+
+                <Route
+                  path="students/:id/edit"
+                  element={<StudentEdit />}
+                />
+
+
+                {/* BATCHES */}
+
+                <Route
+                  path="batches"
+                  element={<BatchList />}
+                />
+
+                <Route
+                  path="batches/create"
+                  element={<CreateBatch />}
+                />
+
+                <Route
+                  path="batches/:id"
+                  element={<BatchDetails />}
+                />
+
+                <Route
+                  path="batches/:id/edit"
+                  element={<EditBatch />}
+                />
+
+                <Route
+                  path="batches/assign"
+                  element={<BatchStudentAssignment />}
+                />
+
+
+                {/* PAYMENTS */}
+
+                <Route
+                  path="payments"
+                  element={<PaymentList />}
+                />
+
+                <Route
+                  path="payments/dashboard"
+                  element={<PaymentDashboard />}
+                />
+
+                <Route
+                  path="payments/collect"
+                  element={<CollectPayment />}
+                />
+
+                <Route
+                  path="payments/history/:studentId"
+                  element={<PaymentHistory />}
+                />
+
+
+                {/* WEBSITE */}
+
+                <Route
+                  path="website"
+                  element={<WebsiteDashboard />}
+                />
+
+                <Route
+                  path="website/template"
+                  element={<WebsiteTemplate />}
+                />
+
+                <Route
+                  path="website/sections"
+                  element={<WebsiteSections />}
+                />
+
+                <Route
+                  path="website/content"
+                  element={<WebsiteContent />}
+                />
+
+                <Route
+                  path="website/branding"
+                  element={<WebsiteBranding />}
+                />
+
+                <Route
+                  path="website/publish"
+                  element={<WebsitePublish />}
+                />
+
+              </Route>
+
+            </Route>
+
+
+            {/* =================================================
+                TRAINER ROUTES
+            ================================================= */}
+
+            <Route element={<TrainerProtectedRoute />}>
+
+              <Route
+                path="/trainer/create-profile"
+                element={<TrainerCreateProfile />}
+              />
+
+              <Route
+                path="/trainer/pending"
+                element={<TrainerPending />}
+              />
+
+              <Route
+                path="/trainer"
+                element={<TrainerLayout />}
+              >
+
+                <Route
+                  index
+                  element={
+                    <Navigate
+                      to="dashboard"
+                      replace
+                    />
+                  }
+                />
 
                 <Route
                   path="dashboard"
                   element={<TrainerDashboard />}
                 />
 
-                {/* =================================================
-                    MY CLASSES
-                ================================================= */}
-
                 <Route
                   path="classes"
                   element={<TrainerClasses />}
                 />
-
-                {/* =================================================
-                    LMS MAIN PAGE
-
-                    IMPORTANT FIX:
-
-                    Sidebar LMS:
-                    /trainer/lms
-
-                    This MUST open TrainerLMS directly.
-
-                    It must NOT redirect to /trainer/classes.
-                ================================================= */}
 
                 <Route
                   path="lms"
                   element={<TrainerLMS />}
                 />
 
-                {/* =================================================
-                    LMS CLASS DETAIL
-
-                    Manage LMS button from My Classes:
-                    /trainer/lms/:classId
-
-                    Example:
-                    /trainer/lms/27
-                ================================================= */}
-
                 <Route
                   path="lms/:classId"
                   element={<TrainerLMS />}
                 />
-
-                {/* =================================================
-                    BOOKINGS
-                ================================================= */}
 
                 <Route
                   path="bookings"
                   element={<TrainerBookings />}
                 />
 
-                {/* =================================================
-                    STUDENTS
-                ================================================= */}
-
                 <Route
                   path="students"
                   element={<TrainerStudents />}
                 />
-
-                {/* =================================================
-                    PROFILE
-                ================================================= */}
 
                 <Route
                   path="profile"
                   element={<TrainerProfile />}
                 />
 
-                {/* =================================================
-                    SESSIONS
-                ================================================= */}
-
                 <Route
                   path="sessions"
                   element={<TrainerSession />}
                 />
-
-                {/* =================================================
-                    ATTENDANCE
-                ================================================= */}
 
                 <Route
                   path="attendance"
                   element={<TrainerAttendance />}
                 />
 
-                {/* =================================================
-                    ASSIGNMENTS
-                ================================================= */}
-
                 <Route
                   path="assignments"
                   element={<TrainerAssignments />}
                 />
-
-                {/* =================================================
-                    RECORDINGS
-                ================================================= */}
 
                 <Route
                   path="recordings"
@@ -1065,6 +2861,7 @@ function App() {
               </Route>
 
             </Route>
+
 
             {/* =================================================
                 FALLBACK
@@ -1082,14 +2879,21 @@ function App() {
 
           </Routes>
 
+
+          {/* =================================================
+              TOASTER
+          ================================================= */}
+
           <Toaster
             position="top-right"
           />
 
         </div>
+
       </SidebarProvider>
     </Router>
   );
 }
+
 
 export default App;
