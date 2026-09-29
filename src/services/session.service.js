@@ -271,69 +271,200 @@
 
 
 
+// import axios from "axios";
+// import { getTimezone } from "../utils/timezone";
+
+// /* ═══════════════════════════════════════════════════════════════════════════
+//    AXIOS INSTANCE
+//    ═══════════════════════════════════════════════════════════════════════════
+//    Every request automatically gets:
+//      • Authorization header (from localStorage)
+//      • X-Timezone header (from browser's Intl API)
+
+//    This means NO component needs to manually pass timezone headers.
+//    The backend reads X-Timezone to know what "today" means for the user.
+//    ═══════════════════════════════════════════════════════════════════════════ */
+
+// // const api = axios.create({
+// //   baseURL: "http://localhost:5000/api",
+// // });
+
+// const API_URL =
+//   import.meta.env.VITE_API_URL ||
+//   "https://finearts-backend.onrender.com/api";
+
+// /* ── Auth Token ── */
+// api.interceptors.request.use((config) => {
+//   const token = localStorage.getItem("token");
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
+
+// /* ── Timezone ── */
+// api.interceptors.request.use((config) => {
+//   config.headers["X-Timezone"] = getTimezone();
+//   return config;
+// });
+
+// /* ── Response: unwrap data ── */
+// api.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     // Pass through — let components handle errors with toast
+//     return Promise.reject(error);
+//   }
+// );
+
+// export default api;
+
+
+// /* ═══════════════════════════════════════════════════════════════════════════
+//    SESSIONS
+//    ═══════════════════════════════════════════════════════════════════════════ */
+
+// export const getClassSessions = async (classId) => {
+//   const res = await api.get(`/sessions/class/${classId}`);
+//   return res.data;
+// };
+
+// export const getClassSessionsForBooking = async (classId) => {
+//   const res = await api.get(`/sessions/class/${classId}/booking`);
+//   return res.data.data;
+// };
+
+// export const getSessionById = async (id) => {
+//   const res = await api.get(`/sessions/${id}`);
+//   return res.data;
+// };
+
+// /**
+//  * Create session templates.
+//  * Payload should include `timezone` (from useTimezone()) alongside
+//  * each session's start_time/end_time so the backend stores it.
+//  *
+//  * Example payload:
+//  * {
+//  *   sessions: [
+//  *     { class_id: 1, title: "Session A", start_time: "14:00:00", end_time: "15:00:00", timezone: "Asia/Kolkata" }
+//  *   ]
+//  * }
+//  */
+// export const createSession = async (payload) => {
+//   const res = await api.post("/sessions/create", payload);
+//   return res.data;
+// };
+
+// /**
+//  * Update a session template.
+//  * Payload can include `timezone` to update the stored timezone.
+//  */
+// export const updateSession = async (id, payload) => {
+//   const res = await api.put(`/sessions/${id}`, payload);
+//   return res.data;
+// };
+
+// export const deleteSession = async (id) => {
+//   const res = await api.delete(`/sessions/${id}`);
+//   return res.data;
+// };
+
+// /**
+//  * Get user's sessions for today.
+//  * X-Timezone header (auto-sent) tells the backend which "today" to use.
+//  */
+// export const getTodaySessions = async () => {
+//   const res = await api.get("/sessions/user/today");
+//   return res.data;
+// };
+
+// /**
+//  * Get user's upcoming sessions.
+//  * X-Timezone header determines the day ordering and range.
+//  */
+// export const getUpcomingSessions = async () => {
+//   const res = await api.get("/sessions/user/upcoming");
+//   return res.data;
+// };
+
+
 import axios from "axios";
 import { getTimezone } from "../utils/timezone";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AXIOS INSTANCE
-   ═══════════════════════════════════════════════════════════════════════════
-   Every request automatically gets:
-     • Authorization header (from localStorage)
-     • X-Timezone header (from browser's Intl API)
-
-   This means NO component needs to manually pass timezone headers.
-   The backend reads X-Timezone to know what "today" means for the user.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-// const api = axios.create({
-//   baseURL: "http://localhost:5000/api",
-// });
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://finearts-backend.onrender.com/api";
 
-/* ── Auth Token ── */
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 120000,
 });
+
+/* ── Auth Token ── */
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 /* ── Timezone ── */
-api.interceptors.request.use((config) => {
-  config.headers["X-Timezone"] = getTimezone();
-  return config;
-});
+api.interceptors.request.use(
+  (config) => {
+    config.headers = config.headers || {};
+    config.headers["X-Timezone"] = getTimezone();
 
-/* ── Response: unwrap data ── */
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/* ── Response ── */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Pass through — let components handle errors with toast
+    // Pass through — components handle errors with toast
     return Promise.reject(error);
   }
 );
 
 export default api;
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    SESSIONS
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Get all sessions for a class.
+ */
 export const getClassSessions = async (classId) => {
   const res = await api.get(`/sessions/class/${classId}`);
   return res.data;
 };
 
+/**
+ * Get sessions for booking.
+ */
 export const getClassSessionsForBooking = async (classId) => {
   const res = await api.get(`/sessions/class/${classId}/booking`);
   return res.data.data;
 };
 
+/**
+ * Get a single session by ID.
+ */
 export const getSessionById = async (id) => {
   const res = await api.get(`/sessions/${id}`);
   return res.data;
@@ -341,15 +472,6 @@ export const getSessionById = async (id) => {
 
 /**
  * Create session templates.
- * Payload should include `timezone` (from useTimezone()) alongside
- * each session's start_time/end_time so the backend stores it.
- *
- * Example payload:
- * {
- *   sessions: [
- *     { class_id: 1, title: "Session A", start_time: "14:00:00", end_time: "15:00:00", timezone: "Asia/Kolkata" }
- *   ]
- * }
  */
 export const createSession = async (payload) => {
   const res = await api.post("/sessions/create", payload);
@@ -358,13 +480,15 @@ export const createSession = async (payload) => {
 
 /**
  * Update a session template.
- * Payload can include `timezone` to update the stored timezone.
  */
 export const updateSession = async (id, payload) => {
   const res = await api.put(`/sessions/${id}`, payload);
   return res.data;
 };
 
+/**
+ * Delete a session.
+ */
 export const deleteSession = async (id) => {
   const res = await api.delete(`/sessions/${id}`);
   return res.data;
@@ -372,7 +496,6 @@ export const deleteSession = async (id) => {
 
 /**
  * Get user's sessions for today.
- * X-Timezone header (auto-sent) tells the backend which "today" to use.
  */
 export const getTodaySessions = async () => {
   const res = await api.get("/sessions/user/today");
@@ -381,7 +504,6 @@ export const getTodaySessions = async () => {
 
 /**
  * Get user's upcoming sessions.
- * X-Timezone header determines the day ordering and range.
  */
 export const getUpcomingSessions = async () => {
   const res = await api.get("/sessions/user/upcoming");
