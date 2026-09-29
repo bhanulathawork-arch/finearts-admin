@@ -285,9 +285,13 @@ import { getTimezone } from "../utils/timezone";
    The backend reads X-Timezone to know what "today" means for the user.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
+// const api = axios.create({
+//   baseURL: "http://localhost:5000/api",
+// });
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://finearts-backend.onrender.com/api";
 
 /* ── Auth Token ── */
 api.interceptors.request.use((config) => {

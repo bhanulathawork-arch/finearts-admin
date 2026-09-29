@@ -101,28 +101,28 @@ import PaymentHistory from "./institute/payments/PaymentHistory";
 /* =========================================================
    INSTITUTE WEBSITE
 ========================================================= */
-import WebsiteDashboard from "./institute/Website/WebsiteDashboard";
-import WebsiteTemplate from "./institute/Website/WebsiteTemplate";
-import WebsiteSections from "./institute/Website/WebsiteSections";
-import WebsiteContent from "./institute/Website/WebsiteContent";
-import WebsiteBranding from "./institute/Website/WebsiteBranding";
-import WebsitePublish from "./institute/Website/WebsitePublish";
+import WebsiteDashboard from "./institute/Websites/WebsiteDashboard";
+import WebsiteTemplate from "./institute/Websites/WebsiteTemplate";
+import WebsiteSections from "./institute/Websites/WebsiteSections";
+import WebsiteContent from "./institute/Websites/WebsiteContent";
+import WebsiteBranding from "./institute/Websites/WebsiteBranding";
+import WebsitePublish from "./institute/Websites/WebsitePublish";
 
 /* =========================================================
    WEBSITE PREVIEW
 ========================================================= */
-import WebsiteNavbar from "./institute/Website/WebsiteNavbar";
-import WebsiteHome from "./institute/Website/WebsiteHome";
-import WebsiteAbout from "./institute/Website/WebsiteAbout";
-import WebsiteClasses from "./institute/Website/WebsiteClasses";
-import WebsiteClassesDetail from "./institute/Website/WebsiteClassDetail";
-import WebsiteTrainers from "./institute/Website/WebsiteTrainers";
-import WebsiteTrainerProfile from "./institute/Website/WebsiteTrainerProfile";
-import WebsiteSessions from "./institute/Website/WebsiteSessions";
-import WebsitePreviewDashboard from "./institute/Website/WebsitePreviewDashboard";
-import WebsiteTestimonials from "./institute/Website/WebsiteTestimonials";
-import WebsiteLogin from "./institute/Website/WebsiteLogin";
-import WebsitePreview from "./institute/Website/WebsitePreview";
+import WebsiteNavbar from "./institute/Websites/WebsiteNavbar";
+import WebsiteHome from "./institute/Websites/WebsiteHome";
+import WebsiteAbout from "./institute/Websites/WebsiteAbout";
+import WebsiteClasses from "./institute/Websites/WebsiteClasses";
+import WebsiteClassesDetail from "./institute/Websites/WebsiteClassDetail";
+import WebsiteTrainers from "./institute/Websites/WebsiteTrainers";
+import WebsiteTrainerProfile from "./institute/Websites/WebsiteTrainerProfile";
+import WebsiteSessions from "./institute/Websites/WebsiteSessions";
+import WebsitePreviewDashboard from "./institute/Websites/WebsitePreviewDashboard";
+import WebsiteTestimonials from "./institute/Websites/WebsiteTestimonials";
+import WebsiteLogin from "./institute/Websites/WebsiteLogin";
+import WebsitePreview from "./institute/Websites/WebsitePreview";
 
 /* =========================================================
    TRAINER

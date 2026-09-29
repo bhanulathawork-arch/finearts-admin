@@ -3,9 +3,13 @@ import { useEffect, useState } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { getAuth } from "firebase/auth";
 
-const API =
+// const API =
+//   import.meta.env.VITE_API_URL ||
+//   "http://localhost:5000/api";
+
+const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://finearts-backend.onrender.com/api";
 
 export default function TrainerStudents() {
   const [students, setStudents] = useState([]);
