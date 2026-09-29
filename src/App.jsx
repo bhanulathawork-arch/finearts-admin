@@ -122,6 +122,7 @@ import WebsiteSessions from "./institute/Website/WebsiteSessions";
 import WebsitePreviewDashboard from "./institute/Website/WebsitePreviewDashboard";
 import WebsiteTestimonials from "./institute/Website/WebsiteTestimonials";
 import WebsiteLogin from "./institute/Website/WebsiteLogin";
+import WebsitePreview from "./institute/Website/WebsitePreview";
 
 /* =========================================================
    TRAINER

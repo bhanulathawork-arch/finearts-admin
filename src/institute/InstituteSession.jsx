@@ -1095,7 +1095,7 @@ import {
   FaGraduationCap,
   FaSyncAlt,
 } from "react-icons/fa";
-import API from "../../services/api";
+import API from "../services/api";
 
 /*
 |--------------------------------------------------------------------------
