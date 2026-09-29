@@ -1668,6 +1668,124 @@ const adminMenuItems = [
 //     label: "Profile",
 //   },
 // ];
+// const instituteMenuItems = [
+//   {
+//     path: "/institute/dashboard",
+//     icon: HiOutlineHome,
+//     label: "Dashboard",
+//   },
+
+//   {
+//     path: "/institute/trainers",
+//     icon: HiOutlineUserGroup,
+//     label: "Trainers",
+//   },
+
+//   {
+//     path: "/institute/classes",
+//     icon: HiOutlineAcademicCap,
+//     label: "Classes",
+//   },
+
+//   {
+//     path: "/institute/sessions",
+//     icon: HiOutlineAcademicCap,
+//     label: "Sessions",
+//   },
+
+//   // =====================================================
+//   // LMS
+//   // =====================================================
+
+//   {
+//     path: "/institute/lms",
+//     icon: HiOutlineAcademicCap,
+//     label: "LMS",
+//   },
+
+//   {
+//     path: "/institute/attendance",
+//     icon: HiOutlineCalendar,
+//     label: "Attendance",
+//   },
+
+//   {
+//     path: "/institute/assignments",
+//     icon: HiOutlineDocumentText,
+//     label: "Assignments",
+//   },
+
+//   {
+//     path: "/institute/recordings",
+//     icon: HiOutlineVideoCamera,
+//     label: "Recordings",
+//   },
+
+//   // =====================================================
+//   // INSTITUTE MANAGEMENT
+//   // =====================================================
+
+//   {
+//     path: "/institute/banners",
+//     icon: HiOutlinePhotograph,
+//     label: "Banners",
+//   },
+
+//   {
+//     path: "/institute/bookings",
+//     icon: HiOutlineCalendar,
+//     label: "Bookings",
+//   },
+
+//   {
+//     path: "/institute/testimonials",
+//     icon: HiOutlineChatAlt,
+//     label: "Testimonials",
+//   },
+
+//   {
+//     path: "/institute/profile",
+//     icon: HiOutlineOfficeBuilding,
+//     label: "Institute Profile",
+//   },
+
+//   {
+//     path: "/institute/batches",
+//     icon: HiOutlineCollection,
+//     label: "Batches",
+//   },
+
+//   {
+//     path: "/institute/payments",
+//     icon: HiOutlineCurrencyRupee,
+//     label: "Payments",
+//   },
+
+//   {
+//     path: "/institute/students",
+//     icon: HiOutlineUsers,
+//     label: "Students",
+//   },
+
+//   {
+//     path: "/institute/about",
+//     icon: HiOutlineInformationCircle,
+//     label: "About",
+//   },
+
+//   {
+//     path: "/institute/footer",
+//     icon: HiOutlineDocumentText,
+//     label: "Footer",
+//   },
+
+//   {
+//     path: "/institute/website",
+//     icon: HiOutlineGlobeAlt,
+//     label: "Website",
+//   },
+// ];
+
 const instituteMenuItems = [
   {
     path: "/institute/dashboard",
@@ -1778,6 +1896,10 @@ const instituteMenuItems = [
     icon: HiOutlineDocumentText,
     label: "Footer",
   },
+
+  // =====================================================
+  // WEBSITE
+  // =====================================================
 
   {
     path: "/institute/website",

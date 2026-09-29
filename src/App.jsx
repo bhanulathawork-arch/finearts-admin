@@ -123,6 +123,15 @@ import WebsitePreviewDashboard from "./institute/Website/WebsitePreviewDashboard
 import WebsiteTestimonials from "./institute/Website/WebsiteTestimonials";
 import WebsiteLogin from "./institute/Website/WebsiteLogin";
 import WebsitePreview from "./institute/Website/WebsitePreview";
+import WebsiteAssignments from "./institute/Website/WebisteAssignment";
+import WebsiteAssignmentSubmit from "./institute/Website/WebsiteAssignmentSubmit";
+import WebsiteAttendance from "./institute/Website/WebsiteAttendance";
+import WebsiteMyBookings from "./institute/Website/WebsiteMyBookings";
+import WebsiteLearningCourse from "./institute/Website/WebsiteLearningCourse";
+import WebsiteMyLearning from "./institute/Website/WebsiteMyLearning";
+import WebsitePaymentDetails from "./institute/Website/WebsitePaymentDetails";
+import WebsiteProfile from "./institute/Website/WebsiteProfile";
+import WebsiteRecordings from "./institute/Website/WebsiteRecordings";
 
 /* =========================================================
    TRAINER
@@ -630,6 +639,60 @@ function App() {
                   path="dashboard"
                   element={<WebsitePreviewDashboard />}
                 />
+                  <Route
+  path="dashboard"
+  element={<WebsitePreviewDashboard />}
+/>
+
+<Route
+  path="lms/my-learning"
+  element={<WebsiteMyLearning />}
+/>
+
+<Route
+  path="lms/my-learning/:classId"
+  element={<WebsiteLearningCourse />}
+/>
+
+<Route
+  path="lms/live-sessions"
+  element={<WebsiteSessions />}
+/>
+
+<Route
+  path="lms/recordings"
+  element={<WebsiteRecordings />}
+/>
+
+<Route
+  path="lms/my-bookings"
+  element={<WebsiteMyBookings />}
+/>
+
+<Route
+  path="lms/assignments"
+  element={<WebsiteAssignments />}
+/>
+
+<Route
+  path="lms/assignments/submit"
+  element={<WebsiteAssignmentSubmit />}
+/>
+
+<Route
+  path="lms/attendance"
+  element={<WebsiteAttendance />}
+/>
+
+<Route
+  path="lms/payment-details"
+  element={<WebsitePaymentDetails />}
+/>
+
+<Route
+  path="lms/profile"
+  element={<WebsiteProfile />}
+/>
 
               </Route>
 
