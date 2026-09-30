@@ -1238,20 +1238,25 @@ const API = axios.create({
    FIREBASE TOKEN CONTROL
 ========================================================= */
 
-/*
-  Multiple components can request Firebase tokens at the
-  same time.
-
-  We share one in-flight Firebase token request.
-*/
-
 let firebaseTokenPromise = null;
+
+/*
+  Prevent repeated Firebase refresh attempts when Firebase
+  itself is temporarily returning quota errors.
+*/
+let lastFirebaseTokenFailureAt = 0;
+
+const FIREBASE_TOKEN_FAILURE_COOLDOWN = 30000;
 
 /* =========================================================
    PATH HELPERS
 ========================================================= */
 
 const getPath = () => {
+  if (typeof window === "undefined") {
+    return "/";
+  }
+
   return window.location.pathname || "/";
 };
 
@@ -1359,7 +1364,7 @@ const isFirebaseApiRoute = (config = {}) => {
   const url = getRequestUrl(config);
 
   /* -------------------------------------------------------
-     PUBLIC WEBSITE MUST NEVER BE FIREBASE
+     PUBLIC WEBSITE MUST NEVER USE FIREBASE
   ------------------------------------------------------- */
 
   if (isPublicWebsiteApiRoute(config)) {
@@ -1572,6 +1577,14 @@ const isAdminApiRoute = (config = {}) => {
 ========================================================= */
 
 const getStoredFirebaseToken = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  /* -------------------------------------------------------
+     STUDENT TOKEN
+  ------------------------------------------------------- */
+
   const studentToken =
     localStorage.getItem("studentToken");
 
@@ -1583,6 +1596,10 @@ const getStoredFirebaseToken = () => {
   ) {
     return studentToken.trim();
   }
+
+  /* -------------------------------------------------------
+     GENERIC TOKEN
+  ------------------------------------------------------- */
 
   const storedToken =
     localStorage.getItem("token");
@@ -1604,15 +1621,21 @@ const getStoredFirebaseToken = () => {
 ========================================================= */
 
 const saveFirebaseToken = (token) => {
-  if (!token) {
+  if (
+    typeof window === "undefined" ||
+    !token
+  ) {
     return;
   }
 
-  localStorage.setItem("token", token);
+  localStorage.setItem(
+    "token",
+    token
+  );
 
   /*
-    Keep studentToken synchronized when the student/preview
-    flow is active.
+    Keep studentToken synchronized when the student
+    or preview flow is active.
   */
 
   if (
@@ -1631,15 +1654,15 @@ const saveFirebaseToken = (token) => {
 ========================================================= */
 
 /*
-  IMPORTANT FIX
+  IMPORTANT:
 
-  Normal requests:
+  Normal API requests:
 
-      localStorage token
+      Stored token
           ↓
       API request
 
-  They DO NOT call Firebase.
+  They DO NOT unnecessarily call Firebase.
 
   Firebase is called only when:
 
@@ -1652,9 +1675,9 @@ const getFirebaseToken = async ({
 } = {}) => {
   const auth = getAuth();
 
-  /* =====================================================
+  /* -------------------------------------------------------
      1. USE STORED TOKEN FIRST
-  ===================================================== */
+  ------------------------------------------------------- */
 
   if (!forceRefresh) {
     const storedToken =
@@ -1669,51 +1692,79 @@ const getFirebaseToken = async ({
     }
   }
 
-  /* =====================================================
+  /* -------------------------------------------------------
      2. CHECK FIREBASE USER
-  ===================================================== */
+  ------------------------------------------------------- */
 
   if (!auth.currentUser) {
     console.warn(
       "Firebase Token: NO CURRENT USER"
     );
 
+    return getStoredFirebaseToken();
+  }
+
+  /* -------------------------------------------------------
+     3. PREVENT RAPID FAILED REFRESHES
+  ------------------------------------------------------- */
+
+  const now = Date.now();
+
+  if (
+    !forceRefresh &&
+    lastFirebaseTokenFailureAt > 0 &&
+    now - lastFirebaseTokenFailureAt <
+      FIREBASE_TOKEN_FAILURE_COOLDOWN
+  ) {
+    const storedToken =
+      getStoredFirebaseToken();
+
+    if (storedToken) {
+      console.warn(
+        "Firebase refresh recently failed. Using stored token."
+      );
+
+      return storedToken;
+    }
+
     return null;
   }
 
-  /* =====================================================
-     3. SHARE ONE FIREBASE REQUEST
-  ===================================================== */
+  /* -------------------------------------------------------
+     4. SHARE ONE FIREBASE REQUEST
+  ------------------------------------------------------- */
 
   try {
-    /*
-      If another request is already getting a token,
-      wait for the same Promise.
-    */
-
-    if (!firebaseTokenPromise) {
-      firebaseTokenPromise =
-        auth.currentUser.getIdToken(
-          forceRefresh
-        );
+    if (
+      !forceRefresh &&
+      firebaseTokenPromise
+    ) {
+      return await firebaseTokenPromise;
     }
+
+    firebaseTokenPromise =
+      auth.currentUser.getIdToken(
+        forceRefresh
+      );
 
     const token =
       await firebaseTokenPromise;
 
     firebaseTokenPromise = null;
 
-    /* ===================================================
-       4. VALIDATE TOKEN
-    =================================================== */
+    lastFirebaseTokenFailureAt = 0;
+
+    /* -----------------------------------------------------
+       5. VALIDATE TOKEN
+    ----------------------------------------------------- */
 
     if (!token) {
       return null;
     }
 
-    /* ===================================================
-       5. SAVE TOKEN
-    =================================================== */
+    /* -----------------------------------------------------
+       6. SAVE TOKEN
+    ----------------------------------------------------- */
 
     saveFirebaseToken(token);
 
@@ -1726,30 +1777,30 @@ const getFirebaseToken = async ({
   } catch (error) {
     firebaseTokenPromise = null;
 
+    lastFirebaseTokenFailureAt =
+      Date.now();
+
     console.error(
       "Firebase token retrieval failed:",
       error
     );
 
-    /*
-      For a normal request, try the existing stored
-      token before giving up.
-    */
+    /* -----------------------------------------------------
+       7. FALLBACK TO EXISTING TOKEN
+    ----------------------------------------------------- */
 
-    if (!forceRefresh) {
-      const fallbackToken =
-        getStoredFirebaseToken();
+    const fallbackToken =
+      getStoredFirebaseToken();
 
-      if (fallbackToken) {
-        console.warn(
-          "Firebase failed. Using stored token."
-        );
+    if (fallbackToken) {
+      console.warn(
+        "Firebase failed. Using stored token."
+      );
 
-        return fallbackToken;
-      }
+      return fallbackToken;
     }
 
-    throw error;
+    return null;
   }
 };
 
@@ -1758,6 +1809,10 @@ const getFirebaseToken = async ({
 ========================================================= */
 
 const getAdminToken = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   const possibleKeys = [
     "adminToken",
     "admin_token",
@@ -1967,7 +2022,7 @@ API.interceptors.request.use(
 
     /* =====================================================
        3. PUBLIC WEBSITE API
-       
+
        /footer and /websites/public do NOT need Firebase.
     ===================================================== */
 
@@ -2222,6 +2277,8 @@ API.interceptors.response.use(
 
     /* =====================================================
        PUBLIC WEBSITE FAILURE
+
+       Never attempt Firebase refresh for these requests.
     ===================================================== */
 
     if (
@@ -2276,61 +2333,21 @@ API.interceptors.response.use(
          CLEAR ADMIN SESSION ONLY
       --------------------------------------------------- */
 
-      localStorage.removeItem(
-        "adminToken"
-      );
+      const adminKeys = [
+        "adminToken",
+        "admin_token",
+        "adminAccessToken",
+        "admin_access_token",
+        "adminAuthToken",
+        "admin_auth_token",
+        "adminUser",
+        "admin_user",
+      ];
 
-      localStorage.removeItem(
-        "admin_token"
-      );
-
-      localStorage.removeItem(
-        "adminAccessToken"
-      );
-
-      localStorage.removeItem(
-        "admin_access_token"
-      );
-
-      localStorage.removeItem(
-        "adminAuthToken"
-      );
-
-      localStorage.removeItem(
-        "admin_auth_token"
-      );
-
-      sessionStorage.removeItem(
-        "adminToken"
-      );
-
-      sessionStorage.removeItem(
-        "admin_token"
-      );
-
-      sessionStorage.removeItem(
-        "adminAccessToken"
-      );
-
-      sessionStorage.removeItem(
-        "admin_access_token"
-      );
-
-      sessionStorage.removeItem(
-        "adminAuthToken"
-      );
-
-      sessionStorage.removeItem(
-        "admin_auth_token"
-      );
-
-      localStorage.removeItem(
-        "adminUser"
-      );
-
-      localStorage.removeItem(
-        "admin_user"
-      );
+      for (const key of adminKeys) {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      }
 
       /*
         DO NOT REMOVE FIREBASE TOKEN
@@ -2369,8 +2386,8 @@ API.interceptors.response.use(
         /*
           A REAL 401 occurred.
 
-          This is the only normal situation where we
-          force Firebase to refresh the token.
+          This is the only normal situation where
+          Firebase is force-refreshed.
         */
 
         const freshToken =
@@ -2417,9 +2434,9 @@ API.interceptors.response.use(
           refreshError
         );
 
-        /* ---------------------------------------------------
+        /* -------------------------------------------------
            FIREBASE SIGN OUT
-        --------------------------------------------------- */
+        ------------------------------------------------- */
 
         try {
           await signOut(
@@ -2432,9 +2449,9 @@ API.interceptors.response.use(
           );
         }
 
-        /* ---------------------------------------------------
+        /* -------------------------------------------------
            CLEAR FIREBASE SESSION
-        --------------------------------------------------- */
+        ------------------------------------------------- */
 
         localStorage.removeItem(
           "token"
@@ -2456,13 +2473,13 @@ API.interceptors.response.use(
           "studentRole"
         );
 
-        /* ---------------------------------------------------
+        /* -------------------------------------------------
            DO NOT CLEAR ADMIN TOKEN
-        --------------------------------------------------- */
+        ------------------------------------------------- */
 
-        /* ---------------------------------------------------
+        /* -------------------------------------------------
            REDIRECT
-        --------------------------------------------------- */
+        ------------------------------------------------- */
 
         if (
           isWebsitePreviewRoute()
@@ -2470,18 +2487,21 @@ API.interceptors.response.use(
           window.location.replace(
             "/institute/website/preview"
           );
+
         } else if (
           isTrainerPage()
         ) {
           window.location.replace(
             "/trainer-login"
           );
+
         } else if (
           isInstituteRoute()
         ) {
           window.location.replace(
             "/institute-login"
           );
+
         } else {
           window.location.replace(
             "/institute/login"
