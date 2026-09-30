@@ -1668,7 +1668,6 @@
 // export default WebsiteClasses;
 
 
-
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -1692,30 +1691,59 @@ import WebsiteBooking from "./WebsiteBooking";
 import API from "../../services/api";
 
 /* =========================================================
+   BLACK + RADIANT BLUE THEME
+========================================================= */
+
+const COLORS = {
+  page: "#000000",
+  pageSecondary: "#02050A",
+
+  card: "#071426",
+  cardSecondary: "#06111F",
+
+  blue: "#008CFF",
+  radiantBlue: "#38D7FF",
+  blueLight: "#60A5FA",
+
+  white: "#F8FAFC",
+  text: "#CBD5E1",
+  muted: "#94A3B8",
+
+  border: "rgba(0,140,255,0.35)",
+  borderStrong: "rgba(56,215,255,0.55)",
+};
+
+/* =========================================================
    DEFAULT BRANDING
 ========================================================= */
 
 const DEFAULT_BRANDING = {
-  navbarColor: "#020817",
-  navbarTextColor: "#FFFFFF",
-  navbarButtonColor: "#008CFF",
+  navbarColor: "#000000",
+  navbarTextColor: "#F8FAFC",
+  navbarButtonColor: COLORS.blue,
   navbarButtonTextColor: "#FFFFFF",
 
-  headingColor: "#F8FAFC",
-  subheadingColor: "#60A5FA",
-  textColor: "#CBD5E1",
-  iconColor: "#38BDF8",
+  headingColor: COLORS.white,
+  subheadingColor: COLORS.radiantBlue,
+  textColor: COLORS.text,
+  iconColor: COLORS.radiantBlue,
 
-  buttonColor: "#008CFF",
+  buttonColor: COLORS.blue,
   buttonTextColor: "#FFFFFF",
 
-  pageBackgroundColor: "#020817",
-  cardBackgroundColor: "#061426",
+  /*
+   * IMPORTANT:
+   * Page background is intentionally BLACK.
+   * This should NOT be changed by database branding.
+   */
+  pageBackgroundColor: "#000000",
 
-  footerBackgroundColor: "#020817",
-  footerHeadingColor: "#FFFFFF",
-  footerTextColor: "#CBD5E1",
-  footerIconColor: "#FFFFFF",
+  cardBackgroundColor: COLORS.card,
+
+  footerBackgroundColor: "#000000",
+  footerHeadingColor: COLORS.white,
+  footerTextColor: COLORS.text,
+  footerIconColor: COLORS.radiantBlue,
 
   fontHeading: "Inter",
   fontSubheading: "Inter",
@@ -1771,7 +1799,6 @@ const getBranding = (branding = {}) => {
     "buttonColor",
     "buttonTextColor",
 
-    "pageBackgroundColor",
     "cardBackgroundColor",
 
     "footerBackgroundColor",
@@ -1802,7 +1829,7 @@ const getBranding = (branding = {}) => {
   keys.forEach((key) => {
     const snake = key.replace(
       /[A-Z]/g,
-      (m) => `_${m.toLowerCase()}`
+      (match) => `_${match.toLowerCase()}`
     );
 
     result[key] = getBrandingValue(
@@ -1813,13 +1840,37 @@ const getBranding = (branding = {}) => {
     );
   });
 
+  /*
+   * FORCE PAGE BACKGROUND TO BLACK.
+   *
+   * Even if old branding exists in database,
+   * the Website Classes page remains black.
+   */
+  result.pageBackgroundColor = "#000000";
+
+  /*
+   * Keep cards dark as well.
+   */
+  result.cardBackgroundColor =
+    branding?.cardBackgroundColor ||
+    branding?.card_background_color ||
+    COLORS.card;
+
   return result;
 };
+
+/* =========================================================
+   FONT HELPER
+========================================================= */
 
 const fontFamily = (font) =>
   font
     ? `'${font}', sans-serif`
     : "Inter, sans-serif";
+
+/* =========================================================
+   COLOR HELPERS
+========================================================= */
 
 const withOpacity = (
   color,
@@ -1873,6 +1924,10 @@ const isEnabled = (
   return defaultValue;
 };
 
+/* =========================================================
+   SECTION HELPER
+========================================================= */
+
 const findSection = (
   sections,
   ...keys
@@ -1924,6 +1979,10 @@ const findSection = (
   );
 };
 
+/* =========================================================
+   CONTENT HELPER
+========================================================= */
+
 const findContent = (
   content,
   keys
@@ -1951,22 +2010,25 @@ const findContent = (
 };
 
 /* =========================================================
-   CLASS DATA HELPERS
+   CLASS HELPERS
 ========================================================= */
 
 const getClassId = (item) =>
   item?.id ||
-  item?.class_id;
+  item?.class_id ||
+  item?.classId;
 
 const getClassTitle = (item) =>
   item?.title ||
   item?.class_title ||
+  item?.classTitle ||
   item?.name ||
   "Class";
 
 const getClassImage = (item) =>
   item?.image ||
   item?.class_image ||
+  item?.classImage ||
   item?.image_url ||
   item?.thumbnail ||
   item?.thumbnail_url ||
@@ -2000,6 +2062,7 @@ const getTrainerImage = (item) =>
   item?.trainer_image ||
   item?.trainerImage ||
   item?.trainer?.image ||
+  item?.trainer?.image_url ||
   "";
 
 const getLevel = (item) =>
@@ -2013,6 +2076,10 @@ const getDuration = (item) =>
   item?.class_duration ||
   item?.duration_minutes ||
   "--";
+
+/* =========================================================
+   AVAILABLE DAYS
+========================================================= */
 
 const getAvailableDays = (item) => {
   const value =
@@ -2039,7 +2106,7 @@ const getAvailableDays = (item) => {
         return parsed.filter(Boolean);
       }
     } catch {
-      // comma-separated fallback
+      // fallback
     }
 
     return trimmed
@@ -2050,6 +2117,10 @@ const getAvailableDays = (item) => {
 
   return [];
 };
+
+/* =========================================================
+   DATE
+========================================================= */
 
 const formatDate = (dateValue) => {
   if (!dateValue) {
@@ -2071,6 +2142,10 @@ const formatDate = (dateValue) => {
     }
   );
 };
+
+/* =========================================================
+   TIME
+========================================================= */
 
 const formatTime = (timeValue) => {
   if (!timeValue) {
@@ -2110,6 +2185,10 @@ const formatTime = (timeValue) => {
   ).padStart(2, "0")} ${period}`;
 };
 
+/* =========================================================
+   TIME + TIMEZONE
+========================================================= */
+
 const formatTimeWithTimezone = (
   date,
   time,
@@ -2125,7 +2204,9 @@ const formatTimeWithTimezone = (
     );
 
     if (
-      Number.isNaN(dateTime.getTime())
+      Number.isNaN(
+        dateTime.getTime()
+      )
     ) {
       return `${formatTime(
         time
@@ -2151,7 +2232,7 @@ const formatTimeWithTimezone = (
 };
 
 /* =========================================================
-   IMAGE HELPERS
+   IMAGE HELPER
 ========================================================= */
 
 const getImage = (
@@ -2166,6 +2247,7 @@ const getImage = (
     return (
       item?.image ||
       item?.subcategory_image ||
+      item?.subcategoryImage ||
       item?.image_url ||
       item?.thumbnail ||
       item?.thumbnail_url ||
@@ -2176,6 +2258,7 @@ const getImage = (
   return (
     item?.image ||
     item?.category_image ||
+    item?.categoryImage ||
     item?.image_url ||
     item?.thumbnail ||
     item?.thumbnail_url ||
@@ -2227,10 +2310,11 @@ const SectionHeading = ({
 
     {eyebrow && (
       <p
-        className="mb-2 text-xs font-semibold uppercase tracking-[0.22em]"
+        className="mb-3 text-xs font-bold uppercase tracking-[0.28em]"
         style={{
           color:
-            branding.subheadingColor,
+            COLORS.radiantBlue,
+
           fontFamily:
             fontFamily(
               branding.fontSubheading
@@ -2244,18 +2328,21 @@ const SectionHeading = ({
     <div className="flex items-center justify-center gap-3">
 
       <span
-        className="hidden h-px w-14 sm:block"
+        className="hidden h-px w-16 sm:block"
         style={{
           background:
-            `linear-gradient(90deg, transparent, ${branding.buttonColor})`,
+            `linear-gradient(90deg, transparent, ${COLORS.blue})`,
         }}
       />
 
       <span
-        className="h-1.5 w-1.5 rotate-45"
+        className="h-2 w-2 rotate-45"
         style={{
           backgroundColor:
-            branding.buttonColor,
+            COLORS.blue,
+
+          boxShadow:
+            `0 0 12px ${COLORS.blue}`,
         }}
       />
 
@@ -2264,32 +2351,41 @@ const SectionHeading = ({
         style={{
           color:
             branding.headingColor,
+
           fontFamily:
             fontFamily(
               branding.fontHeading
             ),
+
           fontWeight:
             branding.headingWeight,
+
           lineHeight:
             branding.headingLineHeight,
+
+          textShadow:
+            "0 0 25px rgba(0,140,255,0.12)",
         }}
       >
         {heading}
       </h2>
 
       <span
-        className="h-1.5 w-1.5 rotate-45"
+        className="h-2 w-2 rotate-45"
         style={{
           backgroundColor:
-            branding.buttonColor,
+            COLORS.radiantBlue,
+
+          boxShadow:
+            `0 0 12px ${COLORS.radiantBlue}`,
         }}
       />
 
       <span
-        className="hidden h-px w-14 sm:block"
+        className="hidden h-px w-16 sm:block"
         style={{
           background:
-            `linear-gradient(90deg, ${branding.buttonColor}, transparent)`,
+            `linear-gradient(90deg, ${COLORS.blue}, transparent)`,
         }}
       />
 
@@ -2297,10 +2393,11 @@ const SectionHeading = ({
 
     {subheading && (
       <p
-        className="mx-auto mt-3 max-w-2xl text-sm sm:text-base"
+        className="mx-auto mt-4 max-w-2xl text-sm leading-6 sm:text-base"
         style={{
           color:
             branding.textColor,
+
           fontFamily:
             fontFamily(
               branding.fontBody
@@ -2331,15 +2428,10 @@ const Stars = ({
   );
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
 
-      <span
-        className="text-xs tracking-[1px]"
-        style={{
-          color:
-            branding.iconColor,
-        }}
-      >
+      <span className="text-xs tracking-[2px]">
+
         {[1, 2, 3, 4, 5].map(
           (star) => (
             <span
@@ -2348,10 +2440,10 @@ const Stars = ({
                 color:
                   star <=
                   Math.round(value)
-                    ? branding.iconColor
+                    ? COLORS.radiantBlue
                     : withOpacity(
                         branding.textColor,
-                        "45"
+                        "35"
                       ),
               }}
             >
@@ -2359,13 +2451,14 @@ const Stars = ({
             </span>
           )
         )}
+
       </span>
 
       <span
         className="text-xs font-semibold"
         style={{
           color:
-            branding.iconColor,
+            COLORS.radiantBlue,
         }}
       >
         {value.toFixed(1)}
@@ -2401,27 +2494,19 @@ const CategoryCard = ({
     <button
       type="button"
       onClick={onClick}
-      className="group relative overflow-hidden rounded-2xl border text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,140,255,0.18)]"
+      className="group relative overflow-hidden rounded-2xl border text-left transition-all duration-300 hover:-translate-y-1"
       style={{
-        backgroundColor:
-          branding.cardBackgroundColor,
+        background:
+          `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
         borderColor: active
-          ? branding.buttonColor
-          : withOpacity(
-              branding.buttonColor,
-              "65"
-            ),
+          ? COLORS.radiantBlue
+          : COLORS.border,
 
         boxShadow: active
-          ? `0 0 0 1px ${withOpacity(
-              branding.buttonColor,
-              "55"
-            )}, 0 0 30px ${withOpacity(
-              branding.buttonColor,
-              "20"
-            )}`
-          : "none",
+          ? `0 0 0 1px rgba(0,140,255,0.35),
+             0 0 35px rgba(0,140,255,0.16)`
+          : "0 12px 35px rgba(0,0,0,0.35)",
       }}
     >
 
@@ -2436,13 +2521,22 @@ const CategoryCard = ({
           />
         ) : (
           <div
-            className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#071a33] to-[#020817]"
+            className="flex h-full w-full items-center justify-center"
             style={{
-              color:
-                branding.buttonColor,
+              background:
+                `radial-gradient(circle at center, rgba(0,140,255,0.25), transparent 55%), linear-gradient(135deg, #071a33, #000000)`,
             }}
           >
-            <span className="text-5xl font-bold">
+            <span
+              className="text-5xl font-bold"
+              style={{
+                color:
+                  COLORS.radiantBlue,
+
+                textShadow:
+                  `0 0 25px rgba(56,215,255,0.45)`,
+              }}
+            >
               {String(name)
                 .charAt(0)
                 .toUpperCase()}
@@ -2450,16 +2544,26 @@ const CategoryCard = ({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-black/15 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.9), transparent 60%)",
+          }}
+        />
 
         {active && (
           <span
             className="absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
             style={{
-              backgroundColor:
-                branding.buttonColor,
+              background:
+                COLORS.blue,
+
               color:
-                branding.buttonTextColor,
+                "#FFFFFF",
+
+              boxShadow:
+                `0 0 18px rgba(0,140,255,0.55)`,
             }}
           >
             Selected
@@ -2477,10 +2581,12 @@ const CategoryCard = ({
             style={{
               color:
                 branding.headingColor,
+
               fontFamily:
                 fontFamily(
                   branding.fontHeading
                 ),
+
               fontWeight:
                 branding.headingWeight,
             }}
@@ -2504,11 +2610,14 @@ const CategoryCard = ({
         </div>
 
         <FaArrowRight
-          className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
           size={13}
+          className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
           style={{
             color:
-              branding.buttonColor,
+              COLORS.radiantBlue,
+
+            filter:
+              "drop-shadow(0 0 6px rgba(56,215,255,0.5))",
           }}
         />
 
@@ -2544,17 +2653,18 @@ const SubcategoryCard = ({
     <button
       type="button"
       onClick={onClick}
-      className="group overflow-hidden rounded-2xl border text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,140,255,0.18)]"
+      className="group overflow-hidden rounded-2xl border text-left transition-all duration-300 hover:-translate-y-1"
       style={{
-        backgroundColor:
-          branding.cardBackgroundColor,
+        background:
+          `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
         borderColor: active
-          ? branding.buttonColor
-          : withOpacity(
-              branding.buttonColor,
-              "55"
-            ),
+          ? COLORS.radiantBlue
+          : COLORS.border,
+
+        boxShadow: active
+          ? "0 0 30px rgba(0,140,255,0.15)"
+          : "none",
       }}
     >
 
@@ -2568,12 +2678,21 @@ const SubcategoryCard = ({
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#071a33] to-[#020817]">
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{
+              background:
+                "radial-gradient(circle at center, rgba(0,140,255,0.2), transparent 60%), linear-gradient(135deg,#071a33,#000000)",
+            }}
+          >
             <span
               className="text-4xl font-bold"
               style={{
                 color:
-                  branding.buttonColor,
+                  COLORS.radiantBlue,
+
+                textShadow:
+                  "0 0 20px rgba(56,215,255,0.4)",
               }}
             >
               {String(name)
@@ -2583,16 +2702,26 @@ const SubcategoryCard = ({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-black/10 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.9), transparent 60%)",
+          }}
+        />
 
         {active && (
           <span
             className="absolute right-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
             style={{
-              backgroundColor:
-                branding.buttonColor,
+              background:
+                COLORS.blue,
+
               color:
-                branding.buttonTextColor,
+                "#FFFFFF",
+
+              boxShadow:
+                "0 0 16px rgba(0,140,255,0.5)",
             }}
           >
             Selected
@@ -2610,10 +2739,12 @@ const SubcategoryCard = ({
             style={{
               color:
                 branding.headingColor,
+
               fontFamily:
                 fontFamily(
                   branding.fontHeading
                 ),
+
               fontWeight:
                 branding.headingWeight,
             }}
@@ -2637,11 +2768,11 @@ const SubcategoryCard = ({
         </div>
 
         <FaArrowRight
-          className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
           size={12}
+          className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
           style={{
             color:
-              branding.buttonColor,
+              COLORS.radiantBlue,
           }}
         />
 
@@ -2652,7 +2783,7 @@ const SubcategoryCard = ({
 };
 
 /* =========================================================
-   INFO
+   INFO ITEM
 ========================================================= */
 
 const Info = ({
@@ -2667,7 +2798,10 @@ const Info = ({
       className="mt-0.5 shrink-0"
       style={{
         color:
-          branding.iconColor,
+          COLORS.radiantBlue,
+
+        filter:
+          "drop-shadow(0 0 5px rgba(56,215,255,0.35))",
       }}
     >
       {icon}
@@ -2720,7 +2854,7 @@ const ClassCard = ({
 
   const image =
     getClassImage(item) ||
-    "https://via.placeholder.com/800x500/061426/38BDF8?text=Fine+Arts";
+    "https://via.placeholder.com/800x500/071426/38D7FF?text=Fine+Arts";
 
   const subcategory =
     getSubcategoryName(item);
@@ -2737,20 +2871,22 @@ const ClassCard = ({
   const duration =
     getDuration(item);
 
-  const trainerRating = Number(
-    item?.trainer_rating ??
+  const trainerRating =
+    Number(
+      item?.trainer_rating ??
       item?.trainerRating ??
       item?.trainer?.rating ??
       0
-  );
+    );
 
-  const trainerReviews = Number(
-    item?.trainer_total_reviews ??
+  const trainerReviews =
+    Number(
+      item?.trainer_total_reviews ??
       item?.trainerTotalReviews ??
       item?.trainer?.total_reviews ??
       item?.trainer?.totalReviews ??
       0
-  );
+    );
 
   const availableDays =
     getAvailableDays(item);
@@ -2770,16 +2906,16 @@ const ClassCard = ({
     item?.class_timezone ||
     "Asia/Kolkata";
 
-  const price = Number(
-    item?.price ?? 0
-  );
+  const price =
+    Number(item?.price ?? 0);
 
-  const students = Number(
-    item?.students_count ??
+  const students =
+    Number(
+      item?.students_count ??
       item?.students ??
       item?.studentsCount ??
       0
-  );
+    );
 
   const formattedDays =
     availableDays.length
@@ -2822,18 +2958,20 @@ const ClassCard = ({
 
   return (
     <article
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,140,255,0.18)]"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1"
       style={{
-        backgroundColor:
-          branding.cardBackgroundColor,
+        background:
+          `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
         borderColor:
-          withOpacity(
-            branding.buttonColor,
-            "65"
-          ),
+          COLORS.border,
+
+        boxShadow:
+          "0 15px 45px rgba(0,0,0,0.35)",
       }}
     >
+
+      {/* IMAGE */}
 
       <button
         type="button"
@@ -2851,28 +2989,37 @@ const ClassCard = ({
               null;
 
             event.currentTarget.src =
-              "https://via.placeholder.com/800x500/061426/38BDF8?text=Fine+Arts";
+              "https://via.placeholder.com/800x500/071426/38D7FF?text=Fine+Arts";
           }}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-black/15 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.05) 65%)",
+          }}
+        />
 
         <span
           className="absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
           style={{
-            backgroundColor:
-              withOpacity(
-                branding.buttonColor,
-                "E8"
-              ),
+            background:
+              "rgba(0,140,255,0.9)",
+
             color:
-              branding.buttonTextColor,
+              "#FFFFFF",
+
+            boxShadow:
+              "0 0 18px rgba(0,140,255,0.45)",
           }}
         >
           {subcategory}
         </span>
 
       </button>
+
+      {/* CONTENT */}
 
       <div className="flex flex-1 flex-col p-4">
 
@@ -2881,16 +3028,20 @@ const ClassCard = ({
           style={{
             color:
               branding.headingColor,
+
             fontFamily:
               fontFamily(
                 branding.fontHeading
               ),
+
             fontWeight:
               branding.headingWeight,
           }}
         >
           {title}
         </h3>
+
+        {/* INFORMATION */}
 
         <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
 
@@ -2944,14 +3095,13 @@ const ClassCard = ({
 
         </div>
 
+        {/* PRICE */}
+
         <div
           className="mt-4 flex items-center justify-between gap-3 border-t pt-4"
           style={{
             borderColor:
-              withOpacity(
-                branding.buttonColor,
-                "18"
-              ),
+              "rgba(0,140,255,0.18)",
           }}
         >
 
@@ -2971,13 +3121,18 @@ const ClassCard = ({
               className="mt-1 text-xl"
               style={{
                 color:
-                  branding.buttonColor,
+                  COLORS.radiantBlue,
+
                 fontFamily:
                   fontFamily(
                     branding.fontHeading
                   ),
+
                 fontWeight:
                   branding.headingWeight,
+
+                textShadow:
+                  "0 0 12px rgba(56,215,255,0.25)",
               }}
             >
               ₹
@@ -3016,24 +3171,30 @@ const ClassCard = ({
 
         </div>
 
+        {/* TRAINER */}
+
         <div className="mt-4 flex min-w-0 items-center gap-3">
 
           <img
             src={
               trainerImage ||
-              "https://via.placeholder.com/100/061426/38BDF8?text=T"
+              "https://via.placeholder.com/100/071426/38D7FF?text=T"
             }
             alt={trainerName}
             className="h-11 w-11 shrink-0 rounded-full object-cover"
             style={{
-              border: `2px solid ${branding.buttonColor}`,
+              border:
+                `2px solid ${COLORS.blue}`,
+
+              boxShadow:
+                "0 0 12px rgba(0,140,255,0.25)",
             }}
             onError={(event) => {
               event.currentTarget.onerror =
                 null;
 
               event.currentTarget.src =
-                "https://via.placeholder.com/100/061426/38BDF8?text=T";
+                "https://via.placeholder.com/100/071426/38D7FF?text=T";
             }}
           />
 
@@ -3052,8 +3213,12 @@ const ClassCard = ({
             <div className="mt-1 flex items-center gap-2">
 
               <Stars
-                rating={trainerRating}
-                branding={branding}
+                rating={
+                  trainerRating
+                }
+                branding={
+                  branding
+                }
               />
 
               {trainerReviews > 0 && (
@@ -3074,22 +3239,23 @@ const ClassCard = ({
 
         </div>
 
+        {/* ACTIONS */}
+
         <div className="mt-auto grid grid-cols-2 gap-2 pt-5">
 
           <button
             type="button"
             onClick={handleBook}
-            className="rounded-lg px-3 py-2.5 text-xs font-bold transition hover:brightness-110"
+            className="rounded-lg px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
             style={{
-              backgroundColor:
-                branding.buttonColor,
+              background:
+                `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.radiantBlue})`,
+
               color:
-                branding.buttonTextColor,
+                "#FFFFFF",
+
               boxShadow:
-                `0 0 18px ${withOpacity(
-                  branding.buttonColor,
-                  "35"
-                )}`,
+                "0 0 20px rgba(0,140,255,0.3)",
             }}
           >
             Book Now
@@ -3098,12 +3264,14 @@ const ClassCard = ({
           <button
             type="button"
             onClick={handleDetails}
-            className="rounded-lg border px-3 py-2.5 text-xs font-bold transition hover:bg-white/5"
+            className="rounded-lg border px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:bg-blue-500/10"
             style={{
               color:
                 branding.headingColor,
+
               borderColor:
-                branding.buttonColor,
+                COLORS.blue,
+
               backgroundColor:
                 "transparent",
             }}
@@ -3132,26 +3300,25 @@ const EmptyState = ({
   <div
     className="rounded-2xl border border-dashed px-6 py-14 text-center"
     style={{
-      backgroundColor:
-        branding.cardBackgroundColor,
+      background:
+        `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
+
       borderColor:
-        withOpacity(
-          branding.buttonColor,
-          "35"
-        ),
+        COLORS.border,
     }}
   >
 
     <div
       className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
       style={{
-        backgroundColor:
-          withOpacity(
-            branding.buttonColor,
-            "12"
-          ),
+        background:
+          "rgba(0,140,255,0.1)",
+
         color:
-          branding.buttonColor,
+          COLORS.radiantBlue,
+
+        boxShadow:
+          "0 0 25px rgba(0,140,255,0.15)",
       }}
     >
       <FaSearch size={19} />
@@ -3162,10 +3329,12 @@ const EmptyState = ({
       style={{
         color:
           branding.headingColor,
+
         fontFamily:
           fontFamily(
             branding.fontHeading
           ),
+
         fontWeight:
           branding.headingWeight,
       }}
@@ -3189,7 +3358,7 @@ const EmptyState = ({
 );
 
 /* =========================================================
-   MAIN WEBSITE CLASSES PAGE
+   MAIN WEBSITE CLASSES
 ========================================================= */
 
 const WebsiteClasses = () => {
@@ -3199,6 +3368,10 @@ const WebsiteClasses = () => {
 
   const location =
     useLocation();
+
+  /* =======================================================
+     WEBSITE DATA
+  ======================================================= */
 
   const website =
     outlet?.website ||
@@ -3220,32 +3393,22 @@ const WebsiteClasses = () => {
     website?.subcategories ||
     [];
 
-  /*
-   * Existing banners from WebsitePreview.
-   * These remain as a fallback.
-   */
+  /* =======================================================
+     BANNERS FROM PARENT
+  ======================================================= */
+
   const outletBanners =
     outlet?.banners ||
     website?.banners ||
     [];
 
+  /* =======================================================
+     BRANDING
+  ======================================================= */
+
   const rawBranding =
     outlet?.branding ||
     website?.branding ||
-    {};
-
-  const rawSections =
-    outlet?.sections ||
-    website?.sections ||
-    website?.websiteSections ||
-    website?.website_sections ||
-    [];
-
-  const rawContent =
-    outlet?.content ||
-    website?.content ||
-    website?.websiteContent ||
-    website?.website_content ||
     {};
 
   const branding = useMemo(
@@ -3256,107 +3419,32 @@ const WebsiteClasses = () => {
     [rawBranding]
   );
 
-  const classData =
-    Array.isArray(classes)
-      ? classes
-      : [];
+  /* =======================================================
+     SECTIONS
+  ======================================================= */
 
-  const categoryData =
-    useMemo(() => {
-      const source =
-        Array.isArray(categories)
-          ? categories
-          : [];
-
-      const seen = new Set();
-
-      return source.filter(
-        (category) => {
-          const id =
-            getId(category);
-
-          if (
-            id === undefined ||
-            id === null
-          ) {
-            return false;
-          }
-
-          const key =
-            String(id);
-
-          if (
-            seen.has(key)
-          ) {
-            return false;
-          }
-
-          seen.add(key);
-
-          return true;
-        }
-      );
-    }, [categories]);
-
-  const subcategoryData =
-    useMemo(() => {
-      const source =
-        Array.isArray(
-          subcategories
-        )
-          ? subcategories
-          : [];
-
-      const seen = new Set();
-
-      return source.filter(
-        (subcategory) => {
-          const id =
-            getSubcategoryId(
-              subcategory
-            );
-
-          const categoryId =
-            getCategoryIdFromSubcategory(
-              subcategory
-            );
-
-          if (
-            id === undefined ||
-            id === null ||
-            categoryId ===
-              undefined ||
-            categoryId === null
-          ) {
-            return false;
-          }
-
-          const key =
-            `${categoryId}-${id}`;
-
-          if (
-            seen.has(key)
-          ) {
-            return false;
-          }
-
-          seen.add(key);
-
-          return true;
-        }
-      );
-    }, [subcategories]);
+  const rawSections =
+    outlet?.sections ||
+    website?.sections ||
+    website?.websiteSections ||
+    website?.website_sections ||
+    [];
 
   const sections =
-    Array.isArray(
-      rawSections
-    )
+    Array.isArray(rawSections)
       ? rawSections
       : [];
 
   /* =======================================================
      CONTENT
   ======================================================= */
+
+  const rawContent =
+    outlet?.content ||
+    website?.content ||
+    website?.websiteContent ||
+    website?.website_content ||
+    {};
 
   const classesContent =
     rawContent?.classes ||
@@ -3480,6 +3568,108 @@ const WebsiteClasses = () => {
     "Choose from expert-led classes and start your creative journey.";
 
   /* =======================================================
+     DATA NORMALIZATION
+  ======================================================= */
+
+  const classData =
+    Array.isArray(classes)
+      ? classes
+      : [];
+
+  const categoryData =
+    useMemo(() => {
+
+      const source =
+        Array.isArray(categories)
+          ? categories
+          : [];
+
+      const seen =
+        new Set();
+
+      return source.filter(
+        (category) => {
+
+          const id =
+            getId(category);
+
+          if (
+            id === undefined ||
+            id === null
+          ) {
+            return false;
+          }
+
+          const key =
+            String(id);
+
+          if (
+            seen.has(key)
+          ) {
+            return false;
+          }
+
+          seen.add(key);
+
+          return true;
+        }
+      );
+
+    }, [categories]);
+
+  const subcategoryData =
+    useMemo(() => {
+
+      const source =
+        Array.isArray(
+          subcategories
+        )
+          ? subcategories
+          : [];
+
+      const seen =
+        new Set();
+
+      return source.filter(
+        (subcategory) => {
+
+          const id =
+            getSubcategoryId(
+              subcategory
+            );
+
+          const categoryId =
+            getCategoryIdFromSubcategory(
+              subcategory
+            );
+
+          if (
+            id === undefined ||
+            id === null ||
+            categoryId === undefined ||
+            categoryId === null
+          ) {
+            return false;
+          }
+
+          const key =
+            `${categoryId}-${id}`;
+
+          if (
+            seen.has(key)
+          ) {
+            return false;
+          }
+
+          seen.add(key);
+
+          return true;
+        }
+      );
+
+    }, [subcategories]);
+
+  /* =======================================================
      SECTION VISIBILITY
   ======================================================= */
 
@@ -3542,6 +3732,7 @@ const WebsiteClasses = () => {
 
   const resolveInstituteId =
     () => {
+
       const candidates = [
         outlet?.instituteId,
         outlet?.institute_id,
@@ -3583,13 +3774,13 @@ const WebsiteClasses = () => {
       for (
         const value of candidates
       ) {
+
         if (
-          value !==
-            undefined &&
+          value !== undefined &&
           value !== null &&
-          String(value).trim() !==
-            ""
+          String(value).trim() !== ""
         ) {
+
           const id =
             Number(value);
 
@@ -3606,15 +3797,7 @@ const WebsiteClasses = () => {
     };
 
   /* =======================================================
-     FETCH INSTITUTE DASHBOARD BANNERS
-
-     Institute Dashboard
-             ↓
-        Banner API
-             ↓
-       Public Website API
-             ↓
-       WebsiteClasses
+     BANNER FETCH
   ======================================================= */
 
   const [
@@ -3633,45 +3816,26 @@ const WebsiteClasses = () => {
   ] = useState("");
 
   useEffect(() => {
+
     let cancelled = false;
 
-    const loadInstituteBanners =
+    const loadBanners =
       async () => {
 
         const instituteId =
           resolveInstituteId();
 
         if (!instituteId) {
-          console.warn(
-            "WebsiteClasses: Institute ID not found."
-          );
-
           return;
         }
 
         try {
+
           setBannersLoading(
             true
           );
 
           setBannerError("");
-
-          console.log(
-            "=========================================="
-          );
-
-          console.log(
-            "WEBSITE CLASSES - LOADING BANNERS"
-          );
-
-          console.log(
-            "Institute ID:",
-            instituteId
-          );
-
-          console.log(
-            "=========================================="
-          );
 
           const response =
             await API.get(
@@ -3699,11 +3863,6 @@ const WebsiteClasses = () => {
               ? result.banners
               : [];
 
-          console.log(
-            "INSTITUTE DASHBOARD BANNERS:",
-            apiBanners
-          );
-
           setFetchedBanners(
             apiBanners
           );
@@ -3715,7 +3874,7 @@ const WebsiteClasses = () => {
           }
 
           console.error(
-            "WEBSITE CLASSES BANNER ERROR:",
+            "WebsiteClasses banner error:",
             error?.response
               ?.data || error
           );
@@ -3723,15 +3882,10 @@ const WebsiteClasses = () => {
           setBannerError(
             error?.response
               ?.data?.message ||
-              error?.message ||
-              "Unable to load institute banner."
+            error?.message ||
+            "Unable to load institute banner."
           );
 
-          /*
-           * Do NOT destroy outlet banners.
-           * WebsitePreview can still provide
-           * already-loaded banners.
-           */
           setFetchedBanners([]);
 
         } finally {
@@ -3745,7 +3899,7 @@ const WebsiteClasses = () => {
         }
       };
 
-    loadInstituteBanners();
+    loadBanners();
 
     return () => {
       cancelled = true;
@@ -3754,18 +3908,14 @@ const WebsiteClasses = () => {
   }, [location.search]);
 
   /* =======================================================
-     NORMALIZE DASHBOARD BANNERS
-
-     API is preferred.
-     Outlet banners are fallback.
+     BANNER NORMALIZATION
   ======================================================= */
 
   const bannerData =
     useMemo(() => {
 
       const source =
-        fetchedBanners.length >
-        0
+        fetchedBanners.length > 0
           ? fetchedBanners
           : Array.isArray(
               outletBanners
@@ -3800,13 +3950,6 @@ const WebsiteClasses = () => {
             active === "true" ||
             active === "TRUE";
 
-          /*
-           * Accept HOME banners.
-           *
-           * Also accept generic banners
-           * because some existing dashboard
-           * records may not have banner_type.
-           */
           const isHome =
             type === "HOME" ||
             type === "HOMEPAGE" ||
@@ -3864,7 +4007,7 @@ const WebsiteClasses = () => {
     "";
 
   /* =======================================================
-     FLOW STATE
+     CATEGORY STATE
   ======================================================= */
 
   const [
@@ -3888,6 +4031,7 @@ const WebsiteClasses = () => {
   ] = useState("");
 
   useEffect(() => {
+
     const timer =
       setTimeout(
         () =>
@@ -3899,7 +4043,12 @@ const WebsiteClasses = () => {
 
     return () =>
       clearTimeout(timer);
+
   }, [searchQuery]);
+
+  /* =======================================================
+     SELECTED CATEGORY
+  ======================================================= */
 
   const selectedCategoryObject =
     useMemo(
@@ -3918,6 +4067,10 @@ const WebsiteClasses = () => {
         selectedCategory,
       ]
     );
+
+  /* =======================================================
+     VISIBLE SUBCATEGORIES
+  ======================================================= */
 
   const visibleSubcategories =
     useMemo(() => {
@@ -3967,6 +4120,7 @@ const WebsiteClasses = () => {
             id !== undefined &&
             id !== null
           ) {
+
             const key =
               String(id);
 
@@ -4014,9 +4168,9 @@ const WebsiteClasses = () => {
             String(
               categoryId
             ) !==
-              String(
-                selectedCategory
-              )
+            String(
+              selectedCategory
+            )
           ) {
             return;
           }
@@ -4040,7 +4194,7 @@ const WebsiteClasses = () => {
     ]);
 
   /* =======================================================
-     FILTERED CLASSES
+     FILTER CLASSES
   ======================================================= */
 
   const filteredClasses =
@@ -4217,6 +4371,7 @@ const WebsiteClasses = () => {
 
   const handleOpenBooking =
     (classItem) => {
+
       setSelectedClass(
         classItem
       );
@@ -4228,6 +4383,7 @@ const WebsiteClasses = () => {
 
   const handleCloseBooking =
     () => {
+
       setShowBookingModal(
         false
       );
@@ -4250,8 +4406,12 @@ const WebsiteClasses = () => {
       <div
         className="min-h-screen w-full overflow-x-hidden"
         style={{
+          /*
+           * IMPORTANT:
+           * ALWAYS BLACK.
+           */
           backgroundColor:
-            branding.pageBackgroundColor,
+            "#000000",
 
           color:
             branding.textColor,
@@ -4269,11 +4429,29 @@ const WebsiteClasses = () => {
 
           letterSpacing:
             branding.bodyLetterSpacing,
+
+          minHeight:
+            "100vh",
         }}
       >
 
         {/* =================================================
-            INSTITUTE DASHBOARD BANNER
+            TOP RADIANT LINE
+        ================================================= */}
+
+        <div
+          className="h-[2px] w-full"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, #008CFF, #38D7FF, #008CFF, transparent)",
+
+            boxShadow:
+              "0 0 18px rgba(0,140,255,0.7)",
+          }}
+        />
+
+        {/* =================================================
+            BANNER
         ================================================= */}
 
         {showBanner && (
@@ -4281,20 +4459,19 @@ const WebsiteClasses = () => {
             className="relative overflow-hidden"
             style={{
               background:
-                "#020617",
+                "#000000",
             }}
           >
 
             {/* LOADING */}
 
             {bannersLoading &&
-              bannerData.length ===
-                0 && (
+              bannerData.length === 0 && (
                 <div
                   className="relative h-[230px] w-full overflow-hidden sm:h-[300px] lg:h-[350px]"
                   style={{
                     background:
-                      "linear-gradient(135deg,#020617,#061426,#075985)",
+                      "linear-gradient(135deg,#000000,#020B18,#061426)",
                   }}
                 >
 
@@ -4302,7 +4479,7 @@ const WebsiteClasses = () => {
                     className="absolute inset-0 animate-pulse"
                     style={{
                       background:
-                        "linear-gradient(90deg,transparent,rgba(56,189,248,0.12),transparent)",
+                        "linear-gradient(90deg,transparent,rgba(56,215,255,0.1),transparent)",
                     }}
                   />
 
@@ -4311,12 +4488,13 @@ const WebsiteClasses = () => {
                     <div className="text-center">
 
                       <div
-                        className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
+                        className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2"
                         style={{
                           borderColor:
-                            "rgba(56,189,248,0.25)",
+                            "rgba(56,215,255,0.2)",
+
                           borderTopColor:
-                            "#38BDF8",
+                            COLORS.radiantBlue,
                         }}
                       />
 
@@ -4324,7 +4502,7 @@ const WebsiteClasses = () => {
                         className="text-sm"
                         style={{
                           color:
-                            "#CBD5E1",
+                            COLORS.text,
                         }}
                       >
                         Loading banner...
@@ -4337,11 +4515,10 @@ const WebsiteClasses = () => {
                 </div>
               )}
 
-            {/* BANNER */}
+            {/* ACTUAL BANNER */}
 
             {!bannersLoading &&
-              bannerData.length >
-                0 &&
+              bannerData.length > 0 &&
               bannerImage && (
                 <div className="relative h-[230px] w-full overflow-hidden sm:h-[300px] lg:h-[350px]">
 
@@ -4353,9 +4530,7 @@ const WebsiteClasses = () => {
                     }
                     className="absolute inset-0 h-full w-full object-cover"
                     loading="eager"
-                    onError={(
-                      event
-                    ) => {
+                    onError={(event) => {
                       event.currentTarget.onerror =
                         null;
 
@@ -4370,17 +4545,17 @@ const WebsiteClasses = () => {
                     className="absolute inset-0"
                     style={{
                       background:
-                        "linear-gradient(90deg,rgba(2,6,23,0.90) 0%,rgba(2,6,23,0.62) 38%,rgba(2,6,23,0.22) 75%,rgba(2,6,23,0.15) 100%)",
+                        "linear-gradient(90deg,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.72) 38%,rgba(0,0,0,0.35) 75%,rgba(0,0,0,0.2) 100%)",
                     }}
                   />
 
-                  {/* BOTTOM GRADIENT */}
+                  {/* BOTTOM BLACK */}
 
                   <div
-                    className="absolute inset-x-0 bottom-0 h-32"
+                    className="absolute inset-x-0 bottom-0 h-40"
                     style={{
                       background:
-                        "linear-gradient(to top,#020617,transparent)",
+                        "linear-gradient(to top,#000000,transparent)",
                     }}
                   />
 
@@ -4390,11 +4565,11 @@ const WebsiteClasses = () => {
                     className="pointer-events-none absolute -right-32 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full blur-3xl"
                     style={{
                       background:
-                        "rgba(0,140,255,0.18)",
+                        "rgba(0,140,255,0.16)",
                     }}
                   />
 
-                  {/* BANNER CONTENT */}
+                  {/* CONTENT */}
 
                   <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-5 sm:px-8 lg:px-10">
 
@@ -4404,7 +4579,7 @@ const WebsiteClasses = () => {
                         className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] sm:text-xs"
                         style={{
                           color:
-                            "#38BDF8",
+                            COLORS.radiantBlue,
                         }}
                       >
                         Fine Arts
@@ -4428,7 +4603,7 @@ const WebsiteClasses = () => {
                             branding.headingLineHeight,
 
                           textShadow:
-                            "0 4px 30px rgba(0,0,0,0.45)",
+                            "0 0 35px rgba(0,140,255,0.18)",
                         }}
                       >
                         {bannerTitle}
@@ -4450,16 +4625,16 @@ const WebsiteClasses = () => {
 
                   </div>
 
-                  {/* RADIANT BLUE BORDER */}
+                  {/* BLUE BORDER */}
 
                   <div
                     className="absolute bottom-0 left-0 right-0 h-[2px]"
                     style={{
                       background:
-                        "linear-gradient(90deg,transparent,#008CFF,#38BDF8,#008CFF,transparent)",
+                        "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
 
                       boxShadow:
-                        "0 0 18px rgba(0,140,255,0.7)",
+                        "0 0 20px rgba(0,140,255,0.8)",
                     }}
                   />
 
@@ -4475,7 +4650,7 @@ const WebsiteClasses = () => {
                   className="relative flex h-[230px] items-center justify-center overflow-hidden sm:h-[300px] lg:h-[350px]"
                   style={{
                     background:
-                      "radial-gradient(circle at 80% 50%,rgba(0,140,255,0.22),transparent 35%),linear-gradient(135deg,#020617,#061426,#020617)",
+                      "radial-gradient(circle at 80% 50%,rgba(0,140,255,0.18),transparent 35%),linear-gradient(135deg,#000000,#020B18,#000000)",
                   }}
                 >
 
@@ -4483,7 +4658,7 @@ const WebsiteClasses = () => {
                     className="absolute -right-20 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full blur-3xl"
                     style={{
                       background:
-                        "rgba(0,140,255,0.12)",
+                        "rgba(0,140,255,0.1)",
                     }}
                   />
 
@@ -4493,7 +4668,7 @@ const WebsiteClasses = () => {
                       className="text-xs uppercase tracking-[0.25em]"
                       style={{
                         color:
-                          "#38BDF8",
+                          COLORS.radiantBlue,
                       }}
                     >
                       Fine Arts
@@ -4503,7 +4678,7 @@ const WebsiteClasses = () => {
                       className="mt-3 text-4xl sm:text-5xl"
                       style={{
                         color:
-                          "#F8FAFC",
+                          COLORS.white,
 
                         fontFamily:
                           fontFamily(
@@ -4512,6 +4687,9 @@ const WebsiteClasses = () => {
 
                         fontWeight:
                           branding.headingWeight,
+
+                        textShadow:
+                          "0 0 30px rgba(0,140,255,0.15)",
                       }}
                     >
                       {pageHeading}
@@ -4521,13 +4699,21 @@ const WebsiteClasses = () => {
                       className="mx-auto mt-3 max-w-xl text-sm"
                       style={{
                         color:
-                          "#94A3B8",
+                          COLORS.muted,
                       }}
                     >
                       {pageSubheading}
                     </p>
 
                   </div>
+
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-[2px]"
+                    style={{
+                      background:
+                        "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
+                    }}
+                  />
 
                 </div>
               )}
@@ -4536,11 +4722,17 @@ const WebsiteClasses = () => {
         )}
 
         {/* =================================================
-            CATEGORY
+            CATEGORIES
         ================================================= */}
 
         {showCategories && (
-          <section className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <section
+            className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+            style={{
+              background:
+                "#000000",
+            }}
+          >
 
             <div className="mx-auto max-w-7xl">
 
@@ -4557,8 +4749,7 @@ const WebsiteClasses = () => {
                 }
               />
 
-              {categoryData.length >
-              0 ? (
+              {categoryData.length > 0 ? (
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
                   {categoryData.map(
@@ -4616,7 +4807,7 @@ const WebsiteClasses = () => {
         )}
 
         {/* =================================================
-            SUBCATEGORY
+            SUBCATEGORIES
         ================================================= */}
 
         {showCategories &&
@@ -4627,13 +4818,10 @@ const WebsiteClasses = () => {
               className="border-y px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(0,140,255,0.045), rgba(2,8,23,0))",
+                  "#000000",
 
                 borderColor:
-                  withOpacity(
-                    branding.buttonColor,
-                    "18"
-                  ),
+                  "rgba(0,140,255,0.16)",
               }}
             >
 
@@ -4660,7 +4848,7 @@ const WebsiteClasses = () => {
                 0 ? (
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-                    {/* ALL SUBCATEGORIES */}
+                    {/* ALL */}
 
                     <button
                       type="button"
@@ -4671,38 +4859,39 @@ const WebsiteClasses = () => {
                       }
                       className="group overflow-hidden rounded-2xl border text-left transition-all duration-300 hover:-translate-y-1"
                       style={{
-                        backgroundColor:
-                          branding.cardBackgroundColor,
+                        background:
+                          `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
                         borderColor:
                           selectedSubcategory ===
                           "all"
-                            ? branding.buttonColor
-                            : withOpacity(
-                                branding.buttonColor,
-                                "55"
-                              ),
+                            ? COLORS.radiantBlue
+                            : COLORS.border,
+
+                        boxShadow:
+                          selectedSubcategory ===
+                          "all"
+                            ? "0 0 30px rgba(0,140,255,0.15)"
+                            : "none",
                       }}
                     >
 
-                      <div className="relative flex h-36 items-center justify-center overflow-hidden bg-gradient-to-br from-[#071a33] to-[#020817]">
-
-                        <div
-                          className="absolute inset-0 opacity-40"
-                          style={{
-                            background:
-                              `radial-gradient(circle at center, ${withOpacity(
-                                branding.buttonColor,
-                                "45"
-                              )}, transparent 60%)`,
-                          }}
-                        />
+                      <div
+                        className="relative flex h-36 items-center justify-center overflow-hidden"
+                        style={{
+                          background:
+                            "radial-gradient(circle at center,rgba(0,140,255,0.2),transparent 60%),linear-gradient(135deg,#071a33,#000000)",
+                        }}
+                      >
 
                         <span
                           className="relative text-4xl font-bold"
                           style={{
                             color:
-                              branding.buttonColor,
+                              COLORS.radiantBlue,
+
+                            textShadow:
+                              "0 0 20px rgba(56,215,255,0.45)",
                           }}
                         >
                           All
@@ -4717,10 +4906,12 @@ const WebsiteClasses = () => {
                           style={{
                             color:
                               branding.headingColor,
+
                             fontFamily:
                               fontFamily(
                                 branding.fontHeading
                               ),
+
                             fontWeight:
                               branding.headingWeight,
                           }}
@@ -4746,6 +4937,8 @@ const WebsiteClasses = () => {
                       </div>
 
                     </button>
+
+                    {/* SUBCATEGORIES */}
 
                     {visibleSubcategories.map(
                       (subcategory) => {
@@ -4811,6 +5004,10 @@ const WebsiteClasses = () => {
             <section
               id="classes-section"
               className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+              style={{
+                background:
+                  "#000000",
+              }}
             >
 
               <div className="mx-auto max-w-7xl">
@@ -4871,7 +5068,10 @@ const WebsiteClasses = () => {
                       className="absolute left-4 top-1/2 -translate-y-1/2"
                       style={{
                         color:
-                          branding.iconColor,
+                          COLORS.radiantBlue,
+
+                        filter:
+                          "drop-shadow(0 0 5px rgba(56,215,255,0.4))",
                       }}
                     />
 
@@ -4880,28 +5080,22 @@ const WebsiteClasses = () => {
                       value={
                         searchQuery
                       }
-                      onChange={(
-                        event
-                      ) =>
+                      onChange={(event) =>
                         setSearchQuery(
-                          event.target
-                            .value
+                          event.target.value
                         )
                       }
                       placeholder="Search classes..."
                       className="w-full border py-3.5 pl-11 pr-11 text-sm outline-none transition focus:ring-2"
                       style={{
-                        backgroundColor:
-                          branding.cardBackgroundColor,
+                        background:
+                          `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
                         color:
                           branding.headingColor,
 
                         borderColor:
-                          withOpacity(
-                            branding.buttonColor,
-                            "50"
-                          ),
+                          COLORS.border,
 
                         borderRadius:
                           "999px",
@@ -4910,6 +5104,9 @@ const WebsiteClasses = () => {
                           fontFamily(
                             branding.fontBody
                           ),
+
+                        boxShadow:
+                          "0 10px 30px rgba(0,0,0,0.35)",
                       }}
                     />
 
@@ -4924,7 +5121,7 @@ const WebsiteClasses = () => {
                         className="absolute right-4 top-1/2 -translate-y-1/2"
                         style={{
                           color:
-                            branding.iconColor,
+                            COLORS.radiantBlue,
                         }}
                         aria-label="Clear search"
                       >
@@ -4948,17 +5145,19 @@ const WebsiteClasses = () => {
                     }}
                   >
                     Showing{" "}
+
                     <span
                       className="font-bold"
                       style={{
                         color:
-                          branding.buttonColor,
+                          COLORS.radiantBlue,
                       }}
                     >
                       {
                         filteredClasses.length
                       }
                     </span>{" "}
+
                     {filteredClasses.length ===
                     1
                       ? "class"
@@ -4974,6 +5173,7 @@ const WebsiteClasses = () => {
                         setSelectedSubcategory(
                           "all"
                         );
+
                         setSearchQuery(
                           ""
                         );
@@ -4981,7 +5181,7 @@ const WebsiteClasses = () => {
                       className="inline-flex items-center gap-2 text-xs font-semibold"
                       style={{
                         color:
-                          branding.buttonColor,
+                          COLORS.radiantBlue,
                       }}
                     >
                       <FaTimes />
@@ -4990,6 +5190,8 @@ const WebsiteClasses = () => {
                   )}
 
                 </div>
+
+                {/* CLASS RESULTS */}
 
                 {filteredClasses.length >
                 0 ? (
@@ -5034,16 +5236,21 @@ const WebsiteClasses = () => {
                           setSelectedSubcategory(
                             "all"
                           );
+
                           setSearchQuery(
                             ""
                           );
                         }}
                         className="mt-5 rounded-full px-5 py-2.5 text-xs font-bold"
                         style={{
-                          backgroundColor:
-                            branding.buttonColor,
+                          background:
+                            `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.radiantBlue})`,
+
                           color:
-                            branding.buttonTextColor,
+                            "#FFFFFF",
+
+                          boxShadow:
+                            "0 0 20px rgba(0,140,255,0.3)",
                         }}
                       >
                         Clear Selection
@@ -5064,32 +5271,39 @@ const WebsiteClasses = () => {
         {showClasses &&
           selectedCategory ===
             "all" && (
-            <section className="px-4 pb-16 sm:px-6 lg:px-8">
+            <section
+              className="px-4 pb-16 sm:px-6 lg:px-8"
+              style={{
+                background:
+                  "#000000",
+              }}
+            >
 
               <div
                 className="mx-auto max-w-3xl rounded-2xl border px-6 py-12 text-center"
                 style={{
-                  backgroundColor:
-                    branding.cardBackgroundColor,
+                  background:
+                    `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
                   borderColor:
-                    withOpacity(
-                      branding.buttonColor,
-                      "35"
-                    ),
+                    COLORS.border,
+
+                  boxShadow:
+                    "0 15px 50px rgba(0,0,0,0.4)",
                 }}
               >
 
                 <div
                   className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
                   style={{
-                    backgroundColor:
-                      withOpacity(
-                        branding.buttonColor,
-                        "14"
-                      ),
+                    background:
+                      "rgba(0,140,255,0.1)",
+
                     color:
-                      branding.buttonColor,
+                      COLORS.radiantBlue,
+
+                    boxShadow:
+                      "0 0 25px rgba(0,140,255,0.15)",
                   }}
                 >
                   <FaArrowRight
@@ -5102,10 +5316,12 @@ const WebsiteClasses = () => {
                   style={{
                     color:
                       branding.headingColor,
+
                     fontFamily:
                       fontFamily(
                         branding.fontHeading
                       ),
+
                     fontWeight:
                       branding.headingWeight,
                   }}
@@ -5130,6 +5346,21 @@ const WebsiteClasses = () => {
 
             </section>
           )}
+
+        {/* =================================================
+            BOTTOM BLUE LINE
+        ================================================= */}
+
+        <div
+          className="h-[2px] w-full"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, #008CFF, #38D7FF, #008CFF, transparent)",
+
+            boxShadow:
+              "0 0 18px rgba(0,140,255,0.65)",
+          }}
+        />
 
       </div>
 
