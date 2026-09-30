@@ -3,9 +3,7 @@ import { useEffect, useState } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { getAuth } from "firebase/auth";
 
-// const API =
-//   import.meta.env.VITE_API_URL ||
-//   "http://localhost:5000/api";
+
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -19,29 +17,7 @@ export default function TrainerStudents() {
     fetchStudents();
   }, []);
 
-//   async function fetchStudents() {
-//   try {
-//     const auth = getAuth();
 
-//     const token =
-//       await auth.currentUser?.getIdToken(true);
-
-//     const res = await fetch(
-//       `${API}/trainers/students`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     const data = await res.json();
-
-//     setStudents(data.data || []);
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
 
 async function fetchStudents() {
   try {
