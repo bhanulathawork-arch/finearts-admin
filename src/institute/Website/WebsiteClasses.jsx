@@ -1668,7 +1668,11 @@
 // export default WebsiteClasses;
 
 
-import { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import {
   useNavigate,
@@ -1695,22 +1699,30 @@ import API from "../../services/api";
 ========================================================= */
 
 const COLORS = {
+  black: "#000000",
   page: "#000000",
   pageSecondary: "#02050A",
 
   card: "#071426",
   cardSecondary: "#06111F",
+  cardHover: "#0A1B30",
 
   blue: "#008CFF",
   radiantBlue: "#38D7FF",
   blueLight: "#60A5FA",
 
-  white: "#F8FAFC",
+  white: "#FFFFFF",
+  heading: "#F8FAFC",
   text: "#CBD5E1",
+  textBright: "#E2E8F0",
   muted: "#94A3B8",
 
   border: "rgba(0,140,255,0.35)",
+  borderSoft: "rgba(0,140,255,0.18)",
   borderStrong: "rgba(56,215,255,0.55)",
+
+  blueGlow: "rgba(0,140,255,0.35)",
+  radiantGlow: "rgba(56,215,255,0.30)",
 };
 
 /* =========================================================
@@ -1718,32 +1730,18 @@ const COLORS = {
 ========================================================= */
 
 const DEFAULT_BRANDING = {
-  navbarColor: "#000000",
-  navbarTextColor: "#F8FAFC",
-  navbarButtonColor: COLORS.blue,
-  navbarButtonTextColor: "#FFFFFF",
+  navbarColor: COLORS.black,
+  navbarTextColor: COLORS.white,
 
-  headingColor: COLORS.white,
+  headingColor: COLORS.heading,
   subheadingColor: COLORS.radiantBlue,
   textColor: COLORS.text,
   iconColor: COLORS.radiantBlue,
 
   buttonColor: COLORS.blue,
-  buttonTextColor: "#FFFFFF",
-
-  /*
-   * IMPORTANT:
-   * Page background is intentionally BLACK.
-   * This should NOT be changed by database branding.
-   */
-  pageBackgroundColor: "#000000",
+  buttonTextColor: COLORS.white,
 
   cardBackgroundColor: COLORS.card,
-
-  footerBackgroundColor: "#000000",
-  footerHeadingColor: COLORS.white,
-  footerTextColor: COLORS.text,
-  footerIconColor: COLORS.radiantBlue,
 
   fontHeading: "Inter",
   fontSubheading: "Inter",
@@ -1764,7 +1762,7 @@ const DEFAULT_BRANDING = {
 };
 
 /* =========================================================
-   BRANDING HELPERS
+   BRANDING HELPER
 ========================================================= */
 
 const getBrandingValue = (
@@ -1784,92 +1782,153 @@ const getBrandingValue = (
     : fallback;
 };
 
-const getBranding = (branding = {}) => {
-  const keys = [
-    "navbarColor",
-    "navbarTextColor",
-    "navbarButtonColor",
-    "navbarButtonTextColor",
+/* =========================================================
+   GET BRANDING
+   IMPORTANT:
+   Text colors are FORCE-LOCKED to visible colors.
+========================================================= */
 
-    "headingColor",
-    "subheadingColor",
-    "textColor",
-    "iconColor",
+const getBranding = (
+  branding = {}
+) => {
+  const result = {
+    ...DEFAULT_BRANDING,
 
-    "buttonColor",
-    "buttonTextColor",
+    fontHeading:
+      getBrandingValue(
+        branding,
+        "fontHeading",
+        "font_heading",
+        DEFAULT_BRANDING.fontHeading
+      ),
 
-    "cardBackgroundColor",
+    fontSubheading:
+      getBrandingValue(
+        branding,
+        "fontSubheading",
+        "font_subheading",
+        DEFAULT_BRANDING.fontSubheading
+      ),
 
-    "footerBackgroundColor",
-    "footerHeadingColor",
-    "footerTextColor",
-    "footerIconColor",
+    fontBody:
+      getBrandingValue(
+        branding,
+        "fontBody",
+        "font_body",
+        DEFAULT_BRANDING.fontBody
+      ),
 
-    "fontHeading",
-    "fontSubheading",
-    "fontBody",
+    headingWeight:
+      getBrandingValue(
+        branding,
+        "headingWeight",
+        "heading_weight",
+        DEFAULT_BRANDING.headingWeight
+      ),
 
-    "headingWeight",
-    "headingLineHeight",
-    "headingLetterSpacing",
+    headingLineHeight:
+      getBrandingValue(
+        branding,
+        "headingLineHeight",
+        "heading_line_height",
+        DEFAULT_BRANDING.headingLineHeight
+      ),
 
-    "subheadingWeight",
-    "subheadingLineHeight",
+    headingLetterSpacing:
+      getBrandingValue(
+        branding,
+        "headingLetterSpacing",
+        "heading_letter_spacing",
+        DEFAULT_BRANDING.headingLetterSpacing
+      ),
 
-    "bodyWeight",
-    "bodyLineHeight",
-    "bodyLetterSpacing",
+    subheadingWeight:
+      getBrandingValue(
+        branding,
+        "subheadingWeight",
+        "subheading_weight",
+        DEFAULT_BRANDING.subheadingWeight
+      ),
 
-    "roundedButtons",
-  ];
+    subheadingLineHeight:
+      getBrandingValue(
+        branding,
+        "subheadingLineHeight",
+        "subheading_line_height",
+        DEFAULT_BRANDING.subheadingLineHeight
+      ),
 
-  const result = {};
+    bodyWeight:
+      getBrandingValue(
+        branding,
+        "bodyWeight",
+        "body_weight",
+        DEFAULT_BRANDING.bodyWeight
+      ),
 
-  keys.forEach((key) => {
-    const snake = key.replace(
-      /[A-Z]/g,
-      (match) => `_${match.toLowerCase()}`
-    );
+    bodyLineHeight:
+      getBrandingValue(
+        branding,
+        "bodyLineHeight",
+        "body_line_height",
+        DEFAULT_BRANDING.bodyLineHeight
+      ),
 
-    result[key] = getBrandingValue(
-      branding,
-      key,
-      snake,
-      DEFAULT_BRANDING[key]
-    );
-  });
+    bodyLetterSpacing:
+      getBrandingValue(
+        branding,
+        "bodyLetterSpacing",
+        "body_letter_spacing",
+        DEFAULT_BRANDING.bodyLetterSpacing
+      ),
+  };
 
   /*
-   * FORCE PAGE BACKGROUND TO BLACK.
-   *
-   * Even if old branding exists in database,
-   * the Website Classes page remains black.
+   * IMPORTANT:
+   * Never allow old database branding to make text
+   * invisible on the black website.
    */
-  result.pageBackgroundColor = "#000000";
 
-  /*
-   * Keep cards dark as well.
-   */
+  result.pageBackgroundColor =
+    COLORS.black;
+
+  result.headingColor =
+    COLORS.heading;
+
+  result.subheadingColor =
+    COLORS.radiantBlue;
+
+  result.textColor =
+    COLORS.text;
+
+  result.iconColor =
+    COLORS.radiantBlue;
+
+  result.buttonColor =
+    COLORS.blue;
+
+  result.buttonTextColor =
+    COLORS.white;
+
   result.cardBackgroundColor =
-    branding?.cardBackgroundColor ||
-    branding?.card_background_color ||
     COLORS.card;
 
   return result;
 };
 
 /* =========================================================
-   FONT HELPER
+   FONT
 ========================================================= */
 
-const fontFamily = (font) =>
+const fontFamily = (
+  font
+) =>
   font
     ? `'${font}', sans-serif`
     : "Inter, sans-serif";
 
 /* =========================================================
-   COLOR HELPERS
+   OPACITY HELPER
 ========================================================= */
 
 const withOpacity = (
@@ -1886,13 +1945,23 @@ const withOpacity = (
   return color;
 };
 
-const getValue = (...values) =>
+/* =========================================================
+   VALUE HELPER
+========================================================= */
+
+const getValue = (
+  ...values
+) =>
   values.find(
     (value) =>
       value !== undefined &&
       value !== null &&
       String(value).trim() !== ""
   );
+
+/* =========================================================
+   ENABLED HELPER
+========================================================= */
 
 const isEnabled = (
   value,
@@ -1906,17 +1975,25 @@ const isEnabled = (
   }
 
   if (
-    [true, 1, "1", "true", "TRUE"].includes(
-      value
-    )
+    [
+      true,
+      1,
+      "1",
+      "true",
+      "TRUE",
+    ].includes(value)
   ) {
     return true;
   }
 
   if (
-    [false, 0, "0", "false", "FALSE"].includes(
-      value
-    )
+    [
+      false,
+      0,
+      "0",
+      "false",
+      "FALSE",
+    ].includes(value)
   ) {
     return false;
   }
@@ -1936,46 +2013,58 @@ const findSection = (
     return null;
   }
 
-  const normalizedKeys = keys.map((key) =>
-    String(key)
-      .trim()
-      .toLowerCase()
-      .replace(/[\s-]+/g, "_")
-  );
+  const normalizedKeys =
+    keys.map((key) =>
+      String(key)
+        .trim()
+        .toLowerCase()
+        .replace(
+          /[\s-]+/g,
+          "_"
+        )
+    );
 
   return (
-    sections.find((section) => {
-      const candidates = [
-        section?.section_key,
-        section?.sectionKey,
-        section?.section_name,
-        section?.sectionName,
-        section?.key,
-        section?.name,
-        section?.slug,
-        section?.page_section,
-        section?.pageSection,
-      ];
+    sections.find(
+      (section) => {
+        const candidates = [
+          section?.section_key,
+          section?.sectionKey,
+          section?.section_name,
+          section?.sectionName,
+          section?.key,
+          section?.name,
+          section?.slug,
+          section?.page_section,
+          section?.pageSection,
+        ];
 
-      return candidates.some((candidate) => {
-        if (
-          candidate === undefined ||
-          candidate === null
-        ) {
-          return false;
-        }
+        return candidates.some(
+          (candidate) => {
+            if (
+              candidate ===
+                undefined ||
+              candidate === null
+            ) {
+              return false;
+            }
 
-        const normalized =
-          String(candidate)
-            .trim()
-            .toLowerCase()
-            .replace(/[\s-]+/g, "_");
+            const normalized =
+              String(candidate)
+                .trim()
+                .toLowerCase()
+                .replace(
+                  /[\s-]+/g,
+                  "_"
+                );
 
-        return normalizedKeys.includes(
-          normalized
+            return normalizedKeys.includes(
+              normalized
+            );
+          }
         );
-      });
-    }) || null
+      }
+    ) || null
   );
 };
 
@@ -1995,7 +2084,8 @@ const findContent = (
   }
 
   for (const key of keys) {
-    const value = content?.[key];
+    const value =
+      content?.[key];
 
     if (
       value !== undefined &&
@@ -2013,19 +2103,25 @@ const findContent = (
    CLASS HELPERS
 ========================================================= */
 
-const getClassId = (item) =>
-  item?.id ||
-  item?.class_id ||
+const getClassId = (
+  item
+) =>
+  item?.id ??
+  item?.class_id ??
   item?.classId;
 
-const getClassTitle = (item) =>
+const getClassTitle = (
+  item
+) =>
   item?.title ||
   item?.class_title ||
   item?.classTitle ||
   item?.name ||
   "Class";
 
-const getClassImage = (item) =>
+const getClassImage = (
+  item
+) =>
   item?.image ||
   item?.class_image ||
   item?.classImage ||
@@ -2034,54 +2130,70 @@ const getClassImage = (item) =>
   item?.thumbnail_url ||
   "";
 
-const getInstituteName = (item) =>
+const getInstituteName = (
+  item
+) =>
   item?.institute_name ||
   item?.institute?.name ||
   item?.instituteName ||
   "Institute";
 
-const getCategoryName = (item) =>
+const getCategoryName = (
+  item
+) =>
   item?.category_name ||
   item?.category?.name ||
   item?.categoryName ||
   "Category";
 
-const getSubcategoryName = (item) =>
+const getSubcategoryName = (
+  item
+) =>
   item?.subcategory_name ||
   item?.subcategory?.name ||
   item?.subcategoryName ||
   "General";
 
-const getTrainerName = (item) =>
+const getTrainerName = (
+  item
+) =>
   item?.trainer_name ||
   item?.trainerName ||
   item?.trainer?.name ||
   "Expert Trainer";
 
-const getTrainerImage = (item) =>
+const getTrainerImage = (
+  item
+) =>
   item?.trainer_image ||
   item?.trainerImage ||
   item?.trainer?.image ||
   item?.trainer?.image_url ||
   "";
 
-const getLevel = (item) =>
+const getLevel = (
+  item
+) =>
   item?.level ||
   item?.class_level ||
   item?.difficulty ||
   "All Levels";
 
-const getDuration = (item) =>
+const getDuration = (
+  item
+) =>
   item?.duration ||
   item?.class_duration ||
   item?.duration_minutes ||
   "--";
 
 /* =========================================================
-   AVAILABLE DAYS
+   DAYS
 ========================================================= */
 
-const getAvailableDays = (item) => {
+const getAvailableDays = (
+  item
+) => {
   const value =
     item?.available_days ??
     item?.availableDays ??
@@ -2093,17 +2205,21 @@ const getAvailableDays = (item) => {
   }
 
   if (typeof value === "string") {
-    const trimmed = value.trim();
+    const trimmed =
+      value.trim();
 
     if (!trimmed) {
       return [];
     }
 
     try {
-      const parsed = JSON.parse(trimmed);
+      const parsed =
+        JSON.parse(trimmed);
 
       if (Array.isArray(parsed)) {
-        return parsed.filter(Boolean);
+        return parsed.filter(
+          Boolean
+        );
       }
     } catch {
       // fallback
@@ -2111,7 +2227,9 @@ const getAvailableDays = (item) => {
 
     return trimmed
       .split(",")
-      .map((day) => day.trim())
+      .map((day) =>
+        day.trim()
+      )
       .filter(Boolean);
   }
 
@@ -2122,15 +2240,24 @@ const getAvailableDays = (item) => {
    DATE
 ========================================================= */
 
-const formatDate = (dateValue) => {
+const formatDate = (
+  dateValue
+) => {
   if (!dateValue) {
     return "--";
   }
 
-  const date = new Date(dateValue);
+  const date =
+    new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
-    return String(dateValue);
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return String(
+      dateValue
+    );
   }
 
   return date.toLocaleDateString(
@@ -2147,25 +2274,34 @@ const formatDate = (dateValue) => {
    TIME
 ========================================================= */
 
-const formatTime = (timeValue) => {
+const formatTime = (
+  timeValue
+) => {
   if (!timeValue) {
     return "--";
   }
 
-  const value = String(timeValue);
+  const value =
+    String(timeValue);
 
-  if (/am|pm/i.test(value)) {
+  if (
+    /am|pm/i.test(value)
+  ) {
     return value;
   }
 
-  const parts = value.split(":");
+  const parts =
+    value.split(":");
 
   if (parts.length < 2) {
     return value;
   }
 
-  const hours = Number(parts[0]);
-  const minutes = Number(parts[1]);
+  const hours =
+    Number(parts[0]);
+
+  const minutes =
+    Number(parts[1]);
 
   if (
     Number.isNaN(hours) ||
@@ -2175,18 +2311,23 @@ const formatTime = (timeValue) => {
   }
 
   const period =
-    hours >= 12 ? "PM" : "AM";
+    hours >= 12
+      ? "PM"
+      : "AM";
 
   const hour12 =
     hours % 12 || 12;
 
   return `${hour12}:${String(
     minutes
-  ).padStart(2, "0")} ${period}`;
+  ).padStart(
+    2,
+    "0"
+  )} ${period}`;
 };
 
 /* =========================================================
-   TIME + TIMEZONE
+   TIMEZONE
 ========================================================= */
 
 const formatTimeWithTimezone = (
@@ -2199,9 +2340,10 @@ const formatTimeWithTimezone = (
   }
 
   try {
-    const dateTime = new Date(
-      `${date}T${time}`
-    );
+    const dateTime =
+      new Date(
+        `${date}T${time}`
+      );
 
     if (
       Number.isNaN(
@@ -2220,7 +2362,8 @@ const formatTimeWithTimezone = (
         minute: "2-digit",
         hour12: true,
         timeZone:
-          timezone || "Asia/Kolkata",
+          timezone ||
+          "Asia/Kolkata",
         timeZoneName: "short",
       }
     );
@@ -2243,7 +2386,10 @@ const getImage = (
     return "";
   }
 
-  if (type === "subcategory") {
+  if (
+    type ===
+    "subcategory"
+  ) {
     return (
       item?.image ||
       item?.subcategory_image ||
@@ -2270,12 +2416,16 @@ const getImage = (
    ID HELPERS
 ========================================================= */
 
-const getId = (item) =>
+const getId = (
+  item
+) =>
   item?.id ??
   item?.category_id ??
   item?.categoryId;
 
-const getSubcategoryId = (item) =>
+const getSubcategoryId = (
+  item
+) =>
   item?.id ??
   item?.subcategory_id ??
   item?.subcategoryId;
@@ -2286,12 +2436,16 @@ const getCategoryIdFromSubcategory =
     item?.categoryId ??
     item?.category?.id;
 
-const getItemCategoryId = (item) =>
+const getItemCategoryId = (
+  item
+) =>
   item?.category_id ??
   item?.categoryId ??
   item?.category?.id;
 
-const getItemSubcategoryId = (item) =>
+const getItemSubcategoryId = (
+  item
+) =>
   item?.subcategory_id ??
   item?.subcategoryId ??
   item?.subcategory?.id;
@@ -2319,6 +2473,9 @@ const SectionHeading = ({
             fontFamily(
               branding.fontSubheading
             ),
+
+          textShadow:
+            "0 0 12px rgba(56,215,255,0.3)",
         }}
       >
         {eyebrow}
@@ -2350,7 +2507,7 @@ const SectionHeading = ({
         className="text-3xl sm:text-4xl"
         style={{
           color:
-            branding.headingColor,
+            COLORS.white,
 
           fontFamily:
             fontFamily(
@@ -2363,8 +2520,11 @@ const SectionHeading = ({
           lineHeight:
             branding.headingLineHeight,
 
+          letterSpacing:
+            branding.headingLetterSpacing,
+
           textShadow:
-            "0 0 25px rgba(0,140,255,0.12)",
+            "0 0 25px rgba(0,140,255,0.15)",
         }}
       >
         {heading}
@@ -2396,12 +2556,15 @@ const SectionHeading = ({
         className="mx-auto mt-4 max-w-2xl text-sm leading-6 sm:text-base"
         style={{
           color:
-            branding.textColor,
+            COLORS.textBright,
 
           fontFamily:
             fontFamily(
               branding.fontBody
             ),
+
+          fontWeight:
+            branding.bodyWeight,
         }}
       >
         {subheading}
@@ -2417,15 +2580,15 @@ const SectionHeading = ({
 
 const Stars = ({
   rating,
-  branding,
 }) => {
-  const value = Math.max(
-    0,
-    Math.min(
-      5,
-      Number(rating) || 0
-    )
-  );
+  const value =
+    Math.max(
+      0,
+      Math.min(
+        5,
+        Number(rating) || 0
+      )
+    );
 
   return (
     <div className="flex items-center gap-2">
@@ -2439,12 +2602,11 @@ const Stars = ({
               style={{
                 color:
                   star <=
-                  Math.round(value)
+                  Math.round(
+                    value
+                  )
                     ? COLORS.radiantBlue
-                    : withOpacity(
-                        branding.textColor,
-                        "35"
-                      ),
+                    : "rgba(148,163,184,0.35)",
               }}
             >
               ★
@@ -2477,7 +2639,6 @@ const CategoryCard = ({
   count,
   active,
   onClick,
-  branding,
 }) => {
   const name =
     category?.name ||
@@ -2485,10 +2646,11 @@ const CategoryCard = ({
     category?.title ||
     "Category";
 
-  const image = getImage(
-    category,
-    "category"
-  );
+  const image =
+    getImage(
+      category,
+      "category"
+    );
 
   return (
     <button
@@ -2499,14 +2661,15 @@ const CategoryCard = ({
         background:
           `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
-        borderColor: active
-          ? COLORS.radiantBlue
-          : COLORS.border,
+        borderColor:
+          active
+            ? COLORS.radiantBlue
+            : COLORS.border,
 
-        boxShadow: active
-          ? `0 0 0 1px rgba(0,140,255,0.35),
-             0 0 35px rgba(0,140,255,0.16)`
-          : "0 12px 35px rgba(0,0,0,0.35)",
+        boxShadow:
+          active
+            ? "0 0 0 1px rgba(0,140,255,0.35),0 0 35px rgba(0,140,255,0.16)"
+            : "0 12px 35px rgba(0,0,0,0.35)",
       }}
     >
 
@@ -2524,7 +2687,7 @@ const CategoryCard = ({
             className="flex h-full w-full items-center justify-center"
             style={{
               background:
-                `radial-gradient(circle at center, rgba(0,140,255,0.25), transparent 55%), linear-gradient(135deg, #071a33, #000000)`,
+                "radial-gradient(circle at center,rgba(0,140,255,0.25),transparent 55%),linear-gradient(135deg,#071a33,#000000)",
             }}
           >
             <span
@@ -2534,7 +2697,7 @@ const CategoryCard = ({
                   COLORS.radiantBlue,
 
                 textShadow:
-                  `0 0 25px rgba(56,215,255,0.45)`,
+                  "0 0 25px rgba(56,215,255,0.45)",
               }}
             >
               {String(name)
@@ -2548,7 +2711,7 @@ const CategoryCard = ({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.9), transparent 60%)",
+              "linear-gradient(to top,rgba(0,0,0,0.95),transparent 60%)",
           }}
         />
 
@@ -2560,10 +2723,10 @@ const CategoryCard = ({
                 COLORS.blue,
 
               color:
-                "#FFFFFF",
+                COLORS.white,
 
               boxShadow:
-                `0 0 18px rgba(0,140,255,0.55)`,
+                "0 0 18px rgba(0,140,255,0.55)",
             }}
           >
             Selected
@@ -2580,15 +2743,9 @@ const CategoryCard = ({
             className="truncate text-base"
             style={{
               color:
-                branding.headingColor,
+                COLORS.white,
 
-              fontFamily:
-                fontFamily(
-                  branding.fontHeading
-                ),
-
-              fontWeight:
-                branding.headingWeight,
+              fontWeight: 700,
             }}
           >
             {name}
@@ -2598,7 +2755,7 @@ const CategoryCard = ({
             className="mt-1 text-xs"
             style={{
               color:
-                branding.textColor,
+                COLORS.text,
             }}
           >
             {count}{" "}
@@ -2636,7 +2793,6 @@ const SubcategoryCard = ({
   count,
   active,
   onClick,
-  branding,
 }) => {
   const name =
     subcategory?.name ||
@@ -2644,10 +2800,11 @@ const SubcategoryCard = ({
     subcategory?.title ||
     "Subcategory";
 
-  const image = getImage(
-    subcategory,
-    "subcategory"
-  );
+  const image =
+    getImage(
+      subcategory,
+      "subcategory"
+    );
 
   return (
     <button
@@ -2658,13 +2815,15 @@ const SubcategoryCard = ({
         background:
           `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
-        borderColor: active
-          ? COLORS.radiantBlue
-          : COLORS.border,
+        borderColor:
+          active
+            ? COLORS.radiantBlue
+            : COLORS.border,
 
-        boxShadow: active
-          ? "0 0 30px rgba(0,140,255,0.15)"
-          : "none",
+        boxShadow:
+          active
+            ? "0 0 30px rgba(0,140,255,0.15)"
+            : "none",
       }}
     >
 
@@ -2682,7 +2841,7 @@ const SubcategoryCard = ({
             className="flex h-full w-full items-center justify-center"
             style={{
               background:
-                "radial-gradient(circle at center, rgba(0,140,255,0.2), transparent 60%), linear-gradient(135deg,#071a33,#000000)",
+                "radial-gradient(circle at center,rgba(0,140,255,0.2),transparent 60%),linear-gradient(135deg,#071a33,#000000)",
             }}
           >
             <span
@@ -2706,7 +2865,7 @@ const SubcategoryCard = ({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.9), transparent 60%)",
+              "linear-gradient(to top,rgba(0,0,0,0.9),transparent 60%)",
           }}
         />
 
@@ -2718,7 +2877,7 @@ const SubcategoryCard = ({
                 COLORS.blue,
 
               color:
-                "#FFFFFF",
+                COLORS.white,
 
               boxShadow:
                 "0 0 16px rgba(0,140,255,0.5)",
@@ -2738,15 +2897,9 @@ const SubcategoryCard = ({
             className="truncate text-sm sm:text-base"
             style={{
               color:
-                branding.headingColor,
+                COLORS.white,
 
-              fontFamily:
-                fontFamily(
-                  branding.fontHeading
-                ),
-
-              fontWeight:
-                branding.headingWeight,
+              fontWeight: 700,
             }}
           >
             {name}
@@ -2756,7 +2909,7 @@ const SubcategoryCard = ({
             className="mt-1 text-xs"
             style={{
               color:
-                branding.textColor,
+                COLORS.text,
             }}
           >
             {count}{" "}
@@ -2783,14 +2936,13 @@ const SubcategoryCard = ({
 };
 
 /* =========================================================
-   INFO ITEM
+   INFO
 ========================================================= */
 
 const Info = ({
   icon,
   label,
   value,
-  branding,
 }) => (
   <div className="flex min-w-0 items-start gap-2">
 
@@ -2813,7 +2965,7 @@ const Info = ({
         className="text-[10px]"
         style={{
           color:
-            branding.textColor,
+            COLORS.muted,
         }}
       >
         {label}
@@ -2823,7 +2975,7 @@ const Info = ({
         className="truncate text-xs font-semibold"
         style={{
           color:
-            branding.headingColor,
+            COLORS.textBright,
         }}
         title={String(value)}
       >
@@ -2842,9 +2994,9 @@ const Info = ({
 const ClassCard = ({
   item,
   onBook,
-  branding,
 }) => {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
   const classId =
     getClassId(item);
@@ -2907,7 +3059,9 @@ const ClassCard = ({
     "Asia/Kolkata";
 
   const price =
-    Number(item?.price ?? 0);
+    Number(
+      item?.price ?? 0
+    );
 
   const students =
     Number(
@@ -2921,7 +3075,8 @@ const ClassCard = ({
     availableDays.length
       ? availableDays
           .map((day) =>
-            String(day).substring(0, 3)
+            String(day)
+              .substring(0, 3)
           )
           .join(", ")
       : "--";
@@ -2933,28 +3088,33 @@ const ClassCard = ({
           startTime,
           timezone
         )
-      : formatTime(startTime);
+      : formatTime(
+          startTime
+        );
 
-  const handleDetails = () => {
-    if (!classId) {
-      return;
-    }
+  const handleDetails =
+    () => {
+      if (!classId) {
+        return;
+      }
 
-    navigate(
-      `/institute/website/preview/classes/${classId}`
-    );
-  };
+      navigate(
+        `/institute/website/preview/classes/${classId}`
+      );
+    };
 
-  const handleBook = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleBook =
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    if (
-      typeof onBook === "function"
-    ) {
-      onBook(item);
-    }
-  };
+      if (
+        typeof onBook ===
+        "function"
+      ) {
+        onBook(item);
+      }
+    };
 
   return (
     <article
@@ -2967,7 +3127,7 @@ const ClassCard = ({
           COLORS.border,
 
         boxShadow:
-          "0 15px 45px rgba(0,0,0,0.35)",
+          "0 15px 45px rgba(0,0,0,0.4)",
       }}
     >
 
@@ -2975,7 +3135,9 @@ const ClassCard = ({
 
       <button
         type="button"
-        onClick={handleDetails}
+        onClick={
+          handleDetails
+        }
         className="relative block h-48 w-full shrink-0 overflow-hidden text-left"
       >
 
@@ -2984,7 +3146,9 @@ const ClassCard = ({
           alt={title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
-          onError={(event) => {
+          onError={(
+            event
+          ) => {
             event.currentTarget.onerror =
               null;
 
@@ -2997,7 +3161,7 @@ const ClassCard = ({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.05) 65%)",
+              "linear-gradient(to top,rgba(0,0,0,0.95),rgba(0,0,0,0.05) 65%)",
           }}
         />
 
@@ -3005,10 +3169,10 @@ const ClassCard = ({
           className="absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
           style={{
             background:
-              "rgba(0,140,255,0.9)",
+              "rgba(0,140,255,0.92)",
 
             color:
-              "#FFFFFF",
+              COLORS.white,
 
             boxShadow:
               "0 0 18px rgba(0,140,255,0.45)",
@@ -3027,15 +3191,13 @@ const ClassCard = ({
           className="line-clamp-2 min-h-[48px] text-lg"
           style={{
             color:
-              branding.headingColor,
-
-            fontFamily:
-              fontFamily(
-                branding.fontHeading
-              ),
+              COLORS.white,
 
             fontWeight:
-              branding.headingWeight,
+              700,
+
+            lineHeight:
+              1.35,
           }}
         >
           {title}
@@ -3046,10 +3208,11 @@ const ClassCard = ({
         <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
 
           <Info
-            icon={<FaClock />}
+            icon={
+              <FaClock />
+            }
             label="Duration"
             value={duration}
-            branding={branding}
           />
 
           <Info
@@ -3060,37 +3223,44 @@ const ClassCard = ({
             }
             label="Level"
             value={level}
-            branding={branding}
           />
 
           <Info
-            icon={<FaCalendarWeek />}
+            icon={
+              <FaCalendarWeek />
+            }
             label="Days"
-            value={formattedDays}
-            branding={branding}
+            value={
+              formattedDays
+            }
           />
 
           <Info
-            icon={<FaClock />}
+            icon={
+              <FaClock />
+            }
             label="Start Time"
-            value={formattedTime}
-            branding={branding}
+            value={
+              formattedTime
+            }
           />
 
           <Info
-            icon={<FaCalendarAlt />}
+            icon={
+              <FaCalendarAlt />
+            }
             label="Start Date"
             value={formatDate(
               startDate
             )}
-            branding={branding}
           />
 
           <Info
-            icon={<FaUsers />}
+            icon={
+              <FaUsers />
+            }
             label="Students"
             value={students}
-            branding={branding}
           />
 
         </div>
@@ -3101,7 +3271,7 @@ const ClassCard = ({
           className="mt-4 flex items-center justify-between gap-3 border-t pt-4"
           style={{
             borderColor:
-              "rgba(0,140,255,0.18)",
+              COLORS.borderSoft,
           }}
         >
 
@@ -3111,7 +3281,7 @@ const ClassCard = ({
               className="text-[10px] uppercase tracking-wider"
               style={{
                 color:
-                  branding.textColor,
+                  COLORS.muted,
               }}
             >
               Price
@@ -3123,13 +3293,8 @@ const ClassCard = ({
                 color:
                   COLORS.radiantBlue,
 
-                fontFamily:
-                  fontFamily(
-                    branding.fontHeading
-                  ),
-
                 fontWeight:
-                  branding.headingWeight,
+                  700,
 
                 textShadow:
                   "0 0 12px rgba(56,215,255,0.25)",
@@ -3149,7 +3314,7 @@ const ClassCard = ({
               className="text-[10px] uppercase tracking-wider"
               style={{
                 color:
-                  branding.textColor,
+                  COLORS.muted,
               }}
             >
               Students
@@ -3159,7 +3324,7 @@ const ClassCard = ({
               className="mt-1 text-xs font-semibold"
               style={{
                 color:
-                  branding.headingColor,
+                  COLORS.white,
               }}
             >
               {students.toLocaleString(
@@ -3189,7 +3354,9 @@ const ClassCard = ({
               boxShadow:
                 "0 0 12px rgba(0,140,255,0.25)",
             }}
-            onError={(event) => {
+            onError={(
+              event
+            ) => {
               event.currentTarget.onerror =
                 null;
 
@@ -3204,7 +3371,7 @@ const ClassCard = ({
               className="truncate text-sm font-semibold"
               style={{
                 color:
-                  branding.headingColor,
+                  COLORS.white,
               }}
             >
               {trainerName}
@@ -3216,20 +3383,22 @@ const ClassCard = ({
                 rating={
                   trainerRating
                 }
-                branding={
-                  branding
-                }
               />
 
-              {trainerReviews > 0 && (
+              {trainerReviews >
+                0 && (
                 <span
                   className="text-[10px]"
                   style={{
                     color:
-                      branding.textColor,
+                      COLORS.muted,
                   }}
                 >
-                  ({trainerReviews})
+                  (
+                  {
+                    trainerReviews
+                  }
+                  )
                 </span>
               )}
 
@@ -3245,14 +3414,16 @@ const ClassCard = ({
 
           <button
             type="button"
-            onClick={handleBook}
+            onClick={
+              handleBook
+            }
             className="rounded-lg px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
             style={{
               background:
                 `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.radiantBlue})`,
 
               color:
-                "#FFFFFF",
+                COLORS.black,
 
               boxShadow:
                 "0 0 20px rgba(0,140,255,0.3)",
@@ -3263,17 +3434,19 @@ const ClassCard = ({
 
           <button
             type="button"
-            onClick={handleDetails}
+            onClick={
+              handleDetails
+            }
             className="rounded-lg border px-3 py-2.5 text-xs font-bold transition-all duration-200 hover:bg-blue-500/10"
             style={{
               color:
-                branding.headingColor,
+                COLORS.white,
 
               borderColor:
                 COLORS.blue,
 
-              backgroundColor:
-                "transparent",
+              background:
+                "rgba(0,0,0,0.25)",
             }}
           >
             View Details
@@ -3294,7 +3467,6 @@ const ClassCard = ({
 const EmptyState = ({
   title,
   text,
-  branding,
   action,
 }) => (
   <div
@@ -3305,6 +3477,9 @@ const EmptyState = ({
 
       borderColor:
         COLORS.border,
+
+      boxShadow:
+        "0 15px 50px rgba(0,0,0,0.4)",
     }}
   >
 
@@ -3321,22 +3496,19 @@ const EmptyState = ({
           "0 0 25px rgba(0,140,255,0.15)",
       }}
     >
-      <FaSearch size={19} />
+      <FaSearch
+        size={19}
+      />
     </div>
 
     <h3
       className="mt-5 text-xl"
       style={{
         color:
-          branding.headingColor,
-
-        fontFamily:
-          fontFamily(
-            branding.fontHeading
-          ),
+          COLORS.white,
 
         fontWeight:
-          branding.headingWeight,
+          700,
       }}
     >
       {title}
@@ -3346,7 +3518,7 @@ const EmptyState = ({
       className="mx-auto mt-2 max-w-md text-sm"
       style={{
         color:
-          branding.textColor,
+          COLORS.text,
       }}
     >
       {text}
@@ -3362,7 +3534,6 @@ const EmptyState = ({
 ========================================================= */
 
 const WebsiteClasses = () => {
-
   const outlet =
     useOutletContext() || {};
 
@@ -3394,7 +3565,7 @@ const WebsiteClasses = () => {
     [];
 
   /* =======================================================
-     BANNERS FROM PARENT
+     BANNERS
   ======================================================= */
 
   const outletBanners =
@@ -3411,13 +3582,14 @@ const WebsiteClasses = () => {
     website?.branding ||
     {};
 
-  const branding = useMemo(
-    () =>
-      getBranding(
-        rawBranding
-      ),
-    [rawBranding]
-  );
+  const branding =
+    useMemo(
+      () =>
+        getBranding(
+          rawBranding
+        ),
+      [rawBranding]
+    );
 
   /* =======================================================
      SECTIONS
@@ -3431,7 +3603,9 @@ const WebsiteClasses = () => {
     [];
 
   const sections =
-    Array.isArray(rawSections)
+    Array.isArray(
+      rawSections
+    )
       ? rawSections
       : [];
 
@@ -3449,8 +3623,10 @@ const WebsiteClasses = () => {
   const classesContent =
     rawContent?.classes ||
     rawContent?.Classes ||
-    website?.content?.classes ||
-    website?.content?.Classes ||
+    website?.content
+      ?.classes ||
+    website?.content
+      ?.Classes ||
     {};
 
   const pageHeading =
@@ -3568,7 +3744,7 @@ const WebsiteClasses = () => {
     "Choose from expert-led classes and start your creative journey.";
 
   /* =======================================================
-     DATA NORMALIZATION
+     NORMALIZE DATA
   ======================================================= */
 
   const classData =
@@ -3578,9 +3754,10 @@ const WebsiteClasses = () => {
 
   const categoryData =
     useMemo(() => {
-
       const source =
-        Array.isArray(categories)
+        Array.isArray(
+          categories
+        )
           ? categories
           : [];
 
@@ -3589,9 +3766,10 @@ const WebsiteClasses = () => {
 
       return source.filter(
         (category) => {
-
           const id =
-            getId(category);
+            getId(
+              category
+            );
 
           if (
             id === undefined ||
@@ -3614,12 +3792,10 @@ const WebsiteClasses = () => {
           return true;
         }
       );
-
     }, [categories]);
 
   const subcategoryData =
     useMemo(() => {
-
       const source =
         Array.isArray(
           subcategories
@@ -3632,7 +3808,6 @@ const WebsiteClasses = () => {
 
       return source.filter(
         (subcategory) => {
-
           const id =
             getSubcategoryId(
               subcategory
@@ -3646,7 +3821,8 @@ const WebsiteClasses = () => {
           if (
             id === undefined ||
             id === null ||
-            categoryId === undefined ||
+            categoryId ===
+              undefined ||
             categoryId === null
           ) {
             return false;
@@ -3666,7 +3842,6 @@ const WebsiteClasses = () => {
           return true;
         }
       );
-
     }, [subcategories]);
 
   /* =======================================================
@@ -3732,13 +3907,13 @@ const WebsiteClasses = () => {
 
   const resolveInstituteId =
     () => {
-
       const candidates = [
         outlet?.instituteId,
         outlet?.institute_id,
 
         outlet?.institute?.id,
-        outlet?.institute?.institute_id,
+        outlet?.institute
+          ?.institute_id,
 
         website?.institute_id,
         website?.instituteId,
@@ -3768,19 +3943,22 @@ const WebsiteClasses = () => {
 
         new URLSearchParams(
           location.search
-        ).get("institute_id"),
+        ).get(
+          "institute_id"
+        ),
       ];
 
       for (
-        const value of candidates
+        const value of
+          candidates
       ) {
-
         if (
-          value !== undefined &&
+          value !==
+            undefined &&
           value !== null &&
-          String(value).trim() !== ""
+          String(value).trim() !==
+            ""
         ) {
-
           const id =
             Number(value);
 
@@ -3797,7 +3975,7 @@ const WebsiteClasses = () => {
     };
 
   /* =======================================================
-     BANNER FETCH
+     BANNER STATE
   ======================================================= */
 
   const [
@@ -3810,18 +3988,12 @@ const WebsiteClasses = () => {
     setBannersLoading,
   ] = useState(false);
 
-  const [
-    bannerError,
-    setBannerError,
-  ] = useState("");
-
   useEffect(() => {
-
-    let cancelled = false;
+    let cancelled =
+      false;
 
     const loadBanners =
       async () => {
-
         const instituteId =
           resolveInstituteId();
 
@@ -3830,12 +4002,9 @@ const WebsiteClasses = () => {
         }
 
         try {
-
           setBannersLoading(
             true
           );
-
-          setBannerError("");
 
           const response =
             await API.get(
@@ -3847,12 +4016,15 @@ const WebsiteClasses = () => {
               }
             );
 
-          if (cancelled) {
+          if (
+            cancelled
+          ) {
             return;
           }
 
           const result =
-            response?.data?.data ??
+            response?.data
+              ?.data ??
             response?.data ??
             {};
 
@@ -3866,36 +4038,33 @@ const WebsiteClasses = () => {
           setFetchedBanners(
             apiBanners
           );
-
-        } catch (error) {
-
-          if (cancelled) {
+        } catch (
+          error
+        ) {
+          if (
+            cancelled
+          ) {
             return;
           }
 
           console.error(
             "WebsiteClasses banner error:",
             error?.response
-              ?.data || error
+              ?.data ||
+              error
           );
 
-          setBannerError(
-            error?.response
-              ?.data?.message ||
-            error?.message ||
-            "Unable to load institute banner."
+          setFetchedBanners(
+            []
           );
-
-          setFetchedBanners([]);
-
         } finally {
-
-          if (!cancelled) {
+          if (
+            !cancelled
+          ) {
             setBannersLoading(
               false
             );
           }
-
         }
       };
 
@@ -3904,63 +4073,74 @@ const WebsiteClasses = () => {
     return () => {
       cancelled = true;
     };
-
   }, [location.search]);
 
   /* =======================================================
-     BANNER NORMALIZATION
+     BANNER DATA
   ======================================================= */
 
   const bannerData =
     useMemo(() => {
-
       const source =
-        fetchedBanners.length > 0
+        fetchedBanners.length >
+        0
           ? fetchedBanners
           : Array.isArray(
-              outletBanners
+                outletBanners
             )
             ? outletBanners
             : [];
 
       return source
         .filter(Boolean)
-        .filter((banner) => {
+        .filter(
+          (banner) => {
+            const type =
+              String(
+                banner?.banner_type ??
+                  banner?.bannerType ??
+                  banner?.type ??
+                  ""
+              )
+                .trim()
+                .toUpperCase();
 
-          const type =
-            String(
-              banner?.banner_type ??
-                banner?.bannerType ??
-                banner?.type ??
-                ""
-            )
-              .trim()
-              .toUpperCase();
+            const active =
+              banner?.is_active ??
+              banner?.isActive ??
+              banner?.active ??
+              true;
 
-          const active =
-            banner?.is_active ??
-            banner?.isActive ??
-            banner?.active ??
-            true;
+            const isActive =
+              active === true ||
+              active === 1 ||
+              active === "1" ||
+              active === "true" ||
+              active === "TRUE";
 
-          const isActive =
-            active === true ||
-            active === 1 ||
-            active === "1" ||
-            active === "true" ||
-            active === "TRUE";
+            const isClasses =
+              [
+                "CLASS",
+                "CLASSES",
+                "CLASS_PAGE",
+                "CLASSES_PAGE",
+              ].includes(type);
 
-          const isHome =
-            type === "HOME" ||
-            type === "HOMEPAGE" ||
-            type === "HOME_PAGE" ||
-            type === "";
+            const isHome =
+              [
+                "HOME",
+                "HOMEPAGE",
+                "HOME_PAGE",
+                "",
+              ].includes(type);
 
-          return (
-            isActive &&
-            isHome
-          );
-        })
+            return (
+              isActive &&
+              (isClasses ||
+                isHome)
+            );
+          }
+        )
         .sort(
           (a, b) =>
             Number(
@@ -3974,18 +4154,14 @@ const WebsiteClasses = () => {
                 999
             )
         );
-
     }, [
       fetchedBanners,
       outletBanners,
     ]);
 
-  /* =======================================================
-     CURRENT BANNER
-  ======================================================= */
-
   const currentBanner =
-    bannerData[0] || null;
+    bannerData[0] ||
+    null;
 
   const bannerImage =
     currentBanner?.image_url ||
@@ -4031,19 +4207,17 @@ const WebsiteClasses = () => {
   ] = useState("");
 
   useEffect(() => {
-
     const timer =
-      setTimeout(
-        () =>
-          setDebouncedSearch(
-            searchQuery
-          ),
-        300
-      );
+      setTimeout(() => {
+        setDebouncedSearch(
+          searchQuery
+        );
+      }, 300);
 
     return () =>
-      clearTimeout(timer);
-
+      clearTimeout(
+        timer
+      );
   }, [searchQuery]);
 
   /* =======================================================
@@ -4074,7 +4248,6 @@ const WebsiteClasses = () => {
 
   const visibleSubcategories =
     useMemo(() => {
-
       if (
         selectedCategory ===
         "all"
@@ -4093,7 +4266,6 @@ const WebsiteClasses = () => {
             selectedCategory
           )
       );
-
     }, [
       subcategoryData,
       selectedCategory,
@@ -4105,12 +4277,10 @@ const WebsiteClasses = () => {
 
   const categoryCounts =
     useMemo(() => {
-
       const counts = {};
 
       classData.forEach(
         (item) => {
-
           const id =
             getItemCategoryId(
               item
@@ -4120,20 +4290,17 @@ const WebsiteClasses = () => {
             id !== undefined &&
             id !== null
           ) {
-
             const key =
               String(id);
 
             counts[key] =
-              (counts[key] || 0) +
-              1;
+              (counts[key] ||
+                0) + 1;
           }
-
         }
       );
 
       return counts;
-
     }, [classData]);
 
   /* =======================================================
@@ -4142,12 +4309,10 @@ const WebsiteClasses = () => {
 
   const subcategoryCounts =
     useMemo(() => {
-
       const counts = {};
 
       classData.forEach(
         (item) => {
-
           const categoryId =
             getItemCategoryId(
               item
@@ -4168,9 +4333,9 @@ const WebsiteClasses = () => {
             String(
               categoryId
             ) !==
-            String(
-              selectedCategory
-            )
+              String(
+                selectedCategory
+              )
           ) {
             return;
           }
@@ -4181,13 +4346,12 @@ const WebsiteClasses = () => {
             );
 
           counts[key] =
-            (counts[key] || 0) +
-            1;
+            (counts[key] ||
+              0) + 1;
         }
       );
 
       return counts;
-
     }, [
       classData,
       selectedCategory,
@@ -4199,7 +4363,6 @@ const WebsiteClasses = () => {
 
   const filteredClasses =
     useMemo(() => {
-
       const search =
         debouncedSearch
           .trim()
@@ -4214,7 +4377,6 @@ const WebsiteClasses = () => {
 
       return classData.filter(
         (item) => {
-
           if (
             String(
               getItemCategoryId(
@@ -4248,11 +4410,21 @@ const WebsiteClasses = () => {
           }
 
           const searchable = [
-            getClassTitle(item),
-            getSubcategoryName(item),
-            getCategoryName(item),
-            getInstituteName(item),
-            getTrainerName(item),
+            getClassTitle(
+              item
+            ),
+            getSubcategoryName(
+              item
+            ),
+            getCategoryName(
+              item
+            ),
+            getInstituteName(
+              item
+            ),
+            getTrainerName(
+              item
+            ),
           ]
             .filter(Boolean)
             .join(" ")
@@ -4263,7 +4435,6 @@ const WebsiteClasses = () => {
           );
         }
       );
-
     }, [
       classData,
       debouncedSearch,
@@ -4277,7 +4448,6 @@ const WebsiteClasses = () => {
 
   const handleCategoryClick =
     (categoryId) => {
-
       const id =
         String(categoryId);
 
@@ -4286,7 +4456,6 @@ const WebsiteClasses = () => {
           selectedCategory
         ) === id
       ) {
-
         setSelectedCategory(
           "all"
         );
@@ -4295,30 +4464,36 @@ const WebsiteClasses = () => {
           "all"
         );
 
-        setSearchQuery("");
+        setSearchQuery(
+          ""
+        );
 
         return;
       }
 
-      setSelectedCategory(id);
+      setSelectedCategory(
+        id
+      );
 
       setSelectedSubcategory(
         "all"
       );
 
-      setSearchQuery("");
+      setSearchQuery(
+        ""
+      );
 
       setTimeout(() => {
-
         document
           .getElementById(
             "subcategories-section"
           )
           ?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
+            behavior:
+              "smooth",
+            block:
+              "start",
           });
-
       }, 50);
     };
 
@@ -4328,7 +4503,6 @@ const WebsiteClasses = () => {
 
   const handleSubcategoryClick =
     (subcategoryId) => {
-
       const id =
         String(
           subcategoryId
@@ -4336,22 +4510,23 @@ const WebsiteClasses = () => {
 
       setSelectedSubcategory(
         (current) =>
-          String(current) === id
+          String(current) ===
+          id
             ? "all"
             : id
       );
 
       setTimeout(() => {
-
         document
           .getElementById(
             "classes-section"
           )
           ?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
+            behavior:
+              "smooth",
+            block:
+              "start",
           });
-
       }, 50);
     };
 
@@ -4371,7 +4546,6 @@ const WebsiteClasses = () => {
 
   const handleOpenBooking =
     (classItem) => {
-
       setSelectedClass(
         classItem
       );
@@ -4383,18 +4557,15 @@ const WebsiteClasses = () => {
 
   const handleCloseBooking =
     () => {
-
       setShowBookingModal(
         false
       );
 
-      setTimeout(
-        () =>
-          setSelectedClass(
-            null
-          ),
-        200
-      );
+      setTimeout(() => {
+        setSelectedClass(
+          null
+        );
+      }, 200);
     };
 
   /* =======================================================
@@ -4406,15 +4577,11 @@ const WebsiteClasses = () => {
       <div
         className="min-h-screen w-full overflow-x-hidden"
         style={{
-          /*
-           * IMPORTANT:
-           * ALWAYS BLACK.
-           */
-          backgroundColor:
-            "#000000",
+          background:
+            COLORS.black,
 
           color:
-            branding.textColor,
+            COLORS.text,
 
           fontFamily:
             fontFamily(
@@ -4429,9 +4596,6 @@ const WebsiteClasses = () => {
 
           letterSpacing:
             branding.bodyLetterSpacing,
-
-          minHeight:
-            "100vh",
         }}
       >
 
@@ -4443,7 +4607,7 @@ const WebsiteClasses = () => {
           className="h-[2px] w-full"
           style={{
             background:
-              "linear-gradient(90deg, transparent, #008CFF, #38D7FF, #008CFF, transparent)",
+              "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
 
             boxShadow:
               "0 0 18px rgba(0,140,255,0.7)",
@@ -4459,78 +4623,66 @@ const WebsiteClasses = () => {
             className="relative overflow-hidden"
             style={{
               background:
-                "#000000",
+                COLORS.black,
             }}
           >
 
-            {/* LOADING */}
-
             {bannersLoading &&
-              bannerData.length === 0 && (
+              bannerData.length ===
+                0 && (
                 <div
-                  className="relative h-[230px] w-full overflow-hidden sm:h-[300px] lg:h-[350px]"
+                  className="relative flex h-[230px] items-center justify-center sm:h-[300px] lg:h-[350px]"
                   style={{
                     background:
                       "linear-gradient(135deg,#000000,#020B18,#061426)",
                   }}
                 >
+                  <div className="text-center">
 
-                  <div
-                    className="absolute inset-0 animate-pulse"
-                    style={{
-                      background:
-                        "linear-gradient(90deg,transparent,rgba(56,215,255,0.1),transparent)",
-                    }}
-                  />
+                    <div
+                      className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2"
+                      style={{
+                        borderColor:
+                          "rgba(56,215,255,0.2)",
 
-                  <div className="absolute inset-0 flex items-center justify-center">
+                        borderTopColor:
+                          COLORS.radiantBlue,
+                      }}
+                    />
 
-                    <div className="text-center">
-
-                      <div
-                        className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2"
-                        style={{
-                          borderColor:
-                            "rgba(56,215,255,0.2)",
-
-                          borderTopColor:
-                            COLORS.radiantBlue,
-                        }}
-                      />
-
-                      <p
-                        className="text-sm"
-                        style={{
-                          color:
-                            COLORS.text,
-                        }}
-                      >
-                        Loading banner...
-                      </p>
-
-                    </div>
+                    <p
+                      className="text-sm"
+                      style={{
+                        color:
+                          COLORS.white,
+                      }}
+                    >
+                      Loading banner...
+                    </p>
 
                   </div>
-
                 </div>
               )}
 
-            {/* ACTUAL BANNER */}
-
             {!bannersLoading &&
-              bannerData.length > 0 &&
+              bannerData.length >
+                0 &&
               bannerImage && (
                 <div className="relative h-[230px] w-full overflow-hidden sm:h-[300px] lg:h-[350px]">
 
                   <img
-                    src={bannerImage}
+                    src={
+                      bannerImage
+                    }
                     alt={
                       bannerTitle ||
                       "Institute Banner"
                     }
                     className="absolute inset-0 h-full w-full object-cover"
                     loading="eager"
-                    onError={(event) => {
+                    onError={(
+                      event
+                    ) => {
                       event.currentTarget.onerror =
                         null;
 
@@ -4539,7 +4691,7 @@ const WebsiteClasses = () => {
                     }}
                   />
 
-                  {/* DARK OVERLAY */}
+                  {/* OVERLAY */}
 
                   <div
                     className="absolute inset-0"
@@ -4549,8 +4701,6 @@ const WebsiteClasses = () => {
                     }}
                   />
 
-                  {/* BOTTOM BLACK */}
-
                   <div
                     className="absolute inset-x-0 bottom-0 h-40"
                     style={{
@@ -4558,8 +4708,6 @@ const WebsiteClasses = () => {
                         "linear-gradient(to top,#000000,transparent)",
                     }}
                   />
-
-                  {/* BLUE GLOW */}
 
                   <div
                     className="pointer-events-none absolute -right-32 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full blur-3xl"
@@ -4569,7 +4717,7 @@ const WebsiteClasses = () => {
                     }}
                   />
 
-                  {/* CONTENT */}
+                  {/* BANNER TEXT */}
 
                   <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-5 sm:px-8 lg:px-10">
 
@@ -4589,7 +4737,7 @@ const WebsiteClasses = () => {
                         className="text-3xl sm:text-4xl lg:text-5xl"
                         style={{
                           color:
-                            "#FFFFFF",
+                            COLORS.white,
 
                           fontFamily:
                             fontFamily(
@@ -4597,13 +4745,13 @@ const WebsiteClasses = () => {
                             ),
 
                           fontWeight:
-                            branding.headingWeight,
+                            700,
 
                           lineHeight:
-                            branding.headingLineHeight,
+                            1.15,
 
                           textShadow:
-                            "0 0 35px rgba(0,140,255,0.18)",
+                            "0 0 35px rgba(0,140,255,0.3)",
                         }}
                       >
                         {bannerTitle}
@@ -4614,18 +4762,18 @@ const WebsiteClasses = () => {
                           className="mt-3 max-w-xl text-xs leading-6 sm:text-sm"
                           style={{
                             color:
-                              "#CBD5E1",
+                              COLORS.textBright,
                           }}
                         >
-                          {bannerSubtitle}
+                          {
+                            bannerSubtitle
+                          }
                         </p>
                       )}
 
                     </div>
 
                   </div>
-
-                  {/* BLUE BORDER */}
 
                   <div
                     className="absolute bottom-0 left-0 right-0 h-[2px]"
@@ -4641,7 +4789,7 @@ const WebsiteClasses = () => {
                 </div>
               )}
 
-            {/* FALLBACK */}
+            {/* FALLBACK BANNER */}
 
             {!bannersLoading &&
               (!bannerData.length ||
@@ -4655,14 +4803,8 @@ const WebsiteClasses = () => {
                 >
 
                   <div
-                    className="absolute -right-20 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full blur-3xl"
-                    style={{
-                      background:
-                        "rgba(0,140,255,0.1)",
-                    }}
-                  />
-
-                  <div className="relative z-10 px-5 text-center">
+                    className="relative z-10 px-5 text-center"
+                  >
 
                     <p
                       className="text-xs uppercase tracking-[0.25em]"
@@ -4686,10 +4828,7 @@ const WebsiteClasses = () => {
                           ),
 
                         fontWeight:
-                          branding.headingWeight,
-
-                        textShadow:
-                          "0 0 30px rgba(0,140,255,0.15)",
+                          700,
                       }}
                     >
                       {pageHeading}
@@ -4699,10 +4838,12 @@ const WebsiteClasses = () => {
                       className="mx-auto mt-3 max-w-xl text-sm"
                       style={{
                         color:
-                          COLORS.muted,
+                          COLORS.text,
                       }}
                     >
-                      {pageSubheading}
+                      {
+                        pageSubheading
+                      }
                     </p>
 
                   </div>
@@ -4730,7 +4871,7 @@ const WebsiteClasses = () => {
             className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
             style={{
               background:
-                "#000000",
+                COLORS.black,
             }}
           >
 
@@ -4749,12 +4890,14 @@ const WebsiteClasses = () => {
                 }
               />
 
-              {categoryData.length > 0 ? (
+              {categoryData.length >
+              0 ? (
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
                   {categoryData.map(
-                    (category) => {
-
+                    (
+                      category
+                    ) => {
                       const id =
                         getId(
                           category
@@ -4762,23 +4905,26 @@ const WebsiteClasses = () => {
 
                       return (
                         <CategoryCard
-                          key={id}
+                          key={
+                            id
+                          }
                           category={
                             category
                           }
                           count={
                             categoryCounts[
-                              String(id)
+                              String(
+                                id
+                              )
                             ] || 0
                           }
                           active={
                             String(
                               selectedCategory
                             ) ===
-                            String(id)
-                          }
-                          branding={
-                            branding
+                            String(
+                              id
+                            )
                           }
                           onClick={() =>
                             handleCategoryClick(
@@ -4795,9 +4941,6 @@ const WebsiteClasses = () => {
                 <EmptyState
                   title="No Categories Available"
                   text="Categories will appear here when they are added."
-                  branding={
-                    branding
-                  }
                 />
               )}
 
@@ -4818,10 +4961,10 @@ const WebsiteClasses = () => {
               className="border-y px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
               style={{
                 background:
-                  "#000000",
+                  COLORS.black,
 
                 borderColor:
-                  "rgba(0,140,255,0.16)",
+                  COLORS.borderSoft,
               }}
             >
 
@@ -4867,17 +5010,11 @@ const WebsiteClasses = () => {
                           "all"
                             ? COLORS.radiantBlue
                             : COLORS.border,
-
-                        boxShadow:
-                          selectedSubcategory ===
-                          "all"
-                            ? "0 0 30px rgba(0,140,255,0.15)"
-                            : "none",
                       }}
                     >
 
                       <div
-                        className="relative flex h-36 items-center justify-center overflow-hidden"
+                        className="relative flex h-36 items-center justify-center"
                         style={{
                           background:
                             "radial-gradient(circle at center,rgba(0,140,255,0.2),transparent 60%),linear-gradient(135deg,#071a33,#000000)",
@@ -4885,7 +5022,7 @@ const WebsiteClasses = () => {
                       >
 
                         <span
-                          className="relative text-4xl font-bold"
+                          className="text-4xl font-bold"
                           style={{
                             color:
                               COLORS.radiantBlue,
@@ -4905,15 +5042,10 @@ const WebsiteClasses = () => {
                           className="text-base"
                           style={{
                             color:
-                              branding.headingColor,
-
-                            fontFamily:
-                              fontFamily(
-                                branding.fontHeading
-                              ),
+                              COLORS.white,
 
                             fontWeight:
-                              branding.headingWeight,
+                              700,
                           }}
                         >
                           All Subcategories
@@ -4923,14 +5055,16 @@ const WebsiteClasses = () => {
                           className="mt-1 text-xs"
                           style={{
                             color:
-                              branding.textColor,
+                              COLORS.text,
                           }}
                         >
-                          {categoryCounts[
-                            String(
-                              selectedCategory
-                            )
-                          ] || 0}{" "}
+                          {
+                            categoryCounts[
+                              String(
+                                selectedCategory
+                              )
+                            ] || 0
+                          }{" "}
                           Classes
                         </p>
 
@@ -4938,11 +5072,10 @@ const WebsiteClasses = () => {
 
                     </button>
 
-                    {/* SUBCATEGORIES */}
-
                     {visibleSubcategories.map(
-                      (subcategory) => {
-
+                      (
+                        subcategory
+                      ) => {
                         const id =
                           getSubcategoryId(
                             subcategory
@@ -4950,23 +5083,26 @@ const WebsiteClasses = () => {
 
                         return (
                           <SubcategoryCard
-                            key={id}
+                            key={
+                              id
+                            }
                             subcategory={
                               subcategory
                             }
                             count={
                               subcategoryCounts[
-                                String(id)
+                                String(
+                                  id
+                                )
                               ] || 0
                             }
                             active={
                               String(
                                 selectedSubcategory
                               ) ===
-                              String(id)
-                            }
-                            branding={
-                              branding
+                              String(
+                                id
+                              )
                             }
                             onClick={() =>
                               handleSubcategoryClick(
@@ -4983,9 +5119,6 @@ const WebsiteClasses = () => {
                   <EmptyState
                     title="No Subcategories Available"
                     text="There are no subcategories configured for this category yet."
-                    branding={
-                      branding
-                    }
                   />
                 )}
 
@@ -5006,7 +5139,7 @@ const WebsiteClasses = () => {
               className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
               style={{
                 background:
-                  "#000000",
+                  COLORS.black,
               }}
             >
 
@@ -5080,19 +5213,24 @@ const WebsiteClasses = () => {
                       value={
                         searchQuery
                       }
-                      onChange={(event) =>
+                      onChange={(
+                        event
+                      ) =>
                         setSearchQuery(
                           event.target.value
                         )
                       }
                       placeholder="Search classes..."
-                      className="w-full border py-3.5 pl-11 pr-11 text-sm outline-none transition focus:ring-2"
+                      className="w-full border py-3.5 pl-11 pr-11 text-sm outline-none"
                       style={{
                         background:
                           `linear-gradient(145deg, ${COLORS.card}, ${COLORS.cardSecondary})`,
 
                         color:
-                          branding.headingColor,
+                          COLORS.white,
+
+                        caretColor:
+                          COLORS.radiantBlue,
 
                         borderColor:
                           COLORS.border,
@@ -5133,7 +5271,7 @@ const WebsiteClasses = () => {
 
                 </div>
 
-                {/* RESULTS */}
+                {/* RESULT COUNT */}
 
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
 
@@ -5141,11 +5279,10 @@ const WebsiteClasses = () => {
                     className="text-xs"
                     style={{
                       color:
-                        branding.textColor,
+                        COLORS.text,
                     }}
                   >
                     Showing{" "}
-
                     <span
                       className="font-bold"
                       style={{
@@ -5157,7 +5294,6 @@ const WebsiteClasses = () => {
                         filteredClasses.length
                       }
                     </span>{" "}
-
                     {filteredClasses.length ===
                     1
                       ? "class"
@@ -5203,9 +5339,8 @@ const WebsiteClasses = () => {
                           key={getClassId(
                             item
                           )}
-                          item={item}
-                          branding={
-                            branding
+                          item={
+                            item
                           }
                           onBook={
                             handleOpenBooking
@@ -5226,9 +5361,6 @@ const WebsiteClasses = () => {
                           ? "No classes are available in this subcategory."
                           : "No classes are available in this category."
                     }
-                    branding={
-                      branding
-                    }
                     action={
                       <button
                         type="button"
@@ -5247,7 +5379,7 @@ const WebsiteClasses = () => {
                             `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.radiantBlue})`,
 
                           color:
-                            "#FFFFFF",
+                            COLORS.black,
 
                           boxShadow:
                             "0 0 20px rgba(0,140,255,0.3)",
@@ -5275,7 +5407,7 @@ const WebsiteClasses = () => {
               className="px-4 pb-16 sm:px-6 lg:px-8"
               style={{
                 background:
-                  "#000000",
+                  COLORS.black,
               }}
             >
 
@@ -5315,15 +5447,10 @@ const WebsiteClasses = () => {
                   className="mt-5 text-2xl"
                   style={{
                     color:
-                      branding.headingColor,
-
-                    fontFamily:
-                      fontFamily(
-                        branding.fontHeading
-                      ),
+                      COLORS.white,
 
                     fontWeight:
-                      branding.headingWeight,
+                      700,
                   }}
                 >
                   Choose a Category
@@ -5333,7 +5460,7 @@ const WebsiteClasses = () => {
                   className="mx-auto mt-2 max-w-xl text-sm"
                   style={{
                     color:
-                      branding.textColor,
+                      COLORS.textBright,
                   }}
                 >
                   Select a category above
@@ -5355,7 +5482,7 @@ const WebsiteClasses = () => {
           className="h-[2px] w-full"
           style={{
             background:
-              "linear-gradient(90deg, transparent, #008CFF, #38D7FF, #008CFF, transparent)",
+              "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
 
             boxShadow:
               "0 0 18px rgba(0,140,255,0.65)",
@@ -5379,6 +5506,45 @@ const WebsiteClasses = () => {
           handleCloseBooking
         }
       />
+
+      {/* =================================================
+          FORCE INPUT TEXT VISIBILITY
+      ================================================= */}
+
+      <style>
+        {`
+          .website-classes-page input::placeholder {
+            color: #94A3B8 !important;
+            opacity: 1 !important;
+          }
+
+          input::placeholder {
+            color: #94A3B8 !important;
+            opacity: 1 !important;
+          }
+
+          input {
+            color: #FFFFFF !important;
+            caret-color: #38D7FF !important;
+          }
+
+          button {
+            -webkit-tap-highlight-color: transparent;
+          }
+
+          button:focus-visible,
+          input:focus-visible {
+            outline: 2px solid #38D7FF;
+            outline-offset: 2px;
+          }
+
+          @media (max-width: 640px) {
+            .website-classes-page {
+              overflow-x: hidden;
+            }
+          }
+        `}
+      </style>
 
     </>
   );
