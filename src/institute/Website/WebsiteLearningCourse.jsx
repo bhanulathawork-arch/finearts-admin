@@ -42,7 +42,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-import API from "../services/api";
+import API from "../../services/api";
 
 /* =========================================================
    CONSTANTS
