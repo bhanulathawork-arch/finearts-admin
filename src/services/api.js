@@ -1239,46 +1239,13 @@ const API = axios.create({
 ========================================================= */
 
 /*
-  Important:
-
   Multiple components can request Firebase tokens at the
   same time.
 
-  Example:
-
-    WebsitePreviewDashboard
-          ↓
-       /footer
-          ↓
-       /banners
-          ↓
-       /classes
-          ↓
-       /trainers
-
-  Without a shared promise, several calls can enter
-  Firebase token handling simultaneously.
-
-  We therefore share one in-flight token request.
+  We share one in-flight Firebase token request.
 */
 
 let firebaseTokenPromise = null;
-
-/*
-  When Firebase token refresh fails, don't immediately
-  hammer securetoken.googleapis.com again.
-
-  This is especially important for:
-
-    auth/quota-exceeded
-
-  because repeated refresh attempts can make the situation
-  worse.
-*/
-
-let lastFirebaseTokenFailureAt = 0;
-
-const FIREBASE_TOKEN_FAILURE_COOLDOWN = 60000;
 
 /* =========================================================
    PATH HELPERS
@@ -1611,7 +1578,8 @@ const getStoredFirebaseToken = () => {
   if (
     studentToken &&
     studentToken !== "undefined" &&
-    studentToken !== "null"
+    studentToken !== "null" &&
+    studentToken.trim()
   ) {
     return studentToken.trim();
   }
@@ -1622,7 +1590,8 @@ const getStoredFirebaseToken = () => {
   if (
     storedToken &&
     storedToken !== "undefined" &&
-    storedToken !== "null"
+    storedToken !== "null" &&
+    storedToken.trim()
   ) {
     return storedToken.trim();
   }
@@ -1641,6 +1610,11 @@ const saveFirebaseToken = (token) => {
 
   localStorage.setItem("token", token);
 
+  /*
+    Keep studentToken synchronized when the student/preview
+    flow is active.
+  */
+
   if (
     isWebsitePreviewRoute() ||
     localStorage.getItem("studentToken")
@@ -1656,147 +1630,127 @@ const saveFirebaseToken = (token) => {
    GET FIREBASE TOKEN
 ========================================================= */
 
+/*
+  IMPORTANT FIX
+
+  Normal requests:
+
+      localStorage token
+          ↓
+      API request
+
+  They DO NOT call Firebase.
+
+  Firebase is called only when:
+
+      1. No stored token exists
+      2. OR a real 401 requires forceRefresh
+*/
+
 const getFirebaseToken = async ({
   forceRefresh = false,
 } = {}) => {
   const auth = getAuth();
 
-  /* -------------------------------------------------------
-     CURRENT FIREBASE USER
-  ------------------------------------------------------- */
+  /* =====================================================
+     1. USE STORED TOKEN FIRST
+  ===================================================== */
 
-  if (auth.currentUser) {
-    try {
-      /*
-        IMPORTANT:
+  if (!forceRefresh) {
+    const storedToken =
+      getStoredFirebaseToken();
 
-        If another request is already obtaining a token,
-        reuse that same Promise.
-      */
+    if (storedToken) {
+      console.log(
+        "Firebase Token: USING STORED TOKEN"
+      );
 
-      if (!forceRefresh && firebaseTokenPromise) {
-        return await firebaseTokenPromise;
-      }
+      return storedToken;
+    }
+  }
 
-      /*
-        Avoid repeatedly hitting Firebase after a recent
-        token refresh failure.
-      */
+  /* =====================================================
+     2. CHECK FIREBASE USER
+  ===================================================== */
 
-      const now = Date.now();
+  if (!auth.currentUser) {
+    console.warn(
+      "Firebase Token: NO CURRENT USER"
+    );
 
-      if (
-        !forceRefresh &&
-        lastFirebaseTokenFailureAt > 0 &&
-        now - lastFirebaseTokenFailureAt <
-          FIREBASE_TOKEN_FAILURE_COOLDOWN
-      ) {
-        const storedToken =
-          getStoredFirebaseToken();
+    return null;
+  }
 
-        if (storedToken) {
-          console.warn(
-            "Firebase token refresh recently failed. Using stored token."
-          );
+  /* =====================================================
+     3. SHARE ONE FIREBASE REQUEST
+  ===================================================== */
 
-          return storedToken;
-        }
-      }
+  try {
+    /*
+      If another request is already getting a token,
+      wait for the same Promise.
+    */
 
-      /*
-        Create ONE shared Firebase token request.
-      */
-
+    if (!firebaseTokenPromise) {
       firebaseTokenPromise =
         auth.currentUser.getIdToken(
           forceRefresh
         );
+    }
 
-      const token =
-        await firebaseTokenPromise;
+    const token =
+      await firebaseTokenPromise;
 
-      /*
-        Clear successful request state.
-      */
+    firebaseTokenPromise = null;
 
-      firebaseTokenPromise = null;
-      lastFirebaseTokenFailureAt = 0;
+    /* ===================================================
+       4. VALIDATE TOKEN
+    =================================================== */
 
-      if (!token) {
-        return null;
-      }
+    if (!token) {
+      return null;
+    }
 
-      saveFirebaseToken(token);
+    /* ===================================================
+       5. SAVE TOKEN
+    =================================================== */
 
-      console.log(
-        "Firebase token retrieved successfully"
-      );
+    saveFirebaseToken(token);
 
-      return token;
+    console.log(
+      "Firebase Token: FIREBASE TOKEN GENERATED"
+    );
 
-    } catch (error) {
-      firebaseTokenPromise = null;
+    return token;
 
-      lastFirebaseTokenFailureAt =
-        Date.now();
+  } catch (error) {
+    firebaseTokenPromise = null;
 
-      console.error(
-        "Firebase token retrieval failed:",
-        error
-      );
+    console.error(
+      "Firebase token retrieval failed:",
+      error
+    );
 
-      /*
-        IMPORTANT:
+    /*
+      For a normal request, try the existing stored
+      token before giving up.
+    */
 
-        Do not immediately call Firebase again.
-
-        Use the existing stored token if available.
-      */
-
-      const storedToken =
+    if (!forceRefresh) {
+      const fallbackToken =
         getStoredFirebaseToken();
 
-      if (storedToken) {
+      if (fallbackToken) {
         console.warn(
-          "Using stored Firebase token after token retrieval failure."
+          "Firebase failed. Using stored token."
         );
 
-        return storedToken;
+        return fallbackToken;
       }
     }
+
+    throw error;
   }
-
-  /* -------------------------------------------------------
-     STUDENT TOKEN FALLBACK
-  ------------------------------------------------------- */
-
-  const studentToken =
-    localStorage.getItem("studentToken");
-
-  if (
-    studentToken &&
-    studentToken !== "undefined" &&
-    studentToken !== "null"
-  ) {
-    return studentToken.trim();
-  }
-
-  /* -------------------------------------------------------
-     GENERIC TOKEN FALLBACK
-  ------------------------------------------------------- */
-
-  const storedToken =
-    localStorage.getItem("token");
-
-  if (
-    storedToken &&
-    storedToken !== "undefined" &&
-    storedToken !== "null"
-  ) {
-    return storedToken.trim();
-  }
-
-  return null;
 };
 
 /* =========================================================
@@ -1885,7 +1839,8 @@ const getAdminToken = () => {
     if (
       genericToken &&
       genericToken !== "undefined" &&
-      genericToken !== "null"
+      genericToken !== "null" &&
+      genericToken.trim()
     ) {
       return genericToken.trim();
     }
@@ -2012,6 +1967,8 @@ API.interceptors.request.use(
 
     /* =====================================================
        3. PUBLIC WEBSITE API
+       
+       /footer and /websites/public do NOT need Firebase.
     ===================================================== */
 
     if (isPublicWebsiteApiRoute(config)) {
@@ -2410,9 +2367,10 @@ API.interceptors.response.use(
         }
 
         /*
-          A real 401 occurred.
+          A REAL 401 occurred.
 
-          This is the ONLY place where we force-refresh.
+          This is the only normal situation where we
+          force Firebase to refresh the token.
         */
 
         const freshToken =
@@ -2541,7 +2499,7 @@ API.interceptors.response.use(
 );
 
 /* =========================================================
-   IMPORTANT COMPATIBILITY FIX
+   COMPATIBILITY EXPORT
 ========================================================= */
 
 const api = API;
