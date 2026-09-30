@@ -301,7 +301,7 @@ const WebsiteBooking = ({
         );
       }
 
-      const token = await currentUser.getIdToken(true);
+      const token = await currentUser.getIdToken();
 
       if (!token) {
         throw new Error(
