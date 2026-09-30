@@ -334,6 +334,10 @@ const isAdminApiRoute = (config = {}) => {
     "/students",
     "/bookings",
     "/testimonials",
+    "/lms",
+    "/attendance",
+    "/assignments",
+    "/recordings",
   ];
 
   const matchesAdminPrefix =

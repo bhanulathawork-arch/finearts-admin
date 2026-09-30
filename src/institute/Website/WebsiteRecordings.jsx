@@ -1111,7 +1111,7 @@ export default function WebsiteRecordings() {
 
         const response =
           await API.get(
-            "/recordings/student",
+            "/recordings/students",
             {
               params,
             }

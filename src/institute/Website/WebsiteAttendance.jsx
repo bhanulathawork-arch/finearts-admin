@@ -2058,10 +2058,10 @@ export default function WebsiteAttendance() {
          * authentication interceptor.
          */
 
-        const response =
-          await API.get(
-            "/attendance/student"
-          );
+       const response =
+  await API.get(
+    "/attendance/students/my"
+  );
 
         const payload =
           response?.data;

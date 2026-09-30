@@ -2159,11 +2159,10 @@ export default function WebsiteAssignments() {
          * /api/assignments/my-assignments
          */
 
-        const response =
-          await API.get(
-            "/assignments/my-assignments"
-          );
-
+     const response =
+  await API.get(
+    "/assignments/students/assignments"
+  );
         const data =
           response?.data;
 
