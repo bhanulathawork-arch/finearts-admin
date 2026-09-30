@@ -1689,7 +1689,7 @@ import {
 
 import WebsiteBooking from "./WebsiteBooking";
 
-import API from "../services/api";
+import API from "../../services/api";
 
 /* =========================================================
    DEFAULT BRANDING
