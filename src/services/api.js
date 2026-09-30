@@ -6690,12 +6690,17 @@ const getFirebaseToken = async () => {
      CURRENT FIREBASE USER
   ------------------------------------------------------- */
 
+  // if (auth.currentUser) {
+  //   try {
+  //     const token =
+  //       await auth.currentUser.getIdToken(
+  //         true
+  //       );
+
   if (auth.currentUser) {
-    try {
-      const token =
-        await auth.currentUser.getIdToken(
-          true
-        );
+  try {
+    const token =
+      await auth.currentUser.getIdToken();
 
 
       if (!token) {
