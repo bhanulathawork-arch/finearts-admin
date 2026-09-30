@@ -1,8 +1,10 @@
+
+
+
 // import { useEffect, useState } from "react";
 // import {
 //   Globe,
 //   Palette,
-//   LayoutTemplate,
 //   Eye,
 //   Settings,
 //   ExternalLink,
@@ -27,17 +29,14 @@
 //     try {
 //       setLoading(true);
 
-//       const [
-//         websiteData,
-//         websiteStatus,
-//       ] = await Promise.all([
-//         getWebsiteData(),
-//         getWebsiteStatus(),
-//       ]);
+//       const [websiteData, websiteStatus] =
+//         await Promise.all([
+//           getWebsiteData(),
+//           getWebsiteStatus(),
+//         ]);
 
 //       setWebsite(websiteData);
 //       setStatus(websiteStatus);
-
 //     } catch (error) {
 //       console.error(
 //         "Website dashboard error:",
@@ -129,6 +128,7 @@
 //                   : "bg-yellow-500/10"
 //               }`}
 //             >
+
 //               {isPublished ? (
 //                 <CheckCircle
 //                   size={24}
@@ -140,6 +140,7 @@
 //                   className="text-yellow-400"
 //                 />
 //               )}
+
 //             </div>
 
 //             <div>
@@ -184,34 +185,10 @@
 
 //         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-//           {/* TEMPLATE */}
 
-//           <a
-//             href="/institute/website/template"
-//             className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
-//           >
-
-//             <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
-
-//               <LayoutTemplate
-//                 size={22}
-//                 className="text-purple-400"
-//               />
-
-//             </div>
-
-//             <h3 className="text-white font-semibold">
-//               Template
-//             </h3>
-
-//             <p className="text-gray-500 text-sm mt-2">
-//               Choose a design template for your institute website.
-//             </p>
-
-//           </a>
-
-
-//           {/* SECTIONS */}
+//           {/* =================================================
+//               SECTIONS
+//           ================================================= */}
 
 //           <a
 //             href="/institute/website/sections"
@@ -238,7 +215,9 @@
 //           </a>
 
 
-//           {/* CONTENT */}
+//           {/* =================================================
+//               CONTENT
+//           ================================================= */}
 
 //           <a
 //             href="/institute/website/content"
@@ -265,7 +244,9 @@
 //           </a>
 
 
-//           {/* BRANDING */}
+//           {/* =================================================
+//               BRANDING
+//           ================================================= */}
 
 //           <a
 //             href="/institute/website/branding"
@@ -292,7 +273,9 @@
 //           </a>
 
 
-//           {/* PREVIEW */}
+//           {/* =================================================
+//               PREVIEW
+//           ================================================= */}
 
 //           <a
 //             href="/institute/website/preview"
@@ -319,7 +302,9 @@
 //           </a>
 
 
-//           {/* PUBLISH */}
+//           {/* =================================================
+//               PUBLISH
+//           ================================================= */}
 
 //           <a
 //             href="/institute/website/publish"
@@ -370,6 +355,8 @@
 
 //           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
+//             {/* WEBSITE NAME */}
+
 //             <div>
 //               <p className="text-xs text-gray-500">
 //                 Website Name
@@ -380,6 +367,9 @@
 //                   "-"}
 //               </p>
 //             </div>
+
+
+//             {/* TEMPLATE INFORMATION */}
 
 //             <div>
 //               <p className="text-xs text-gray-500">
@@ -392,6 +382,9 @@
 //               </p>
 //             </div>
 
+
+//             {/* SLUG */}
+
 //             <div>
 //               <p className="text-xs text-gray-500">
 //                 Slug
@@ -402,6 +395,9 @@
 //                   "-"}
 //               </p>
 //             </div>
+
+
+//             {/* STATUS */}
 
 //             <div>
 //               <p className="text-xs text-gray-500">
@@ -429,7 +425,10 @@
 // }
 
 
+
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   Globe,
   Palette,
@@ -446,25 +445,298 @@ import toast from "react-hot-toast";
 import {
   getWebsiteData,
   getWebsiteStatus,
+  setPreviewInstituteId,
 } from "../../services/websiteService";
 
 export default function WebsiteDashboard() {
+  const navigate = useNavigate();
+
   const [website, setWebsite] = useState(null);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /*
+   * =========================================================
+   * GET INSTITUTE ID
+   * =========================================================
+   *
+   * Try all possible locations where the institute ID may exist.
+   *
+   * Priority:
+   * 1. Website response
+   * 2. Website nested object
+   * 3. localStorage
+   * 4. sessionStorage
+   *
+   * =========================================================
+   */
+  const getCurrentInstituteId = () => {
+    const candidates = [
+      // Direct website response
+      website?.instituteId,
+      website?.institute_id,
+      website?.institute?.id,
+      website?.institute?.instituteId,
+      website?.institute?.institute_id,
+
+      // Website nested object
+      website?.website?.instituteId,
+      website?.website?.institute_id,
+      website?.website?.institute?.id,
+      website?.website?.institute?.instituteId,
+      website?.website?.institute?.institute_id,
+
+      // Other possible response structures
+      website?.data?.instituteId,
+      website?.data?.institute_id,
+      website?.data?.institute?.id,
+      website?.data?.institute?.instituteId,
+      website?.data?.institute?.institute_id,
+
+      // Local storage
+      localStorage.getItem("instituteId"),
+      localStorage.getItem("institute_id"),
+      localStorage.getItem("currentInstituteId"),
+      localStorage.getItem("current_institute_id"),
+
+      // Session storage
+      sessionStorage.getItem("instituteId"),
+      sessionStorage.getItem("institute_id"),
+      sessionStorage.getItem("currentInstituteId"),
+      sessionStorage.getItem("current_institute_id"),
+    ];
+
+    const instituteId = candidates.find((value) => {
+      if (
+        value === undefined ||
+        value === null ||
+        value === ""
+      ) {
+        return false;
+      }
+
+      const normalized = String(value).trim();
+
+      return (
+        normalized !== "" &&
+        normalized !== "null" &&
+        normalized !== "undefined"
+      );
+    });
+
+    return instituteId
+      ? String(instituteId).trim()
+      : null;
+  };
+
+  /*
+   * =========================================================
+   * OPEN WEBSITE PREVIEW
+   * =========================================================
+   */
+  const handlePreview = () => {
+    const instituteId = getCurrentInstituteId();
+
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "OPENING WEBSITE PREVIEW"
+    );
+
+    console.log(
+      "Institute ID:",
+      instituteId
+    );
+
+    console.log(
+      "Website data:",
+      website
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+    /*
+     * No institute ID
+     */
+    if (!instituteId) {
+      console.error(
+        "PREVIEW: INSTITUTE ID NOT FOUND"
+      );
+
+      console.error(
+        "localStorage instituteId:",
+        localStorage.getItem("instituteId")
+      );
+
+      console.error(
+        "localStorage institute_id:",
+        localStorage.getItem("institute_id")
+      );
+
+      console.error(
+        "sessionStorage instituteId:",
+        sessionStorage.getItem("instituteId")
+      );
+
+      console.error(
+        "sessionStorage institute_id:",
+        sessionStorage.getItem("institute_id")
+      );
+
+      toast.error(
+        "Institute ID not found. Please refresh the page and try again."
+      );
+
+      return;
+    }
+
+    try {
+      /*
+       * Save the institute ID before navigation.
+       *
+       * websiteService already saves:
+       * - previewInstituteId
+       * - instituteId
+       *
+       * in localStorage and sessionStorage.
+       */
+      setPreviewInstituteId(instituteId);
+
+      /*
+       * Also explicitly save current institute ID.
+       *
+       * This gives the preview page an additional fallback.
+       */
+      localStorage.setItem(
+        "instituteId",
+        String(instituteId)
+      );
+
+      sessionStorage.setItem(
+        "instituteId",
+        String(instituteId)
+      );
+
+      console.log(
+        "PREVIEW INSTITUTE ID SAVED:",
+        instituteId
+      );
+
+      /*
+       * Navigate using React Router.
+       *
+       * We intentionally do NOT use:
+       *
+       * window.location
+       * or
+       * <a href="">
+       *
+       * because we need to establish the preview
+       * institute ID before navigation.
+       */
+      navigate(
+        "/institute/website/preview",
+        {
+          state: {
+            instituteId: Number(instituteId),
+            preview: true,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(
+        "FAILED TO OPEN WEBSITE PREVIEW:",
+        error
+      );
+
+      toast.error(
+        "Unable to open website preview."
+      );
+    }
+  };
+
+  /*
+   * =========================================================
+   * LOAD WEBSITE
+   * =========================================================
+   */
   const loadWebsite = async () => {
     try {
       setLoading(true);
 
-      const [websiteData, websiteStatus] =
-        await Promise.all([
-          getWebsiteData(),
-          getWebsiteStatus(),
-        ]);
+      const [
+        websiteData,
+        websiteStatus,
+      ] = await Promise.all([
+        getWebsiteData(),
+        getWebsiteStatus(),
+      ]);
+
+      console.log(
+        "WEBSITE DASHBOARD DATA:",
+        websiteData
+      );
+
+      console.log(
+        "WEBSITE DASHBOARD STATUS:",
+        websiteStatus
+      );
 
       setWebsite(websiteData);
       setStatus(websiteStatus);
+
+      /*
+       * =====================================================
+       * AUTO-SAVE CURRENT INSTITUTE ID
+       * =====================================================
+       *
+       * If the website API already returns the institute ID,
+       * save it immediately.
+       *
+       * This means the Preview button will still work even
+       * if the ID is not currently present in localStorage.
+       * =====================================================
+       */
+      const instituteId =
+        websiteData?.instituteId ||
+        websiteData?.institute_id ||
+        websiteData?.institute?.id ||
+        websiteData?.institute?.instituteId ||
+        websiteData?.institute?.institute_id ||
+        websiteData?.website?.instituteId ||
+        websiteData?.website?.institute_id ||
+        websiteData?.website?.institute?.id ||
+        websiteData?.website?.institute?.instituteId ||
+        websiteData?.website?.institute?.institute_id ||
+        websiteData?.data?.instituteId ||
+        websiteData?.data?.institute_id ||
+        websiteData?.data?.institute?.id;
+
+      if (
+        instituteId !== undefined &&
+        instituteId !== null &&
+        String(instituteId).trim() !== "" &&
+        String(instituteId) !== "null" &&
+        String(instituteId) !== "undefined"
+      ) {
+        console.log(
+          "CURRENT WEBSITE INSTITUTE ID:",
+          instituteId
+        );
+
+        /*
+         * Save it so Preview can resolve it.
+         */
+        setPreviewInstituteId(instituteId);
+      } else {
+        console.warn(
+          "WEBSITE RESPONSE DOES NOT CONTAIN INSTITUTE ID"
+        );
+      }
     } catch (error) {
       console.error(
         "Website dashboard error:",
@@ -473,6 +745,7 @@ export default function WebsiteDashboard() {
 
       toast.error(
         error?.response?.data?.message ||
+          error?.message ||
           "Failed to load website"
       );
     } finally {
@@ -480,10 +753,20 @@ export default function WebsiteDashboard() {
     }
   };
 
+  /*
+   * =========================================================
+   * INITIAL LOAD
+   * =========================================================
+   */
   useEffect(() => {
     loadWebsite();
   }, []);
 
+  /*
+   * =========================================================
+   * LOADING
+   * =========================================================
+   */
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -494,19 +777,28 @@ export default function WebsiteDashboard() {
     );
   }
 
+  /*
+   * =========================================================
+   * WEBSITE STATUS
+   * =========================================================
+   */
   const websiteStatus =
     status?.status || "DRAFT";
 
   const isPublished =
     websiteStatus === "PUBLISHED";
 
+  /*
+   * =========================================================
+   * UI
+   * =========================================================
+   */
   return (
     <div className="space-y-6">
 
       {/* =================================================
           HEADER
       ================================================= */}
-
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
         <div>
@@ -530,19 +822,18 @@ export default function WebsiteDashboard() {
                 className="px-4 py-2.5 rounded-xl border border-[#2c2c35] text-gray-300 hover:bg-[#1a1a20] flex items-center gap-2"
               >
                 <ExternalLink size={17} />
+
                 View Website
               </a>
             )}
 
         </div>
-
       </div>
 
 
       {/* =================================================
           STATUS CARD
       ================================================= */}
-
       <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6">
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -590,8 +881,11 @@ export default function WebsiteDashboard() {
           <div className="text-sm text-gray-400">
 
             {status?.visibleSectionCount || 0}
+
             {" / "}
+
             {status?.totalSectionCount || 0}
+
             {" sections enabled"}
 
           </div>
@@ -604,7 +898,6 @@ export default function WebsiteDashboard() {
       {/* =================================================
           WEBSITE SETUP
       ================================================= */}
-
       <div>
 
         <h2 className="text-lg font-semibold text-white mb-4">
@@ -617,7 +910,6 @@ export default function WebsiteDashboard() {
           {/* =================================================
               SECTIONS
           ================================================= */}
-
           <a
             href="/institute/website/sections"
             className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
@@ -646,7 +938,6 @@ export default function WebsiteDashboard() {
           {/* =================================================
               CONTENT
           ================================================= */}
-
           <a
             href="/institute/website/content"
             className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
@@ -675,7 +966,6 @@ export default function WebsiteDashboard() {
           {/* =================================================
               BRANDING
           ================================================= */}
-
           <a
             href="/institute/website/branding"
             className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
@@ -704,10 +994,10 @@ export default function WebsiteDashboard() {
           {/* =================================================
               PREVIEW
           ================================================= */}
-
-          <a
-            href="/institute/website/preview"
-            className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
+          <button
+            type="button"
+            onClick={handlePreview}
+            className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-cyan-500/50 transition text-left w-full"
           >
 
             <div className="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4">
@@ -727,13 +1017,12 @@ export default function WebsiteDashboard() {
               Preview your website before publishing.
             </p>
 
-          </a>
+          </button>
 
 
           {/* =================================================
               PUBLISH
           ================================================= */}
-
           <a
             href="/institute/website/publish"
             className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6 hover:border-purple-500/50 transition"
@@ -773,7 +1062,6 @@ export default function WebsiteDashboard() {
       {/* =================================================
           WEBSITE INFORMATION
       ================================================= */}
-
       {website?.website && (
         <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl p-6">
 
@@ -783,9 +1071,12 @@ export default function WebsiteDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
-            {/* WEBSITE NAME */}
 
+            {/* =================================================
+                WEBSITE NAME
+            ================================================= */}
             <div>
+
               <p className="text-xs text-gray-500">
                 Website Name
               </p>
@@ -794,12 +1085,15 @@ export default function WebsiteDashboard() {
                 {website.website.website_name ||
                   "-"}
               </p>
+
             </div>
 
 
-            {/* TEMPLATE INFORMATION */}
-
+            {/* =================================================
+                TEMPLATE INFORMATION
+            ================================================= */}
             <div>
+
               <p className="text-xs text-gray-500">
                 Template
               </p>
@@ -808,12 +1102,15 @@ export default function WebsiteDashboard() {
                 {website.website.template_name ||
                   "Not selected"}
               </p>
+
             </div>
 
 
-            {/* SLUG */}
-
+            {/* =================================================
+                SLUG
+            ================================================= */}
             <div>
+
               <p className="text-xs text-gray-500">
                 Slug
               </p>
@@ -822,12 +1119,15 @@ export default function WebsiteDashboard() {
                 {website.website.slug ||
                   "-"}
               </p>
+
             </div>
 
 
-            {/* STATUS */}
-
+            {/* =================================================
+                STATUS
+            ================================================= */}
             <div>
+
               <p className="text-xs text-gray-500">
                 Status
               </p>
@@ -841,6 +1141,7 @@ export default function WebsiteDashboard() {
               >
                 {websiteStatus}
               </p>
+
             </div>
 
           </div>
