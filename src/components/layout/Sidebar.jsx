@@ -775,7 +775,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`sidebar-hide-scrollbar h-screen overflow-y-auto flex flex-col glass-effect ${
+      className={`sidebar-hide-scrollbar h-screen overflow-hidden flex flex-col glass-effect ${
         isSidebarOpen
           ? "px-4"
           : "px-2"
@@ -889,7 +889,7 @@ export default function Sidebar({
           MENU
       ===================================================== */}
 
-      <nav className="flex-1 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 sidebar-menu-scroll">
 
         {menuItems.map((item) => {
 
@@ -1042,6 +1042,35 @@ export default function Sidebar({
           "Logout"}
 
       </button>
+
+<style>{`
+  .sidebar-menu-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #a52cff transparent;
+  }
+
+  .sidebar-menu-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .sidebar-menu-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-menu-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      #a52cff,
+      #ff2aad
+    );
+    border-radius: 10px;
+  }
+
+  .sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
+    background: #ff2aad;
+  }
+`}</style>
+
 
     </div>
   );
