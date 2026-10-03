@@ -130,11 +130,11 @@ const adminMenuItems = [
     label: "Assignments",
   },
 
-  {
-    path: "/admin/recordings",
-    icon: HiOutlineVideoCamera,
-    label: "Recordings",
-  },
+  // {
+  //   path: "/admin/recordings",
+  //   icon: HiOutlineVideoCamera,
+  //   label: "Recordings",
+  // },
  
   {
     path: "/students",
