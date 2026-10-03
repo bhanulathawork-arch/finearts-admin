@@ -1,3 +1,4 @@
+
 // import { useEffect, useMemo, useState } from "react";
 // import { useNavigate, useParams } from "react-router-dom";
 // import toast from "react-hot-toast";
@@ -7,17 +8,12 @@
 //   BookOpen,
 //   ChevronDown,
 //   ChevronRight,
-//   Edit3,
 //   ExternalLink,
 //   FileText,
 //   GripVertical,
 //   Loader2,
-//   Plus,
 //   Radio,
-//   Save,
-//   Trash2,
 //   Video,
-//   X,
 // } from "lucide-react";
 
 // import API from "../services/api";
@@ -28,63 +24,27 @@
 //   panel2: "#15121F",
 //   border: "rgba(255,255,255,.10)",
 //   purple: "#9B2CFF",
-//   purple2: "#7B2CFF",
 //   pink: "#FF2AAE",
 //   text: "#FFFFFF",
 //   muted: "#AAA5B8",
 // };
 
-// const EMPTY_SECTION = {
-//   title: "",
-//   description: "",
-//   sort_order: 0,
-//   is_published: 0,
-// };
-
-// const EMPTY_LESSON = {
-//   title: "",
-//   description: "",
-//   lesson_type: "YOUTUBE",
-//   youtube_url: "",
-//   content: "",
-//   resource_url: "",
-//   duration_minutes: "",
-//   is_preview: 0,
-//   sort_order: 0,
-//   is_published: 0,
-// };
+// /* =========================================================
+//    HELPERS
+// ========================================================= */
 
 // const normalizeArray = (value) => {
 //   if (Array.isArray(value)) return value;
-//   if (Array.isArray(value?.data)) return value.data;
-//   if (Array.isArray(value?.rows)) return value.rows;
+
+//   if (Array.isArray(value?.data)) {
+//     return value.data;
+//   }
+
+//   if (Array.isArray(value?.rows)) {
+//     return value.rows;
+//   }
+
 //   return [];
-// };
-
-// const normalizeCurriculum = (payload) => {
-//   const root = payload?.data ?? payload ?? {};
-
-//   const course =
-//     root?.course ??
-//     root?.class ??
-//     root?.data?.course ??
-//     null;
-
-//   const sections = normalizeArray(
-//     root?.sections ??
-//       root?.curriculum ??
-//       root?.data?.sections
-//   );
-
-//   return {
-//     course,
-//     sections: sections.map((section) => ({
-//       ...section,
-//       lessons: normalizeArray(
-//         section.lessons ?? section.course_lessons
-//       ),
-//     })),
-//   };
 // };
 
 // const normalizeClasses = (payload) => {
@@ -100,14 +60,44 @@
 //   return normalizeArray(candidates);
 // };
 
-// /* =========================================================
-//    LESSON TYPE NORMALIZATION
-//    ========================================================= */
+// const normalizeCurriculum = (payload) => {
+//   const root = payload?.data ?? payload ?? {};
+
+//   const course =
+//     root?.course ??
+//     root?.class ??
+//     root?.data?.course ??
+//     root?.data?.class ??
+//     null;
+
+//   const sections = normalizeArray(
+//     root?.sections ??
+//       root?.curriculum ??
+//       root?.data?.sections ??
+//       root?.data?.curriculum
+//   );
+
+//   return {
+//     course,
+//     sections: sections.map((section) => ({
+//       ...section,
+//       lessons: normalizeArray(
+//         section?.lessons ??
+//           section?.course_lessons ??
+//           section?.lms_lessons
+//       ),
+//     })),
+//   };
+// };
 
 // const normalizeLessonType = (value) => {
 //   const type = String(value || "").toUpperCase();
 
-//   if (type === "VIDEO" || type === "DIRECT_VIDEO") {
+//   if (
+//     type === "VIDEO" ||
+//     type === "DIRECT_VIDEO" ||
+//     type === "VID"
+//   ) {
 //     return "VIDEO";
 //   }
 
@@ -135,16 +125,8 @@
 //     return "EXTERNAL";
 //   }
 
-//   if (type === "VID") {
-//     return "VIDEO";
-//   }
-
 //   return "YOUTUBE";
 // };
-
-// /* =========================================================
-//    LESSON ICON
-//    ========================================================= */
 
 // const getLessonIcon = (type) => {
 //   switch (normalizeLessonType(type)) {
@@ -158,6 +140,8 @@
 //       return <Video size={16} />;
 
 //     case "PDF":
+//       return <FileText size={16} />;
+
 //     case "TEXT":
 //       return <FileText size={16} />;
 
@@ -168,10 +152,6 @@
 //       return <ExternalLink size={16} />;
 //   }
 // };
-
-// /* =========================================================
-//    LESSON TYPE LABEL
-//    ========================================================= */
 
 // const getLessonTypeLabel = (type) => {
 //   switch (normalizeLessonType(type)) {
@@ -202,28 +182,16 @@
 // };
 
 // /* =========================================================
-//    AUTH
-//    ========================================================= */
+//    ADMIN AUTH
+// ========================================================= */
 
-// const getAuthConfig = async () => {
-//   let token = localStorage.getItem("token");
-
-//   try {
-//     const { getAuth } = await import("firebase/auth");
-
-//     const auth = getAuth();
-
-//     if (auth.currentUser) {
-//       token = await auth.currentUser.getIdToken(true);
-//     }
-//   } catch (error) {
-//     console.warn("Firebase token lookup failed:", error);
-//   }
+// const getAdminConfig = () => {
+//   const adminToken = localStorage.getItem("adminToken");
 
 //   return {
-//     headers: token
+//     headers: adminToken
 //       ? {
-//           Authorization: `Bearer ${token}`,
+//           Authorization: `Bearer ${adminToken}`,
 //         }
 //       : {},
 //   };
@@ -231,38 +199,26 @@
 
 // /* =========================================================
 //    INPUT STYLES
-//    ========================================================= */
+// ========================================================= */
 
 // function InputStyles() {
 //   return (
 //     <style>{`
-//       .input {
-//         width: 100%;
-//         border-radius: 0.75rem;
-//         border: 1px solid rgba(255,255,255,.10);
-//         background: #181820;
-//         padding: 0.75rem 1rem;
-//         color: #fff;
-//         outline: none;
-//         transition:
-//           border-color .2s ease,
-//           box-shadow .2s ease,
-//           background .2s ease;
+//       .admin-lms-scrollbar::-webkit-scrollbar {
+//         width: 7px;
 //       }
 
-//       .input::placeholder {
-//         color: #666171;
+//       .admin-lms-scrollbar::-webkit-scrollbar-track {
+//         background: transparent;
 //       }
 
-//       .input:focus {
-//         border-color: rgba(155,44,255,.8);
-//         box-shadow: 0 0 0 3px rgba(155,44,255,.14);
-//         background: #1a1a23;
+//       .admin-lms-scrollbar::-webkit-scrollbar-thumb {
+//         background: rgba(255,255,255,.12);
+//         border-radius: 999px;
 //       }
 
-//       .input option {
-//         background: #181820;
-//         color: #fff;
+//       .admin-lms-scrollbar::-webkit-scrollbar-thumb:hover {
+//         background: rgba(255,255,255,.20);
 //       }
 //     `}</style>
 //   );
@@ -270,50 +226,47 @@
 
 // /* =========================================================
 //    MAIN COMPONENT
-//    ========================================================= */
+// ========================================================= */
 
 // export default function AdminLMS() {
 //   const { classId } = useParams();
 //   const navigate = useNavigate();
 
+//   const [classes, setClasses] = useState([]);
 //   const [course, setCourse] = useState(null);
 //   const [sections, setSections] = useState([]);
-//   const [classes, setClasses] = useState([]);
 
 //   const [loading, setLoading] = useState(true);
 //   const [classesLoading, setClassesLoading] = useState(false);
-//   const [saving, setSaving] = useState(false);
 
 //   const [openSections, setOpenSections] = useState({});
 
-//   const [sectionModal, setSectionModal] = useState(null);
-//   const [sectionForm, setSectionForm] =
-//     useState(EMPTY_SECTION);
+//   /* =======================================================
+//      COURSE TITLE
+//   ======================================================= */
 
-//   const [lessonModal, setLessonModal] = useState(null);
-//   const [lessonForm, setLessonForm] =
-//     useState(EMPTY_LESSON);
-
-//   const classTitle = useMemo(
-//     () =>
+//   const classTitle = useMemo(() => {
+//     return (
 //       course?.title ||
 //       course?.name ||
-//       "Class Curriculum",
-//     [course]
-//   );
+//       course?.class_name ||
+//       "Class Curriculum"
+//     );
+//   }, [course]);
 
 //   /* =======================================================
-//      LOAD CLASSES
-//      ======================================================= */
+//      LOAD ADMIN CLASSES
+//   ======================================================= */
 
 //   const loadClasses = async () => {
 //     setClassesLoading(true);
+//     setLoading(true);
 
 //     try {
-//       const config = await getAuthConfig();
+//       const config = getAdminConfig();
 
 //       const response = await API.get(
-//         "/classes/trainer/my-classes",
+//         "/lms/admin/classes",
 //         config
 //       );
 
@@ -324,13 +277,13 @@
 //       setClasses(normalized);
 //     } catch (error) {
 //       console.error(
-//         "Trainer LMS classes load error:",
+//         "Admin LMS classes load error:",
 //         error
 //       );
 
 //       toast.error(
 //         error?.response?.data?.message ||
-//           "Failed to load your classes"
+//           "Failed to load LMS classes"
 //       );
 
 //       setClasses([]);
@@ -341,8 +294,8 @@
 //   };
 
 //   /* =======================================================
-//      LOAD CURRICULUM
-//      ======================================================= */
+//      LOAD ADMIN CURRICULUM
+//   ======================================================= */
 
 //   const loadCurriculum = async () => {
 //     if (!classId) {
@@ -353,10 +306,10 @@
 //     setLoading(true);
 
 //     try {
-//       const config = await getAuthConfig();
+//       const config = getAdminConfig();
 
 //       const response = await API.get(
-//         `/lms/trainer/classes/${classId}/curriculum`,
+//         `/lms/admin/classes/${classId}/curriculum`,
 //         config
 //       );
 
@@ -372,8 +325,12 @@
 
 //         normalized.sections.forEach(
 //           (section, index) => {
-//             if (next[section.id] === undefined) {
-//               next[section.id] = index === 0;
+//             if (
+//               next[section.id] ===
+//               undefined
+//             ) {
+//               next[section.id] =
+//                 index === 0;
 //             }
 //           }
 //         );
@@ -382,7 +339,7 @@
 //       });
 //     } catch (error) {
 //       console.error(
-//         "Trainer LMS load error:",
+//         "Admin LMS curriculum load error:",
 //         error
 //       );
 
@@ -398,6 +355,10 @@
 //     }
 //   };
 
+//   /* =======================================================
+//      INITIAL LOAD
+//   ======================================================= */
+
 //   useEffect(() => {
 //     loadCurriculum();
 
@@ -405,437 +366,8 @@
 //   }, [classId]);
 
 //   /* =======================================================
-//      SECTION
-//      ======================================================= */
-
-//   const createSection = () => {
-//     setSectionForm({
-//       ...EMPTY_SECTION,
-//       sort_order: sections.length,
-//     });
-
-//     setSectionModal({
-//       mode: "create",
-//     });
-//   };
-
-//   const editSection = (section) => {
-//     setSectionForm({
-//       title: section.title || "",
-//       description: section.description || "",
-//       sort_order: section.sort_order ?? 0,
-//       is_published: Number(
-//         section.is_published
-//       )
-//         ? 1
-//         : 0,
-//     });
-
-//     setSectionModal({
-//       mode: "edit",
-//       id: section.id,
-//     });
-//   };
-
-//   const saveSection = async (event) => {
-//     event.preventDefault();
-
-//     if (!sectionForm.title.trim()) {
-//       toast.error("Section title is required");
-//       return;
-//     }
-
-//     setSaving(true);
-
-//     try {
-//       const config = await getAuthConfig();
-
-//       const payload = {
-//         title: sectionForm.title.trim(),
-//         description:
-//           sectionForm.description?.trim() ||
-//           null,
-//         sort_order:
-//           Number(sectionForm.sort_order) || 0,
-//         is_published: Number(
-//           sectionForm.is_published
-//         )
-//           ? 1
-//           : 0,
-//       };
-
-//       if (sectionModal.mode === "create") {
-//         await API.post(
-//           `/lms/trainer/classes/${classId}/sections`,
-//           payload,
-//           config
-//         );
-
-//         toast.success("Section created");
-//       } else {
-//         await API.put(
-//           `/lms/trainer/sections/${sectionModal.id}`,
-//           payload,
-//           config
-//         );
-
-//         toast.success("Section updated");
-//       }
-
-//       setSectionModal(null);
-//       await loadCurriculum();
-//     } catch (error) {
-//       console.error(
-//         "Save section error:",
-//         error
-//       );
-
-//       toast.error(
-//         error?.response?.data?.message ||
-//           "Unable to save section"
-//       );
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   const deleteSection = async (section) => {
-//     if (
-//       !window.confirm(
-//         `Delete section "${section.title}" and its lessons?`
-//       )
-//     ) {
-//       return;
-//     }
-
-//     try {
-//       const config = await getAuthConfig();
-
-//       await API.delete(
-//         `/lms/trainer/sections/${section.id}`,
-//         config
-//       );
-
-//       toast.success("Section deleted");
-
-//       await loadCurriculum();
-//     } catch (error) {
-//       console.error(
-//         "Delete section error:",
-//         error
-//       );
-
-//       toast.error(
-//         error?.response?.data?.message ||
-//           "Unable to delete section"
-//       );
-//     }
-//   };
-
-//   /* =======================================================
-//      LESSON
-//      ======================================================= */
-
-//   const createLesson = (section) => {
-//     setLessonForm({
-//       ...EMPTY_LESSON,
-//       sort_order:
-//         section.lessons?.length || 0,
-//     });
-
-//     setLessonModal({
-//       mode: "create",
-//       sectionId: section.id,
-//     });
-//   };
-
-//   const editLesson = (section, lesson) => {
-//     setLessonForm({
-//       title: lesson.title || "",
-//       description: lesson.description || "",
-
-//       lesson_type: normalizeLessonType(
-//         lesson.lesson_type ||
-//           lesson.type
-//       ),
-
-//       youtube_url:
-//         lesson.youtube_url ||
-//         lesson.Video_url ||
-//         "",
-
-//       content: lesson.content || "",
-
-//       resource_url:
-//         lesson.resource_url || "",
-
-//       duration_minutes:
-//         lesson.duration_minutes ?? "",
-
-//       is_preview: Number(
-//         lesson.is_preview
-//       )
-//         ? 1
-//         : 0,
-
-//       sort_order:
-//         lesson.sort_order ?? 0,
-
-//       is_published: Number(
-//         lesson.is_published
-//       )
-//         ? 1
-//         : 0,
-//     });
-
-//     setLessonModal({
-//       mode: "edit",
-//       id: lesson.id,
-//       sectionId: section.id,
-//     });
-//   };
-
-//   /* =======================================================
-//      SAVE LESSON
-//      ======================================================= */
-
-//   const saveLesson = async (event) => {
-//     event.preventDefault();
-
-//     if (!lessonForm.title.trim()) {
-//       toast.error("Lesson title is required");
-//       return;
-//     }
-
-//     const lessonType =
-//       normalizeLessonType(
-//         lessonForm.lesson_type
-//       );
-
-//     const youtubeUrl =
-//       lessonForm.youtube_url?.trim() ||
-//       "";
-
-//     const resourceUrl =
-//       lessonForm.resource_url?.trim() ||
-//       "";
-
-//     const textContent =
-//       lessonForm.content?.trim() || "";
-
-//     /* -----------------------------------------------
-//        VALIDATION
-//     ------------------------------------------------ */
-
-//     if (
-//       lessonType === "YOUTUBE" &&
-//       !youtubeUrl
-//     ) {
-//       toast.error(
-//         "YouTube URL is required for a YouTube lesson."
-//       );
-//       return;
-//     }
-
-//     if (
-//       lessonType === "VIDEO" &&
-//       !resourceUrl
-//     ) {
-//       toast.error(
-//         "Video URL is required for a Video lesson."
-//       );
-//       return;
-//     }
-
-//     /* RECORDING VALIDATION */
-
-//     if (
-//       lessonType === "RECORDING" &&
-//       !resourceUrl
-//     ) {
-//       toast.error(
-//         "Recording URL is required for a Recording lesson."
-//       );
-//       return;
-//     }
-
-//     if (
-//       lessonType === "PDF" &&
-//       !resourceUrl
-//     ) {
-//       toast.error(
-//         "PDF URL is required for a PDF lesson."
-//       );
-//       return;
-//     }
-
-//     if (
-//       lessonType === "LIVE" &&
-//       !resourceUrl
-//     ) {
-//       toast.error(
-//         "Meeting URL is required for a Live lesson."
-//       );
-//       return;
-//     }
-
-//     if (
-//       lessonType === "EXTERNAL" &&
-//       !resourceUrl
-//     ) {
-//       toast.error(
-//         "External URL is required for an External lesson."
-//       );
-//       return;
-//     }
-
-//     if (
-//       lessonType === "TEXT" &&
-//       !textContent
-//     ) {
-//       toast.error(
-//         "Lesson content is required for a Text lesson."
-//       );
-//       return;
-//     }
-
-//     setSaving(true);
-
-//     try {
-//       const config = await getAuthConfig();
-
-//       const payload = {
-//         title: lessonForm.title.trim(),
-
-//         description:
-//           lessonForm.description?.trim() ||
-//           null,
-
-//         lesson_type: lessonType,
-
-//         youtube_url:
-//           lessonType === "YOUTUBE"
-//             ? youtubeUrl
-//             : null,
-
-//         content:
-//           lessonType === "TEXT"
-//             ? textContent
-//             : null,
-
-//         /*
-//          * RECORDING is intentionally included
-//          * here.
-//          */
-//         resource_url: [
-//           "VIDEO",
-//           "RECORDING",
-//           "PDF",
-//           "LIVE",
-//           "EXTERNAL",
-//         ].includes(lessonType)
-//           ? resourceUrl
-//           : null,
-
-//         duration_minutes:
-//           lessonForm.duration_minutes === ""
-//             ? null
-//             : Number(
-//                 lessonForm.duration_minutes
-//               ),
-
-//         is_preview: Number(
-//           lessonForm.is_preview
-//         )
-//           ? 1
-//           : 0,
-
-//         sort_order:
-//           Number(
-//             lessonForm.sort_order
-//           ) || 0,
-
-//         is_published: Number(
-//           lessonForm.is_published
-//         )
-//           ? 1
-//           : 0,
-//       };
-
-//       if (
-//         lessonModal.mode === "create"
-//       ) {
-//         await API.post(
-//           `/lms/trainer/sections/${lessonModal.sectionId}/lessons`,
-//           payload,
-//           config
-//         );
-
-//         toast.success(
-//           "Lesson created"
-//         );
-//       } else {
-//         await API.put(
-//           `/lms/trainer/lessons/${lessonModal.id}`,
-//           payload,
-//           config
-//         );
-
-//         toast.success(
-//           "Lesson updated"
-//         );
-//       }
-
-//       setLessonModal(null);
-
-//       await loadCurriculum();
-//     } catch (error) {
-//       console.error(
-//         "Save lesson error:",
-//         error
-//       );
-
-//       toast.error(
-//         error?.response?.data?.message ||
-//           "Unable to save lesson"
-//       );
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   const deleteLesson = async (lesson) => {
-//     if (
-//       !window.confirm(
-//         `Delete lesson "${lesson.title}"?`
-//       )
-//     ) {
-//       return;
-//     }
-
-//     try {
-//       const config = await getAuthConfig();
-
-//       await API.delete(
-//         `/lms/trainer/lessons/${lesson.id}`,
-//         config
-//       );
-
-//       toast.success("Lesson deleted");
-
-//       await loadCurriculum();
-//     } catch (error) {
-//       console.error(
-//         "Delete lesson error:",
-//         error
-//       );
-
-//       toast.error(
-//         error?.response?.data?.message ||
-//           "Unable to delete lesson"
-//       );
-//     }
-//   };
+//      TOGGLE SECTION
+//   ======================================================= */
 
 //   const toggleSection = (id) => {
 //     setOpenSections((previous) => ({
@@ -844,35 +376,37 @@
 //     }));
 //   };
 
+//   /* =======================================================
+//      STATISTICS
+//   ======================================================= */
+
 //   const totalLessons = sections.reduce(
-//     (sum, section) =>
-//       sum +
-//       (section.lessons?.length || 0),
+//     (total, section) =>
+//       total +
+//       (section?.lessons?.length || 0),
 //     0
 //   );
 
 //   const publishedSections =
 //     sections.filter(
 //       (section) =>
-//         Number(section.is_published)
+//         Number(section?.is_published) === 1
 //     ).length;
 
 //   const publishedLessons =
 //     sections.reduce(
-//       (sum, section) =>
-//         sum +
-//         (section.lessons || []).filter(
+//       (total, section) =>
+//         total +
+//         (section?.lessons || []).filter(
 //           (lesson) =>
-//             Number(
-//               lesson.is_published
-//             )
+//             Number(lesson?.is_published) === 1
 //         ).length,
 //       0
 //     );
 
 //   /* =======================================================
-//      CLASS SELECTION SCREEN
-//      ======================================================= */
+//      CLASS SELECTION
+//   ======================================================= */
 
 //   if (!classId) {
 //     return (
@@ -880,42 +414,44 @@
 //         <InputStyles />
 
 //         <div
-//           className="min-h-screen text-white"
+//           className="min-h-screen w-full text-white"
 //           style={{
 //             background: COLORS.bg,
 //           }}
 //         >
-//           <div className="mx-auto max-w-7xl space-y-7">
-//             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-//               <div>
-//                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
-//                   <BookOpen size={15} />
-//                   Trainer LMS
-//                 </div>
+//           <div className="mx-auto max-w-7xl space-y-7 p-6">
+//             {/* HEADER */}
 
-//                 <h1 className="mt-2 text-3xl font-bold tracking-tight">
-//                   Learning Management
-//                   System
-//                 </h1>
+//             <div>
+//               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
+//                 <BookOpen size={15} />
 
-//                 <p
-//                   className="mt-2 max-w-2xl text-sm leading-6"
-//                   style={{
-//                     color: COLORS.muted,
-//                   }}
-//                 >
-//                   Select one of your
-//                   classes to create and
-//                   manage its curriculum,
-//                   sections, lessons, and
-//                   recordings.
-//                 </p>
+//                 Admin LMS
 //               </div>
+
+//               <h1 className="mt-2 text-3xl font-bold tracking-tight">
+//                 Learning Management
+//                 System
+//               </h1>
+
+//               <p
+//                 className="mt-2 max-w-2xl text-sm leading-6"
+//                 style={{
+//                   color: COLORS.muted,
+//                 }}
+//               >
+//                 Select a class to view
+//                 its LMS curriculum,
+//                 sections, lessons and
+//                 learning content.
+//               </p>
 //             </div>
+
+//             {/* LOADING */}
 
 //             {classesLoading ? (
 //               <div
-//                 className="rounded-2xl border p-14 text-center"
+//                 className="rounded-2xl border p-16 text-center"
 //                 style={{
 //                   borderColor:
 //                     COLORS.border,
@@ -925,7 +461,7 @@
 //               >
 //                 <Loader2
 //                   className="mx-auto animate-spin text-purple-400"
-//                   size={34}
+//                   size={36}
 //                 />
 
 //                 <p
@@ -934,13 +470,14 @@
 //                     color: COLORS.muted,
 //                   }}
 //                 >
-//                   Loading your
-//                   classes...
+//                   Loading classes...
 //                 </p>
 //               </div>
 //             ) : classes.length === 0 ? (
+//               /* EMPTY */
+
 //               <div
-//                 className="rounded-2xl border p-14 text-center"
+//                 className="rounded-2xl border p-16 text-center"
 //                 style={{
 //                   borderColor:
 //                     COLORS.border,
@@ -950,11 +487,11 @@
 //               >
 //                 <BookOpen
 //                   className="mx-auto text-purple-400"
-//                   size={42}
+//                   size={44}
 //                 />
 
 //                 <h2 className="mt-5 text-xl font-semibold">
-//                   No classes available
+//                   No LMS classes found
 //                 </h2>
 
 //                 <p
@@ -963,53 +500,37 @@
 //                     color: COLORS.muted,
 //                   }}
 //                 >
-//                   Create a class from
-//                   My Classes first.
-//                   Your LMS content is
-//                   attached to an existing
-//                   trainer class.
+//                   There are currently no
+//                   classes available for
+//                   the Admin LMS.
 //                 </p>
-
-//                 <button
-//                   type="button"
-//                   onClick={() =>
-//                     navigate(
-//                       "/trainer/classes"
-//                     )
-//                   }
-//                   className="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:opacity-90"
-//                   style={{
-//                     background:
-//                       `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.pink})`,
-//                   }}
-//                 >
-//                   <ArrowLeft size={17} />
-//                   Go to My Classes
-//                 </button>
 //               </div>
 //             ) : (
+//               /* CLASS CARDS */
+
 //               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 //                 {classes.map((item) => {
 //                   const id =
-//                     item.id ??
-//                     item.class_id;
+//                     item?.id ??
+//                     item?.class_id;
 
 //                   const title =
-//                     item.title ||
-//                     item.name ||
-//                     item.class_name ||
+//                     item?.title ||
+//                     item?.name ||
+//                     item?.class_name ||
 //                     "Untitled class";
 
 //                   const category =
-//                     item.category_name ||
-//                     item.category ||
-//                     item.subcategory_name ||
+//                     item?.category_name ||
+//                     item?.category ||
+//                     item?.subcategory_name ||
 //                     "Not available";
 
 //                   const image =
-//                     item.image_url ||
-//                     item.image ||
-//                     item.thumbnail ||
+//                     item?.image_url ||
+//                     item?.image ||
+//                     item?.thumbnail ||
+//                     item?.banner_image ||
 //                     null;
 
 //                   return (
@@ -1018,10 +539,10 @@
 //                       type="button"
 //                       onClick={() =>
 //                         navigate(
-//                           `/trainer/lms/${id}`
+//                           `/admin/lms/${id}`
 //                         )
 //                       }
-//                       className="group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-0.5 hover:border-purple-500/50"
+//                       className="group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-1 hover:border-purple-500/50"
 //                       style={{
 //                         borderColor:
 //                           COLORS.border,
@@ -1029,6 +550,8 @@
 //                           COLORS.panel,
 //                       }}
 //                     >
+//                       {/* IMAGE */}
+
 //                       <div className="h-44 overflow-hidden bg-[#181820]">
 //                         {image ? (
 //                           <img
@@ -1045,6 +568,8 @@
 //                           </div>
 //                         )}
 //                       </div>
+
+//                       {/* CONTENT */}
 
 //                       <div className="p-5">
 //                         <div className="flex items-start justify-between gap-3">
@@ -1072,8 +597,7 @@
 
 //                         <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
 //                           <span className="text-xs text-white/45">
-//                             Manage
-//                             curriculum
+//                             View curriculum
 //                           </span>
 
 //                           <span className="text-sm font-semibold text-purple-300">
@@ -1093,29 +617,30 @@
 //   }
 
 //   /* =======================================================
-//      CLASS LMS SCREEN
-//      ======================================================= */
+//      ADMIN CLASS LMS
+//   ======================================================= */
 
 //   return (
 //     <>
 //       <InputStyles />
 
 //       <div
-//         className="min-h-screen text-white"
+//         className="min-h-screen w-full text-white"
 //         style={{
 //           background: COLORS.bg,
 //         }}
 //       >
-//         <div className="mx-auto max-w-7xl space-y-6">
-
-//           {/* HEADER */}
+//         <div className="mx-auto max-w-7xl space-y-6 p-6">
+//           {/* =================================================
+//               HEADER
+//           ================================================= */}
 
 //           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 //             <div className="flex min-w-0 items-start gap-3">
 //               <button
 //                 type="button"
 //                 onClick={() =>
-//                   navigate("/trainer/lms")
+//                   navigate("/admin/lms")
 //                 }
 //                 className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition hover:bg-white/5"
 //                 style={{
@@ -1130,7 +655,8 @@
 //               <div className="min-w-0">
 //                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
 //                   <BookOpen size={14} />
-//                   Trainer LMS
+
+//                   Admin LMS
 //                 </div>
 
 //                 <h1 className="mt-1 truncate text-2xl font-bold sm:text-3xl">
@@ -1143,29 +669,31 @@
 //                     color: COLORS.muted,
 //                   }}
 //                 >
-//                   Build the curriculum
-//                   that enrolled students
-//                   will see in their
-//                   Learning dashboard.
+//                   View the complete
+//                   curriculum, sections and
+//                   lessons for this class.
 //                 </p>
 //               </div>
 //             </div>
 
-//             <button
-//               type="button"
-//               onClick={createSection}
-//               className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:opacity-90"
+//             <div
+//               className="rounded-xl border px-4 py-3 text-xs"
 //               style={{
+//                 borderColor:
+//                   "rgba(155,44,255,.25)",
 //                 background:
-//                   `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.pink})`,
+//                   "rgba(155,44,255,.08)",
 //               }}
 //             >
-//               <Plus size={18} />
-//               Add Section
-//             </button>
+//               <span className="text-purple-300">
+//                 Admin View
+//               </span>
+//             </div>
 //           </div>
 
-//           {/* SUMMARY */}
+//           {/* =================================================
+//               SUMMARY
+//           ================================================= */}
 
 //           <div
 //             className="rounded-2xl border p-5"
@@ -1188,26 +716,24 @@
 //               />
 
 //               <Stat
-//                 label="Published sections"
-//                 value={
-//                   publishedSections
-//                 }
+//                 label="Published Sections"
+//                 value={publishedSections}
 //               />
 
 //               <Stat
-//                 label="Published lessons"
-//                 value={
-//                   publishedLessons
-//                 }
+//                 label="Published Lessons"
+//                 value={publishedLessons}
 //               />
 //             </div>
 //           </div>
 
-//           {/* CURRICULUM */}
+//           {/* =================================================
+//               LOADING
+//           ================================================= */}
 
 //           {loading ? (
 //             <div
-//               className="rounded-2xl border p-12 text-center"
+//               className="rounded-2xl border p-14 text-center"
 //               style={{
 //                 borderColor:
 //                   COLORS.border,
@@ -1217,7 +743,7 @@
 //             >
 //               <Loader2
 //                 className="mx-auto animate-spin text-purple-400"
-//                 size={32}
+//                 size={34}
 //               />
 
 //               <p
@@ -1230,8 +756,12 @@
 //               </p>
 //             </div>
 //           ) : sections.length === 0 ? (
+//             /* =================================================
+//                EMPTY CURRICULUM
+//             ================================================= */
+
 //             <div
-//               className="rounded-2xl border p-12 text-center"
+//               className="rounded-2xl border p-14 text-center"
 //               style={{
 //                 borderColor:
 //                   COLORS.border,
@@ -1241,38 +771,29 @@
 //             >
 //               <BookOpen
 //                 className="mx-auto text-purple-400"
-//                 size={38}
+//                 size={42}
 //               />
 
-//               <h2 className="mt-4 text-lg font-semibold">
-//                 No curriculum yet
+//               <h2 className="mt-5 text-xl font-semibold">
+//                 No curriculum found
 //               </h2>
 
 //               <p
-//                 className="mx-auto mt-2 max-w-md text-sm leading-6"
+//                 className="mx-auto mt-2 max-w-lg text-sm leading-6"
 //                 style={{
 //                   color: COLORS.muted,
 //                 }}
 //               >
-//                 Create your first
-//                 section, then add
-//                 lessons inside it.
+//                 This class does not
+//                 currently have any LMS
+//                 sections or lessons.
 //               </p>
-
-//               <button
-//                 type="button"
-//                 onClick={createSection}
-//                 className="mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 font-semibold text-white"
-//                 style={{
-//                   background:
-//                     `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.pink})`,
-//                 }}
-//               >
-//                 <Plus size={17} />
-//                 Create First Section
-//               </button>
 //             </div>
 //           ) : (
+//             /* =================================================
+//                CURRICULUM
+//             ================================================= */
+
 //             <div className="space-y-4">
 //               {sections.map(
 //                 (section, index) => {
@@ -1295,25 +816,29 @@
 //                           COLORS.panel,
 //                       }}
 //                     >
-//                       {/* SECTION HEADER */}
+//                       {/* =====================================
+//                           SECTION HEADER
+//                       ===================================== */}
 
-//                       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-//                         <button
-//                           type="button"
-//                           onClick={() =>
-//                             toggleSection(
-//                               section.id
-//                             )
-//                           }
-//                           className="flex min-w-0 items-center gap-3 text-left"
-//                         >
+//                       <button
+//                         type="button"
+//                         onClick={() =>
+//                           toggleSection(
+//                             section.id
+//                           )
+//                         }
+//                         className="flex w-full flex-col gap-4 p-5 text-left transition hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between"
+//                       >
+//                         <div className="flex min-w-0 items-center gap-3">
 //                           {isOpen ? (
 //                             <ChevronDown
 //                               size={19}
+//                               className="shrink-0"
 //                             />
 //                           ) : (
 //                             <ChevronRight
 //                               size={19}
+//                               className="shrink-0"
 //                             />
 //                           )}
 
@@ -1321,22 +846,20 @@
 //                             {index + 1}
 //                           </span>
 
-//                           <span className="min-w-0">
-//                             <span className="block truncate font-semibold">
+//                           <div className="min-w-0">
+//                             <p className="truncate font-semibold">
 //                               {section.title ||
 //                                 "Untitled section"}
-//                             </span>
+//                             </p>
 
-//                             <span
-//                               className="mt-1 block text-xs"
+//                             <p
+//                               className="mt-1 text-xs"
 //                               style={{
 //                                 color:
 //                                   COLORS.muted,
 //                               }}
 //                             >
-//                               {
-//                                 lessons.length
-//                               }{" "}
+//                               {lessons.length}{" "}
 //                               lesson
 //                               {lessons.length ===
 //                               1
@@ -1345,70 +868,24 @@
 
 //                               {Number(
 //                                 section.is_published
-//                               )
+//                               ) === 1
 //                                 ? " • Published"
 //                                 : " • Draft"}
-//                             </span>
-//                           </span>
-//                         </button>
+//                             </p>
+//                           </div>
+//                         </div>
 
 //                         <div className="flex items-center gap-2 pl-12 sm:pl-0">
-//                           <button
-//                             type="button"
-//                             onClick={() =>
-//                               createLesson(
-//                                 section
-//                               )
-//                             }
-//                             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition hover:bg-white/5"
-//                             style={{
-//                               borderColor:
-//                                 COLORS.border,
-//                             }}
-//                           >
-//                             <Plus
-//                               size={15}
-//                             />
-//                             Lesson
-//                           </button>
-
-//                           <button
-//                             type="button"
-//                             onClick={() =>
-//                               editSection(
-//                                 section
-//                               )
-//                             }
-//                             className="rounded-lg border p-2 transition hover:bg-white/5"
-//                             style={{
-//                               borderColor:
-//                                 COLORS.border,
-//                             }}
-//                             title="Edit section"
-//                           >
-//                             <Edit3
-//                               size={15}
-//                             />
-//                           </button>
-
-//                           <button
-//                             type="button"
-//                             onClick={() =>
-//                               deleteSection(
-//                                 section
-//                               )
-//                             }
-//                             className="rounded-lg border border-red-500/20 p-2 text-red-300 transition hover:bg-red-500/10"
-//                             title="Delete section"
-//                           >
-//                             <Trash2
-//                               size={15}
-//                             />
-//                           </button>
+//                           <span className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/50">
+//                             Admin
+//                             Preview
+//                           </span>
 //                         </div>
-//                       </div>
+//                       </button>
 
-//                       {/* SECTION CONTENT */}
+//                       {/* =====================================
+//                           SECTION CONTENT
+//                       ===================================== */}
 
 //                       {isOpen && (
 //                         <div
@@ -1435,145 +912,40 @@
 //                           {lessons.length ===
 //                           0 ? (
 //                             <div
-//                               className="rounded-xl border border-dashed p-7 text-center"
+//                               className="rounded-xl border border-dashed p-8 text-center"
 //                               style={{
 //                                 borderColor:
 //                                   COLORS.border,
 //                               }}
 //                             >
+//                               <BookOpen
+//                                 className="mx-auto text-purple-400/70"
+//                                 size={30}
+//                               />
+
 //                               <p
-//                                 className="text-sm"
+//                                 className="mt-3 text-sm"
 //                                 style={{
 //                                   color:
 //                                     COLORS.muted,
 //                                 }}
 //                               >
-//                                 No lessons
-//                                 in this
-//                                 section.
+//                                 No lessons in
+//                                 this section.
 //                               </p>
-
-//                               <button
-//                                 type="button"
-//                                 onClick={() =>
-//                                   createLesson(
-//                                     section
-//                                   )
-//                                 }
-//                                 className="mt-3 text-sm font-semibold text-purple-300 transition hover:text-purple-200"
-//                               >
-//                                 + Add lesson
-//                               </button>
 //                             </div>
 //                           ) : (
 //                             <div className="space-y-2 pt-4">
 //                               {lessons.map(
 //                                 (lesson) => (
-//                                   <div
+//                                   <LessonRow
 //                                     key={
 //                                       lesson.id
 //                                     }
-//                                     className="flex flex-col gap-3 rounded-xl border p-3 transition hover:border-purple-500/20 sm:flex-row sm:items-center sm:justify-between"
-//                                     style={{
-//                                       borderColor:
-//                                         COLORS.border,
-//                                       background:
-//                                         COLORS.panel2,
-//                                     }}
-//                                   >
-//                                     <div className="flex min-w-0 items-center gap-3">
-//                                       <GripVertical
-//                                         size={
-//                                           16
-//                                         }
-//                                         className="shrink-0 text-white/25"
-//                                       />
-
-//                                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-300">
-//                                         {getLessonIcon(
-//                                           lesson.lesson_type ||
-//                                             lesson.type
-//                                         )}
-//                                       </div>
-
-//                                       <div className="min-w-0">
-//                                         <p className="truncate text-sm font-semibold">
-//                                           {lesson.title ||
-//                                             "Untitled lesson"}
-//                                         </p>
-
-//                                         <p
-//                                           className="mt-1 text-xs"
-//                                           style={{
-//                                             color:
-//                                               COLORS.muted,
-//                                           }}
-//                                         >
-//                                           {getLessonTypeLabel(
-//                                             lesson.lesson_type ||
-//                                               lesson.type
-//                                           )}
-
-//                                           {lesson.duration_minutes
-//                                             ? ` • ${lesson.duration_minutes} min`
-//                                             : ""}
-
-//                                           {Number(
-//                                             lesson.is_preview
-//                                           )
-//                                             ? " • Preview"
-//                                             : ""}
-
-//                                           {Number(
-//                                             lesson.is_published
-//                                           )
-//                                             ? " • Published"
-//                                             : " • Draft"}
-//                                         </p>
-//                                       </div>
-//                                     </div>
-
-//                                     <div className="flex items-center gap-2 pl-12 sm:pl-0">
-//                                       <button
-//                                         type="button"
-//                                         onClick={() =>
-//                                           editLesson(
-//                                             section,
-//                                             lesson
-//                                           )
-//                                         }
-//                                         className="rounded-lg border p-2 transition hover:bg-white/5"
-//                                         style={{
-//                                           borderColor:
-//                                             COLORS.border,
-//                                         }}
-//                                         title="Edit lesson"
-//                                       >
-//                                         <Edit3
-//                                           size={
-//                                             15
-//                                           }
-//                                         />
-//                                       </button>
-
-//                                       <button
-//                                         type="button"
-//                                         onClick={() =>
-//                                           deleteLesson(
-//                                             lesson
-//                                           )
-//                                         }
-//                                         className="rounded-lg border border-red-500/20 p-2 text-red-300 transition hover:bg-red-500/10"
-//                                         title="Delete lesson"
-//                                       >
-//                                         <Trash2
-//                                           size={
-//                                             15
-//                                           }
-//                                         />
-//                                       </button>
-//                                     </div>
-//                                   </div>
+//                                     lesson={
+//                                       lesson
+//                                     }
+//                                   />
 //                                 )
 //                               )}
 //                             </div>
@@ -1587,542 +959,167 @@
 //             </div>
 //           )}
 //         </div>
-
-//         {/* ===================================================
-//             SECTION MODAL
-//         =================================================== */}
-
-//         {sectionModal && (
-//           <Modal
-//             title={
-//               sectionModal.mode ===
-//               "create"
-//                 ? "Create Section"
-//                 : "Edit Section"
-//             }
-//             subtitle="Organize your course content into sections."
-//             onClose={() =>
-//               !saving &&
-//               setSectionModal(null)
-//             }
-//           >
-//             <form
-//               onSubmit={saveSection}
-//               className="space-y-5"
-//             >
-//               <Field
-//                 label="Section title"
-//                 required
-//               >
-//                 <input
-//                   autoFocus
-//                   type="text"
-//                   value={
-//                     sectionForm.title
-//                   }
-//                   onChange={(event) =>
-//                     setSectionForm({
-//                       ...sectionForm,
-//                       title:
-//                         event.target
-//                           .value,
-//                     })
-//                   }
-//                   className="input"
-//                   placeholder="e.g. Module 1 - Introduction"
-//                 />
-//               </Field>
-
-//               <Field
-//                 label="Description"
-//                 optional
-//               >
-//                 <textarea
-//                   value={
-//                     sectionForm.description
-//                   }
-//                   onChange={(event) =>
-//                     setSectionForm({
-//                       ...sectionForm,
-//                       description:
-//                         event.target
-//                           .value,
-//                     })
-//                   }
-//                   rows={4}
-//                   className="input resize-none leading-6"
-//                   placeholder="Add a short description for this section..."
-//                 />
-//               </Field>
-
-//               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <Field label="Sort order">
-//                   <input
-//                     type="number"
-//                     min="0"
-//                     value={
-//                       sectionForm.sort_order
-//                     }
-//                     onChange={(event) =>
-//                       setSectionForm({
-//                         ...sectionForm,
-//                         sort_order:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                   />
-//                 </Field>
-
-//                 <div>
-//                   <span className="mb-2 block text-sm font-medium text-gray-200">
-//                     Visibility
-//                   </span>
-
-//                   <Toggle
-//                     label="Published"
-//                     helper="Visible to enrolled students"
-//                     checked={
-//                       Number(
-//                         sectionForm.is_published
-//                       ) === 1
-//                     }
-//                     onChange={(value) =>
-//                       setSectionForm({
-//                         ...sectionForm,
-//                         is_published:
-//                           value ? 1 : 0,
-//                       })
-//                     }
-//                   />
-//                 </div>
-//               </div>
-
-//               <ModalActions
-//                 saving={saving}
-//                 onCancel={() =>
-//                   setSectionModal(null)
-//                 }
-//                 submitLabel={
-//                   sectionModal.mode ===
-//                   "create"
-//                     ? "Save Section"
-//                     : "Update Section"
-//                 }
-//               />
-//             </form>
-//           </Modal>
-//         )}
-
-//         {/* ===================================================
-//             LESSON MODAL
-//         =================================================== */}
-
-//         {lessonModal && (
-//           <Modal
-//             title={
-//               lessonModal.mode ===
-//               "create"
-//                 ? "Create Lesson"
-//                 : "Edit Lesson"
-//             }
-//             subtitle="Add learning material to this section."
-//             onClose={() =>
-//               !saving &&
-//               setLessonModal(null)
-//             }
-//             wide
-//           >
-//             <form
-//               onSubmit={saveLesson}
-//               className="space-y-5"
-//             >
-//               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-//                 <Field
-//                   label="Lesson title"
-//                   required
-//                 >
-//                   <input
-//                     autoFocus
-//                     type="text"
-//                     value={
-//                       lessonForm.title
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         title:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="e.g. Introduction to Basic Postures"
-//                   />
-//                 </Field>
-
-//                 <Field label="Lesson type">
-//                   <select
-//                     value={
-//                       lessonForm.lesson_type
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         lesson_type:
-//                           event.target
-//                             .value,
-
-//                         /*
-//                          * Clear resource
-//                          * values when switching
-//                          * lesson types.
-//                          */
-//                         resource_url:
-//                           "",
-//                         youtube_url:
-//                           "",
-//                         content: "",
-//                       })
-//                     }
-//                     className="input"
-//                   >
-//                     <option value="YOUTUBE">
-//                       YouTube
-//                     </option>
-
-//                     <option value="VIDEO">
-//                       Video
-//                     </option>
-
-//                     {/* NEW */}
-//                     <option value="RECORDING">
-//                       Recording
-//                     </option>
-
-//                     <option value="PDF">
-//                       PDF
-//                     </option>
-
-//                     <option value="TEXT">
-//                       Text
-//                     </option>
-
-//                     <option value="LIVE">
-//                       Live
-//                     </option>
-
-//                     <option value="EXTERNAL">
-//                       External
-//                     </option>
-//                   </select>
-//                 </Field>
-//               </div>
-
-//               <Field
-//                 label="Description"
-//                 optional
-//               >
-//                 <textarea
-//                   value={
-//                     lessonForm.description
-//                   }
-//                   onChange={(event) =>
-//                     setLessonForm({
-//                       ...lessonForm,
-//                       description:
-//                         event.target
-//                           .value,
-//                     })
-//                   }
-//                   rows={4}
-//                   className="input resize-none leading-6"
-//                   placeholder="Add a short description for this lesson..."
-//                 />
-//               </Field>
-
-//               {/* YOUTUBE */}
-
-//               {lessonForm.lesson_type ===
-//                 "YOUTUBE" && (
-//                 <Field label="YouTube URL">
-//                   <input
-//                     type="url"
-//                     value={
-//                       lessonForm.youtube_url
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         youtube_url:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="https://www.youtube.com/watch?v=..."
-//                   />
-//                 </Field>
-//               )}
-
-//               {/* DIRECT VIDEO */}
-
-//               {lessonForm.lesson_type ===
-//                 "VIDEO" && (
-//                 <Field label="Video URL">
-//                   <input
-//                     type="url"
-//                     value={
-//                       lessonForm.resource_url
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         resource_url:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="Direct video URL"
-//                   />
-//                 </Field>
-//               )}
-
-//               {/* =================================================
-//                   RECORDING
-//               ================================================= */}
-
-//               {lessonForm.lesson_type ===
-//                 "RECORDING" && (
-//                 <div className="space-y-4">
-//                   <Field label="Recording URL">
-//                     <input
-//                       type="url"
-//                       value={
-//                         lessonForm.resource_url
-//                       }
-//                       onChange={(event) =>
-//                         setLessonForm({
-//                           ...lessonForm,
-//                           resource_url:
-//                             event.target
-//                               .value,
-//                         })
-//                       }
-//                       className="input"
-//                       placeholder="https://... recording video URL"
-//                     />
-//                   </Field>
-
-//                   <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
-//                     <div className="flex gap-3">
-//                       <Video
-//                         size={20}
-//                         className="mt-0.5 shrink-0 text-purple-400"
-//                       />
-
-//                       <div>
-//                         <p className="text-sm font-semibold text-white">
-//                           Recorded class
-//                         </p>
-
-//                         <p className="mt-1 text-xs leading-5 text-gray-400">
-//                           Add the URL of the
-//                           recorded class so
-//                           students can watch
-//                           the recording from
-//                           their Learning
-//                           dashboard.
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-//               )}
-
-//               {/* PDF / EXTERNAL */}
-
-//               {(lessonForm.lesson_type ===
-//                 "PDF" ||
-//                 lessonForm.lesson_type ===
-//                   "EXTERNAL") && (
-//                 <Field
-//                   label={
-//                     lessonForm.lesson_type ===
-//                     "PDF"
-//                       ? "PDF URL"
-//                       : "External URL"
-//                   }
-//                 >
-//                   <input
-//                     type="url"
-//                     value={
-//                       lessonForm.resource_url
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         resource_url:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="https://..."
-//                   />
-//                 </Field>
-//               )}
-
-//               {/* TEXT */}
-
-//               {lessonForm.lesson_type ===
-//                 "TEXT" && (
-//                 <Field label="Lesson content">
-//                   <textarea
-//                     value={
-//                       lessonForm.content
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         content:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     rows={8}
-//                     className="input resize-y leading-6"
-//                     placeholder="Write the lesson content here..."
-//                   />
-//                 </Field>
-//               )}
-
-//               {/* LIVE */}
-
-//               {lessonForm.lesson_type ===
-//                 "LIVE" && (
-//                 <Field label="Live session / meeting URL">
-//                   <input
-//                     type="url"
-//                     value={
-//                       lessonForm.resource_url
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         resource_url:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="Zoom / meeting URL"
-//                   />
-//                 </Field>
-//               )}
-
-//               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-//                 <Field label="Duration (minutes)">
-//                   <input
-//                     type="number"
-//                     min="0"
-//                     value={
-//                       lessonForm.duration_minutes
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         duration_minutes:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                     placeholder="Optional"
-//                   />
-//                 </Field>
-
-//                 <Field label="Sort order">
-//                   <input
-//                     type="number"
-//                     min="0"
-//                     value={
-//                       lessonForm.sort_order
-//                     }
-//                     onChange={(event) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         sort_order:
-//                           event.target
-//                             .value,
-//                       })
-//                     }
-//                     className="input"
-//                   />
-//                 </Field>
-
-//                 <div className="space-y-3">
-//                   <Toggle
-//                     label="Published"
-//                     helper="Visible to students"
-//                     checked={
-//                       Number(
-//                         lessonForm.is_published
-//                       ) === 1
-//                     }
-//                     onChange={(value) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         is_published:
-//                           value ? 1 : 0,
-//                       })
-//                     }
-//                   />
-
-//                   <Toggle
-//                     label="Student preview"
-//                     helper="Available before enrollment"
-//                     checked={
-//                       Number(
-//                         lessonForm.is_preview
-//                       ) === 1
-//                     }
-//                     onChange={(value) =>
-//                       setLessonForm({
-//                         ...lessonForm,
-//                         is_preview:
-//                           value ? 1 : 0,
-//                       })
-//                     }
-//                   />
-//                 </div>
-//               </div>
-
-//               <ModalActions
-//                 saving={saving}
-//                 onCancel={() =>
-//                   setLessonModal(null)
-//                 }
-//                 submitLabel={
-//                   lessonModal.mode ===
-//                   "create"
-//                     ? "Save Lesson"
-//                     : "Update Lesson"
-//                 }
-//               />
-//             </form>
-//           </Modal>
-//         )}
 //       </div>
 //     </>
 //   );
 // }
 
 // /* =========================================================
+//    LESSON ROW
+// ========================================================= */
+
+// function LessonRow({ lesson }) {
+//   const type =
+//     lesson?.lesson_type ||
+//     lesson?.type;
+
+//   const lessonType =
+//     normalizeLessonType(type);
+
+//   const title =
+//     lesson?.title ||
+//     "Untitled lesson";
+
+//   const duration =
+//     lesson?.duration_minutes;
+
+//   const isPreview =
+//     Number(lesson?.is_preview) === 1;
+
+//   const isPublished =
+//     Number(lesson?.is_published) === 1;
+
+//   return (
+//     <div
+//       className="flex flex-col gap-3 rounded-xl border p-4 transition hover:border-purple-500/20 sm:flex-row sm:items-center sm:justify-between"
+//       style={{
+//         borderColor: COLORS.border,
+//         background: COLORS.panel2,
+//       }}
+//     >
+//       {/* LEFT */}
+
+//       <div className="flex min-w-0 items-center gap-3">
+//         <GripVertical
+//           size={16}
+//           className="shrink-0 text-white/20"
+//         />
+
+//         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-300">
+//           {getLessonIcon(type)}
+//         </div>
+
+//         <div className="min-w-0">
+//           <p className="truncate text-sm font-semibold text-white">
+//             {title}
+//           </p>
+
+//           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+//             <span
+//               className="text-purple-300"
+//             >
+//               {getLessonTypeLabel(type)}
+//             </span>
+
+//             {duration !==
+//               null &&
+//               duration !==
+//                 undefined &&
+//               duration !==
+//                 "" && (
+//                 <span
+//                   style={{
+//                     color:
+//                       COLORS.muted,
+//                   }}
+//                 >
+//                   • {duration} min
+//                 </span>
+//               )}
+
+//             {isPreview && (
+//               <span
+//                 style={{
+//                   color:
+//                     COLORS.muted,
+//                 }}
+//               >
+//                 • Preview
+//               </span>
+//             )}
+
+//             <span
+//               style={{
+//                 color:
+//                   COLORS.muted,
+//               }}
+//             >
+//               •{" "}
+//               {isPublished
+//                 ? "Published"
+//                 : "Draft"}
+//             </span>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* RIGHT */}
+
+//       <div className="flex items-center gap-2 pl-12 sm:pl-0">
+//         {lessonType ===
+//           "YOUTUBE" &&
+//           lesson?.youtube_url && (
+//             <a
+//               href={
+//                 lesson.youtube_url
+//               }
+//               target="_blank"
+//               rel="noreferrer"
+//               className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-purple-300 transition hover:bg-white/5"
+//             >
+//               <ExternalLink
+//                 size={14}
+//               />
+//               Open
+//             </a>
+//           )}
+
+//         {[
+//           "VIDEO",
+//           "RECORDING",
+//           "PDF",
+//           "LIVE",
+//           "EXTERNAL",
+//         ].includes(
+//           lessonType
+//         ) &&
+//           lesson?.resource_url && (
+//             <a
+//               href={
+//                 lesson.resource_url
+//               }
+//               target="_blank"
+//               rel="noreferrer"
+//               className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-purple-300 transition hover:bg-white/5"
+//             >
+//               <ExternalLink
+//                 size={14}
+//               />
+//               Open
+//             </a>
+//           )}
+
+//         <span className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">
+//           View only
+//         </span>
+//       </div>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
 //    STAT
-//    ========================================================= */
+// ========================================================= */
 
 // function Stat({ label, value }) {
 //   return (
@@ -2138,194 +1135,6 @@
 //   );
 // }
 
-// /* =========================================================
-//    FIELD
-//    ========================================================= */
-
-// function Field({
-//   label,
-//   required = false,
-//   optional = false,
-//   children,
-// }) {
-//   return (
-//     <label className="block text-sm">
-//       <span className="mb-2 block font-medium text-gray-200">
-//         {label}
-
-//         {required && (
-//           <span className="ml-1 text-pink-400">
-//             *
-//           </span>
-//         )}
-
-//         {optional && (
-//           <span className="ml-1 text-xs font-normal text-gray-500">
-//             (Optional)
-//           </span>
-//         )}
-//       </span>
-
-//       {children}
-//     </label>
-//   );
-// }
-
-// /* =========================================================
-//    TOGGLE
-//    ========================================================= */
-
-// function Toggle({
-//   label,
-//   helper,
-//   checked,
-//   onChange,
-// }) {
-//   return (
-//     <label className="flex min-h-[64px] cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-[#181820] px-4 py-3 transition hover:border-purple-500/40">
-//       <div className="min-w-0">
-//         <p className="text-sm font-medium text-white">
-//           {label}
-//         </p>
-
-//         {helper && (
-//           <p className="mt-1 text-xs text-gray-500">
-//             {helper}
-//           </p>
-//         )}
-//       </div>
-
-//       <button
-//         type="button"
-//         role="switch"
-//         aria-checked={checked}
-//         onClick={() =>
-//           onChange(!checked)
-//         }
-//         className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-//           checked
-//             ? "bg-purple-500"
-//             : "bg-white/10"
-//         }`}
-//       >
-//         <span
-//           className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
-//             checked
-//               ? "left-6"
-//               : "left-1"
-//           }`}
-//         />
-//       </button>
-//     </label>
-//   );
-// }
-
-// /* =========================================================
-//    MODAL
-//    ========================================================= */
-
-// function Modal({
-//   title,
-//   subtitle,
-//   onClose,
-//   children,
-//   wide = false,
-// }) {
-//   return (
-//     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-//       <div
-//         className={`w-full ${
-//           wide
-//             ? "max-w-3xl"
-//             : "max-w-xl"
-//         } max-h-[92vh] overflow-hidden rounded-2xl border shadow-[0_25px_80px_rgba(0,0,0,0.65)]`}
-//         style={{
-//           borderColor: COLORS.border,
-//           background: COLORS.panel,
-//         }}
-//       >
-//         <div
-//           className="flex items-center justify-between border-b px-6 py-5"
-//           style={{
-//             borderColor:
-//               COLORS.border,
-//           }}
-//         >
-//           <div className="min-w-0">
-//             <h2 className="text-xl font-semibold text-white">
-//               {title}
-//             </h2>
-
-//             {subtitle && (
-//               <p className="mt-1 text-sm text-gray-500">
-//                 {subtitle}
-//               </p>
-//             )}
-//           </div>
-
-//           <button
-//             type="button"
-//             onClick={onClose}
-//             className="ml-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-white/10 hover:text-white"
-//             title="Close"
-//           >
-//             <X size={20} />
-//           </button>
-//         </div>
-
-//         <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-6 py-6">
-//           {children}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    MODAL ACTIONS
-//    ========================================================= */
-
-// function ModalActions({
-//   saving,
-//   onCancel,
-//   submitLabel = "Save",
-// }) {
-//   return (
-//     <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-5">
-//       <button
-//         type="button"
-//         onClick={onCancel}
-//         disabled={saving}
-//         className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-gray-300 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-//       >
-//         Cancel
-//       </button>
-
-//       <button
-//         type="submit"
-//         disabled={saving}
-//         className="inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-//         style={{
-//           background:
-//             `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.pink})`,
-//         }}
-//       >
-//         {saving ? (
-//           <Loader2
-//             size={16}
-//             className="animate-spin"
-//           />
-//         ) : (
-//           <Save size={16} />
-//         )}
-
-//         {saving
-//           ? "Saving..."
-//           : submitLabel}
-//       </button>
-//     </div>
-//   );
-// }
 
 
 import { useEffect, useMemo, useState } from "react";
@@ -2342,20 +1151,45 @@ import {
   GripVertical,
   Loader2,
   Radio,
+  Users,
+  BarChart3,
+  Pencil,
+  Trash2,
+  Plus,
+  Eye,
+  PlayCircle,
   Video,
+  CheckCircle2,
+  Clock3,
+  CalendarDays,
 } from "lucide-react";
 
 import API from "../services/api";
+
+/* =========================================================
+   COLORS
+========================================================= */
 
 const COLORS = {
   bg: "#07080D",
   panel: "#10121A",
   panel2: "#15121F",
+  panel3: "#191523",
   border: "rgba(255,255,255,.10)",
+  borderStrong: "rgba(180,70,255,.35)",
   purple: "#9B2CFF",
   pink: "#FF2AAE",
+  purpleLight: "#C58BFF",
   text: "#FFFFFF",
   muted: "#AAA5B8",
+  success: "#18D89D",
+  successBg: "rgba(24,216,157,.12)",
+  blue: "#4CA8FF",
+  blueBg: "rgba(76,168,255,.13)",
+  orange: "#FFB84D",
+  orangeBg: "rgba(255,184,77,.13)",
+  red: "#FF5C6C",
+  redBg: "rgba(255,92,108,.12)",
 };
 
 /* =========================================================
@@ -2430,68 +1264,26 @@ const normalizeLessonType = (value) => {
     return "VIDEO";
   }
 
-  if (type === "RECORDING") {
-    return "RECORDING";
-  }
-
-  if (type === "YOUTUBE") {
-    return "YOUTUBE";
-  }
-
-  if (type === "PDF") {
-    return "PDF";
-  }
-
-  if (type === "TEXT") {
-    return "TEXT";
-  }
-
-  if (type === "LIVE") {
-    return "LIVE";
-  }
-
-  if (type === "EXTERNAL") {
-    return "EXTERNAL";
-  }
+  if (type === "RECORDING") return "RECORDING";
+  if (type === "YOUTUBE") return "YOUTUBE";
+  if (type === "PDF") return "PDF";
+  if (type === "TEXT") return "TEXT";
+  if (type === "LIVE") return "LIVE";
+  if (type === "EXTERNAL") return "EXTERNAL";
 
   return "YOUTUBE";
 };
 
-const getLessonIcon = (type) => {
-  switch (normalizeLessonType(type)) {
-    case "YOUTUBE":
-      return <Video size={16} />;
-
-    case "VIDEO":
-      return <Video size={16} />;
-
-    case "RECORDING":
-      return <Video size={16} />;
-
-    case "PDF":
-      return <FileText size={16} />;
-
-    case "TEXT":
-      return <FileText size={16} />;
-
-    case "LIVE":
-      return <Radio size={16} />;
-
-    default:
-      return <ExternalLink size={16} />;
-  }
-};
-
 const getLessonTypeLabel = (type) => {
   switch (normalizeLessonType(type)) {
-    case "YOUTUBE":
-      return "YouTube";
-
     case "VIDEO":
       return "Video";
 
     case "RECORDING":
       return "Recording";
+
+    case "YOUTUBE":
+      return "YouTube";
 
     case "PDF":
       return "PDF";
@@ -2510,9 +1302,141 @@ const getLessonTypeLabel = (type) => {
   }
 };
 
-/* =========================================================
-   ADMIN AUTH
-========================================================= */
+const getLessonIcon = (type) => {
+  switch (normalizeLessonType(type)) {
+    case "VIDEO":
+    case "RECORDING":
+    case "YOUTUBE":
+      return <Video size={15} />;
+
+    case "PDF":
+    case "TEXT":
+      return <FileText size={15} />;
+
+    case "LIVE":
+      return <Radio size={15} />;
+
+    case "EXTERNAL":
+      return <ExternalLink size={15} />;
+
+    default:
+      return <BookOpen size={15} />;
+  }
+};
+
+const getLessonTypeStyle = (type) => {
+  switch (normalizeLessonType(type)) {
+    case "VIDEO":
+    case "RECORDING":
+      return {
+        background: "rgba(255,55,90,.12)",
+        color: "#FF5570",
+      };
+
+    case "YOUTUBE":
+      return {
+        background: "rgba(255,55,90,.12)",
+        color: "#FF5570",
+      };
+
+    case "TEXT":
+      return {
+        background: "rgba(67,145,255,.13)",
+        color: "#65A9FF",
+      };
+
+    case "PDF":
+      return {
+        background: "rgba(155,44,255,.14)",
+        color: "#C27BFF",
+      };
+
+    case "LIVE":
+      return {
+        background: "rgba(155,44,255,.16)",
+        color: "#C27BFF",
+      };
+
+    case "EXTERNAL":
+      return {
+        background: "rgba(40,150,255,.12)",
+        color: "#63B2FF",
+      };
+
+    default:
+      return {
+        background: "rgba(255,255,255,.08)",
+        color: COLORS.muted,
+      };
+  }
+};
+
+const getLessonDuration = (lesson) => {
+  const value =
+    lesson?.duration ??
+    lesson?.duration_minutes ??
+    lesson?.minutes ??
+    null;
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "-";
+  }
+
+  const number = Number(value);
+
+  if (!Number.isNaN(number)) {
+    return `${number} min`;
+  }
+
+  return String(value);
+};
+
+const getPublishState = (lesson) => {
+  if (Number(lesson?.is_published) === 1) {
+    return {
+      label: "Published",
+      background: COLORS.successBg,
+      color: COLORS.success,
+    };
+  }
+
+  if (
+    String(lesson?.status || "").toUpperCase() ===
+    "SCHEDULED"
+  ) {
+    return {
+      label: "Scheduled",
+      background: COLORS.blueBg,
+      color: COLORS.blue,
+    };
+  }
+
+  return {
+    label: "Draft",
+    background: "rgba(255,255,255,.07)",
+    color: "#A8A4B2",
+  };
+};
+
+const getSectionPublishState = (section) => {
+  if (Number(section?.is_published) === 1) {
+    return {
+      label: "Published",
+      background: COLORS.successBg,
+      color: COLORS.success,
+    };
+  }
+
+  return {
+    label: "Draft",
+    background: "rgba(255,255,255,.07)",
+    color: "#A8A4B2",
+  };
+};
 
 const getAdminConfig = () => {
   const adminToken = localStorage.getItem("adminToken");
@@ -2527,34 +1451,114 @@ const getAdminConfig = () => {
 };
 
 /* =========================================================
-   INPUT STYLES
+   SMALL UI COMPONENTS
 ========================================================= */
 
-function InputStyles() {
+function StatusBadge({ children, type = "success" }) {
+  const styles =
+    type === "success"
+      ? {
+          background: COLORS.successBg,
+          color: COLORS.success,
+        }
+      : type === "blue"
+      ? {
+          background: COLORS.blueBg,
+          color: COLORS.blue,
+        }
+      : {
+          background: "rgba(255,255,255,.07)",
+          color: COLORS.muted,
+        };
+
   return (
-    <style>{`
-      .admin-lms-scrollbar::-webkit-scrollbar {
-        width: 7px;
-      }
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+      style={styles}
+    >
+      {children}
+    </span>
+  );
+}
 
-      .admin-lms-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-      }
+function LessonTypeBadge({ type }) {
+  const style = getLessonTypeStyle(type);
 
-      .admin-lms-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,.12);
-        border-radius: 999px;
-      }
+  return (
+    <span
+      className="inline-flex min-w-[86px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
+      style={style}
+    >
+      {getLessonIcon(type)}
+      {getLessonTypeLabel(type)}
+    </span>
+  );
+}
 
-      .admin-lms-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,.20);
-      }
-    `}</style>
+function ActionButton({
+  icon,
+  label,
+  onClick,
+  danger = false,
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-lg transition hover:bg-white/10"
+      style={{
+        color: danger ? COLORS.red : "#D9D4E4",
+      }}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+}) {
+  return (
+    <div
+      className="rounded-2xl border p-5"
+      style={{
+        borderColor: COLORS.border,
+        background:
+          "linear-gradient(145deg, rgba(155,44,255,.08), rgba(255,255,255,.015))",
+      }}
+    >
+      <div
+        className="text-xs font-medium uppercase tracking-[0.14em]"
+        style={{ color: COLORS.muted }}
+      >
+        {label}
+      </div>
+
+      <div className="mt-3 flex items-end justify-between">
+        <div className="text-3xl font-bold">
+          {value}
+        </div>
+
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(155,44,255,.18), rgba(255,42,174,.12))",
+            color: COLORS.purpleLight,
+          }}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
   );
 }
 
 /* =========================================================
-   MAIN COMPONENT
+   MAIN
 ========================================================= */
 
 export default function AdminLMS() {
@@ -2566,12 +1570,17 @@ export default function AdminLMS() {
   const [sections, setSections] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [classesLoading, setClassesLoading] = useState(false);
+  const [classesLoading, setClassesLoading] =
+    useState(false);
 
-  const [openSections, setOpenSections] = useState({});
+  const [openSections, setOpenSections] =
+    useState({});
+
+  const [activeTab, setActiveTab] =
+    useState("content");
 
   /* =======================================================
-     COURSE TITLE
+     CLASS TITLE
   ======================================================= */
 
   const classTitle = useMemo(() => {
@@ -2584,7 +1593,7 @@ export default function AdminLMS() {
   }, [course]);
 
   /* =======================================================
-     LOAD ADMIN CLASSES
+     LOAD CLASSES
   ======================================================= */
 
   const loadClasses = async () => {
@@ -2592,18 +1601,14 @@ export default function AdminLMS() {
     setLoading(true);
 
     try {
-      const config = getAdminConfig();
-
       const response = await API.get(
         "/lms/admin/classes",
-        config
+        getAdminConfig()
       );
 
-      const normalized = normalizeClasses(
-        response.data
+      setClasses(
+        normalizeClasses(response?.data)
       );
-
-      setClasses(normalized);
     } catch (error) {
       console.error(
         "Admin LMS classes load error:",
@@ -2623,7 +1628,7 @@ export default function AdminLMS() {
   };
 
   /* =======================================================
-     LOAD ADMIN CURRICULUM
+     LOAD CURRICULUM
   ======================================================= */
 
   const loadCurriculum = async () => {
@@ -2635,16 +1640,13 @@ export default function AdminLMS() {
     setLoading(true);
 
     try {
-      const config = getAdminConfig();
-
       const response = await API.get(
         `/lms/admin/classes/${classId}/curriculum`,
-        config
+        getAdminConfig()
       );
 
-      const normalized = normalizeCurriculum(
-        response.data
-      );
+      const normalized =
+        normalizeCurriculum(response?.data);
 
       setCourse(normalized.course);
       setSections(normalized.sections);
@@ -2695,7 +1697,7 @@ export default function AdminLMS() {
   }, [classId]);
 
   /* =======================================================
-     TOGGLE SECTION
+     SECTION TOGGLE
   ======================================================= */
 
   const toggleSection = (id) => {
@@ -2706,7 +1708,23 @@ export default function AdminLMS() {
   };
 
   /* =======================================================
-     STATISTICS
+     UI ONLY ACTIONS
+  ======================================================= */
+
+  const uiAction = (message) => {
+    toast(message, {
+      icon: "ℹ️",
+      style: {
+        background: "#17131F",
+        color: "#fff",
+        border:
+          "1px solid rgba(155,44,255,.35)",
+      },
+    });
+  };
+
+  /* =======================================================
+     STATS
   ======================================================= */
 
   const totalLessons = sections.reduce(
@@ -2728,39 +1746,82 @@ export default function AdminLMS() {
         total +
         (section?.lessons || []).filter(
           (lesson) =>
-            Number(lesson?.is_published) === 1
+            Number(lesson?.is_published) ===
+            1
         ).length,
       0
     );
 
+  const studentCount =
+    course?.students_count ??
+    course?.students ??
+    course?.enrolled_students ??
+    0;
+
   /* =======================================================
-     CLASS SELECTION
+     CLASS LIST
   ======================================================= */
 
   if (!classId) {
     return (
       <>
-        <InputStyles />
+        <style>{`
+          .admin-lms-scrollbar::-webkit-scrollbar {
+            width: 7px;
+          }
+
+          .admin-lms-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          .admin-lms-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.12);
+            border-radius: 999px;
+          }
+
+          .admin-lms-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,.22);
+          }
+
+          .admin-lms-card {
+            transition:
+              transform .2s ease,
+              border-color .2s ease,
+              box-shadow .2s ease;
+          }
+
+          .admin-lms-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(155,44,255,.38) !important;
+            box-shadow:
+              0 18px 50px rgba(0,0,0,.28),
+              0 0 30px rgba(155,44,255,.08);
+          }
+        `}</style>
 
         <div
-          className="min-h-screen w-full text-white"
+          className="admin-lms-scrollbar min-h-screen w-full overflow-y-auto text-white"
           style={{
             background: COLORS.bg,
           }}
         >
-          <div className="mx-auto max-w-7xl space-y-7 p-6">
+          <div className="mx-auto max-w-[1450px] space-y-8 p-6 lg:p-8">
+
             {/* HEADER */}
 
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
-                <BookOpen size={15} />
-
+              <div
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em]"
+                style={{
+                  color: COLORS.purpleLight,
+                }}
+              >
+                <BookOpen size={16} />
                 Admin LMS
               </div>
 
-              <h1 className="mt-2 text-3xl font-bold tracking-tight">
-                Learning Management
-                System
+              <h1 className="mt-3 text-3xl font-bold tracking-tight lg:text-4xl">
+                Learning Management System
               </h1>
 
               <p
@@ -2769,8 +1830,8 @@ export default function AdminLMS() {
                   color: COLORS.muted,
                 }}
               >
-                Select a class to view
-                its LMS curriculum,
+                Select a class to view its
+                complete LMS curriculum,
                 sections, lessons and
                 learning content.
               </p>
@@ -2780,17 +1841,16 @@ export default function AdminLMS() {
 
             {classesLoading ? (
               <div
-                className="rounded-2xl border p-16 text-center"
+                className="rounded-2xl border p-20 text-center"
                 style={{
-                  borderColor:
-                    COLORS.border,
-                  background:
-                    COLORS.panel,
+                  borderColor: COLORS.border,
+                  background: COLORS.panel,
                 }}
               >
                 <Loader2
-                  className="mx-auto animate-spin text-purple-400"
-                  size={36}
+                  className="mx-auto animate-spin"
+                  size={38}
+                  color={COLORS.purpleLight}
                 />
 
                 <p
@@ -2799,24 +1859,21 @@ export default function AdminLMS() {
                     color: COLORS.muted,
                   }}
                 >
-                  Loading classes...
+                  Loading LMS classes...
                 </p>
               </div>
             ) : classes.length === 0 ? (
-              /* EMPTY */
-
               <div
-                className="rounded-2xl border p-16 text-center"
+                className="rounded-2xl border p-20 text-center"
                 style={{
-                  borderColor:
-                    COLORS.border,
-                  background:
-                    COLORS.panel,
+                  borderColor: COLORS.border,
+                  background: COLORS.panel,
                 }}
               >
                 <BookOpen
-                  className="mx-auto text-purple-400"
-                  size={44}
+                  className="mx-auto"
+                  size={48}
+                  color={COLORS.purpleLight}
                 />
 
                 <h2 className="mt-5 text-xl font-semibold">
@@ -2829,15 +1886,12 @@ export default function AdminLMS() {
                     color: COLORS.muted,
                   }}
                 >
-                  There are currently no
-                  classes available for
-                  the Admin LMS.
+                  No classes are currently
+                  available in the Admin LMS.
                 </p>
               </div>
             ) : (
-              /* CLASS CARDS */
-
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {classes.map((item) => {
                   const id =
                     item?.id ??
@@ -2847,20 +1901,40 @@ export default function AdminLMS() {
                     item?.title ||
                     item?.name ||
                     item?.class_name ||
-                    "Untitled class";
+                    "Untitled Class";
+
+                  const image =
+                    item?.image ||
+                    item?.thumbnail ||
+                    item?.banner_image ||
+                    item?.class_image ||
+                    null;
 
                   const category =
                     item?.category_name ||
                     item?.category ||
-                    item?.subcategory_name ||
                     "Not available";
 
-                  const image =
-                    item?.image_url ||
-                    item?.image ||
-                    item?.thumbnail ||
-                    item?.banner_image ||
-                    null;
+                  const subcategory =
+                    item?.subcategory_name ||
+                    item?.subcategory ||
+                    "Not available";
+
+                  const sectionsCount =
+                    item?.sections ??
+                    item?.section_count ??
+                    0;
+
+                  const lessonsCount =
+                    item?.lessons ??
+                    item?.lesson_count ??
+                    0;
+
+                  const students =
+                    item?.students ??
+                    item?.students_count ??
+                    item?.enrolled_students ??
+                    0;
 
                   return (
                     <button
@@ -2871,7 +1945,7 @@ export default function AdminLMS() {
                           `/admin/lms/${id}`
                         )
                       }
-                      className="group overflow-hidden rounded-2xl border text-left transition hover:-translate-y-1 hover:border-purple-500/50"
+                      className="admin-lms-card overflow-hidden rounded-2xl border text-left"
                       style={{
                         borderColor:
                           COLORS.border,
@@ -2881,29 +1955,51 @@ export default function AdminLMS() {
                     >
                       {/* IMAGE */}
 
-                      <div className="h-44 overflow-hidden bg-[#181820]">
+                      <div
+                        className="relative h-52 w-full overflow-hidden"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #241132, #10121A)",
+                        }}
+                      >
                         {image ? (
                           <img
                             src={image}
                             alt={title}
-                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center">
+                          <div className="flex h-full w-full items-center justify-center">
                             <BookOpen
-                              size={42}
-                              className="text-purple-400"
+                              size={60}
+                              color={
+                                COLORS.purpleLight
+                              }
                             />
                           </div>
                         )}
+
+                        <div
+                          className="absolute inset-x-0 bottom-0 h-24"
+                          style={{
+                            background:
+                              "linear-gradient(to top, rgba(7,8,13,.9), transparent)",
+                          }}
+                        />
+
+                        <div className="absolute right-4 top-4">
+                          <StatusBadge>
+                            Active
+                          </StatusBadge>
+                        </div>
                       </div>
 
                       {/* CONTENT */}
 
                       <div className="p-5">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h2 className="truncate text-lg font-semibold text-white">
+                          <div>
+                            <h2 className="text-lg font-bold">
                               {title}
                             </h2>
 
@@ -2915,21 +2011,103 @@ export default function AdminLMS() {
                               }}
                             >
                               {category}
+                              {"  "}
+                              <span className="opacity-40">
+                                |
+                              </span>
+                              {"  "}
+                              {subcategory}
                             </p>
                           </div>
 
                           <ChevronRight
-                            size={20}
-                            className="shrink-0 text-purple-300 transition group-hover:translate-x-1"
+                            size={21}
+                            color={
+                              COLORS.purpleLight
+                            }
                           />
                         </div>
 
-                        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-                          <span className="text-xs text-white/45">
+                        <div
+                          className="mt-5 grid grid-cols-3 gap-2 border-t pt-4"
+                          style={{
+                            borderColor:
+                              COLORS.border,
+                          }}
+                        >
+                          <div>
+                            <div
+                              className="text-xs"
+                              style={{
+                                color:
+                                  COLORS.muted,
+                              }}
+                            >
+                              Sections
+                            </div>
+
+                            <div className="mt-1 font-semibold">
+                              {sectionsCount}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div
+                              className="text-xs"
+                              style={{
+                                color:
+                                  COLORS.muted,
+                              }}
+                            >
+                              Lessons
+                            </div>
+
+                            <div className="mt-1 font-semibold">
+                              {lessonsCount}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div
+                              className="text-xs"
+                              style={{
+                                color:
+                                  COLORS.muted,
+                              }}
+                            >
+                              Students
+                            </div>
+
+                            <div className="mt-1 font-semibold">
+                              {students}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          className="mt-5 flex items-center justify-between border-t pt-4"
+                          style={{
+                            borderColor:
+                              COLORS.border,
+                          }}
+                        >
+                          <span
+                            className="text-sm"
+                            style={{
+                              color:
+                                COLORS.muted,
+                            }}
+                          >
                             View curriculum
                           </span>
 
-                          <span className="text-sm font-semibold text-purple-300">
+                          <span
+                            className="font-semibold"
+                            style={{
+                              color:
+                                COLORS.purpleLight,
+                            }}
+                          >
                             Open LMS
                           </span>
                         </div>
@@ -2946,133 +2124,426 @@ export default function AdminLMS() {
   }
 
   /* =======================================================
-     ADMIN CLASS LMS
+     CURRICULUM DETAIL
   ======================================================= */
 
   return (
     <>
-      <InputStyles />
+      <style>{`
+        .admin-lms-detail-scrollbar::-webkit-scrollbar {
+          width: 7px;
+        }
+
+        .admin-lms-detail-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .admin-lms-detail-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,.12);
+          border-radius: 999px;
+        }
+
+        .admin-lms-detail-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255,255,255,.22);
+        }
+
+        .admin-lms-lesson {
+          transition: background .15s ease;
+        }
+
+        .admin-lms-lesson:hover {
+          background: rgba(255,255,255,.025);
+        }
+
+        .admin-lms-section {
+          box-shadow: 0 15px 45px rgba(0,0,0,.18);
+        }
+
+        .admin-lms-tab {
+          transition:
+            background .2s ease,
+            color .2s ease;
+        }
+      `}</style>
 
       <div
-        className="min-h-screen w-full text-white"
+        className="admin-lms-detail-scrollbar min-h-screen w-full overflow-y-auto text-white"
         style={{
           background: COLORS.bg,
         }}
       >
-        <div className="mx-auto max-w-7xl space-y-6 p-6">
-          {/* =================================================
-              HEADER
-          ================================================= */}
+        <div className="mx-auto max-w-[1450px] space-y-6 p-5 lg:p-7">
 
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
+          {/* TOP HEADER */}
+
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
               <button
                 type="button"
                 onClick={() =>
                   navigate("/admin/lms")
                 }
-                className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition hover:bg-white/5"
+                className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition hover:bg-white/10"
                 style={{
-                  borderColor:
-                    COLORS.border,
+                  borderColor: COLORS.border,
+                  background: COLORS.panel,
                 }}
-                title="Back to LMS classes"
               >
-                <ArrowLeft size={19} />
+                <ArrowLeft size={20} />
               </button>
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
-                  <BookOpen size={14} />
-
+              <div>
+                <div
+                  className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em]"
+                  style={{
+                    color: COLORS.purpleLight,
+                  }}
+                >
+                  <BookOpen size={15} />
                   Admin LMS
                 </div>
 
-                <h1 className="mt-1 truncate text-2xl font-bold sm:text-3xl">
+                <h1 className="mt-2 text-3xl font-bold lg:text-4xl">
                   {classTitle}
                 </h1>
 
                 <p
-                  className="mt-1 max-w-2xl text-sm leading-6"
+                  className="mt-2 text-sm"
                   style={{
                     color: COLORS.muted,
                   }}
                 >
-                  View the complete
-                  curriculum, sections and
-                  lessons for this class.
+                  Manage and monitor the
+                  complete curriculum for
+                  this class.
                 </p>
               </div>
             </div>
 
-            <div
-              className="rounded-xl border px-4 py-3 text-xs"
+            <button
+              type="button"
+              onClick={() =>
+                uiAction(
+                  "Admin view is ready. Management actions will be connected next."
+                )
+              }
+              className="rounded-xl border px-5 py-3 text-sm font-semibold transition hover:bg-white/10"
               style={{
                 borderColor:
-                  "rgba(155,44,255,.25)",
-                background:
-                  "rgba(155,44,255,.08)",
+                  COLORS.borderStrong,
+                color:
+                  COLORS.purpleLight,
               }}
             >
-              <span className="text-purple-300">
-                Admin View
-              </span>
-            </div>
+              Admin View
+            </button>
           </div>
 
-          {/* =================================================
-              SUMMARY
-          ================================================= */}
+          {/* CLASS SUMMARY */}
 
           <div
-            className="rounded-2xl border p-5"
+            className="overflow-hidden rounded-3xl border"
             style={{
               borderColor:
-                "rgba(155,44,255,.28)",
+                "rgba(155,44,255,.24)",
               background:
-                "linear-gradient(135deg, rgba(155,44,255,.12), rgba(255,42,174,.05) 45%, #10121A 100%)",
+                "linear-gradient(135deg, rgba(35,14,51,.85), rgba(15,17,25,.95))",
             }}
           >
-            <div className="grid gap-4 md:grid-cols-4">
-              <Stat
-                label="Sections"
-                value={sections.length}
-              />
+            <div className="flex flex-col gap-6 p-5 lg:flex-row lg:items-center lg:p-6">
 
-              <Stat
-                label="Lessons"
-                value={totalLessons}
-              />
+              {/* IMAGE */}
 
-              <Stat
-                label="Published Sections"
-                value={publishedSections}
-              />
+              <div
+                className="h-32 w-full shrink-0 overflow-hidden rounded-2xl lg:w-56"
+                style={{
+                  background:
+                    "linear-gradient(135deg,#2A123D,#11131C)",
+                }}
+              >
+                {course?.image ||
+                course?.thumbnail ||
+                course?.banner_image ||
+                course?.class_image ? (
+                  <img
+                    src={
+                      course?.image ||
+                      course?.thumbnail ||
+                      course?.banner_image ||
+                      course?.class_image
+                    }
+                    alt={classTitle}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <BookOpen
+                      size={50}
+                      color={
+                        COLORS.purpleLight
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
-              <Stat
-                label="Published Lessons"
-                value={publishedLessons}
-              />
+              {/* DETAILS */}
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold">
+                    {classTitle}
+                  </h2>
+
+                  <StatusBadge>
+                    <CheckCircle2
+                      size={13}
+                    />
+                    Active
+                  </StatusBadge>
+                </div>
+
+                <div
+                  className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm"
+                  style={{
+                    color: COLORS.muted,
+                  }}
+                >
+                  <span>
+                    Category:{" "}
+                    <strong className="text-white">
+                      {course?.category_name ||
+                        course?.category ||
+                        "Not available"}
+                    </strong>
+                  </span>
+
+                  <span className="opacity-30">
+                    |
+                  </span>
+
+                  <span>
+                    Subcategory:{" "}
+                    <strong className="text-white">
+                      {course?.subcategory_name ||
+                        course?.subcategory ||
+                        "Not available"}
+                    </strong>
+                  </span>
+                </div>
+
+                <div
+                  className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm"
+                  style={{
+                    color: COLORS.muted,
+                  }}
+                >
+                  <span>
+                    Total Sections:{" "}
+                    <strong className="text-white">
+                      {sections.length}
+                    </strong>
+                  </span>
+
+                  <span>
+                    Total Lessons:{" "}
+                    <strong className="text-white">
+                      {totalLessons}
+                    </strong>
+                  </span>
+
+                  <span>
+                    Students Enrolled:{" "}
+                    <strong className="text-white">
+                      {studentCount}
+                    </strong>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* =================================================
-              LOADING
-          ================================================= */}
+          {/* STATS */}
 
-          {loading ? (
-            <div
-              className="rounded-2xl border p-14 text-center"
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatCard
+              icon={<BookOpen size={20} />}
+              label="Sections"
+              value={sections.length}
+            />
+
+            <StatCard
+              icon={<FileText size={20} />}
+              label="Lessons"
+              value={totalLessons}
+            />
+
+            <StatCard
+              icon={<CheckCircle2 size={20} />}
+              label="Published Lessons"
+              value={publishedLessons}
+            />
+
+            <StatCard
+              icon={<Users size={20} />}
+              label="Students"
+              value={studentCount}
+            />
+          </div>
+
+          {/* TABS + ADD SECTION */}
+
+          <div className="flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-center lg:justify-between"
+            style={{
+              borderColor: COLORS.border,
+            }}
+          >
+            <div className="flex flex-wrap gap-2">
+              {[
+                {
+                  key: "content",
+                  label: "Content",
+                  icon: <BookOpen size={17} />,
+                },
+                {
+                  key: "students",
+                  label: "Students",
+                  icon: <Users size={17} />,
+                },
+                {
+                  key: "progress",
+                  label: "Progress",
+                  icon: <BarChart3 size={17} />,
+                },
+                {
+                  key: "analytics",
+                  label: "Analytics",
+                  icon: <BarChart3 size={17} />,
+                },
+              ].map((tab) => {
+                const active =
+                  activeTab === tab.key;
+
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.key);
+
+                      if (
+                        tab.key !== "content"
+                      ) {
+                        uiAction(
+                          `${tab.label} UI is ready for the next implementation step.`
+                        );
+                      }
+                    }}
+                    className="admin-lms-tab flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
+                    style={{
+                      background: active
+                        ? "linear-gradient(135deg, rgba(155,44,255,.28), rgba(255,42,174,.18))"
+                        : "transparent",
+                      color: active
+                        ? COLORS.purpleLight
+                        : "#D5D0DE",
+                      border: active
+                        ? "1px solid rgba(155,44,255,.30)"
+                        : "1px solid transparent",
+                    }}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                uiAction(
+                  "Add Section UI is ready. CRUD will be connected next."
+                )
+              }
+              className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white"
               style={{
-                borderColor:
-                  COLORS.border,
                 background:
-                  COLORS.panel,
+                  "linear-gradient(135deg,#9B2CFF,#FF2AAE)",
+                boxShadow:
+                  "0 10px 30px rgba(155,44,255,.20)",
+              }}
+            >
+              <Plus size={18} />
+              Add Section
+            </button>
+          </div>
+
+          {/* NON-CONTENT TABS */}
+
+          {activeTab !== "content" ? (
+            <div
+              className="rounded-3xl border p-16 text-center"
+              style={{
+                borderColor: COLORS.border,
+                background: COLORS.panel,
+              }}
+            >
+              {activeTab === "students" ? (
+                <Users
+                  className="mx-auto"
+                  size={52}
+                  color={COLORS.purpleLight}
+                />
+              ) : activeTab ===
+                "progress" ? (
+                <BarChart3
+                  className="mx-auto"
+                  size={52}
+                  color={COLORS.purpleLight}
+                />
+              ) : (
+                <BarChart3
+                  className="mx-auto"
+                  size={52}
+                  color={COLORS.purpleLight}
+                />
+              )}
+
+              <h2 className="mt-5 text-xl font-bold">
+                {activeTab === "students"
+                  ? "Students"
+                  : activeTab ===
+                    "progress"
+                  ? "Learning Progress"
+                  : "Analytics"}
+              </h2>
+
+              <p
+                className="mx-auto mt-2 max-w-xl text-sm leading-6"
+                style={{
+                  color: COLORS.muted,
+                }}
+              >
+                The {activeTab} section
+                will use the same Admin LMS
+                design and will be connected
+                to the backend after the UI
+                implementation.
+              </p>
+            </div>
+          ) : loading ? (
+            <div
+              className="rounded-3xl border p-20 text-center"
+              style={{
+                borderColor: COLORS.border,
+                background: COLORS.panel,
               }}
             >
               <Loader2
-                className="mx-auto animate-spin text-purple-400"
-                size={34}
+                className="mx-auto animate-spin"
+                size={38}
+                color={COLORS.purpleLight}
               />
 
               <p
@@ -3085,30 +2556,25 @@ export default function AdminLMS() {
               </p>
             </div>
           ) : sections.length === 0 ? (
-            /* =================================================
-               EMPTY CURRICULUM
-            ================================================= */
-
             <div
-              className="rounded-2xl border p-14 text-center"
+              className="rounded-3xl border p-20 text-center"
               style={{
-                borderColor:
-                  COLORS.border,
-                background:
-                  COLORS.panel,
+                borderColor: COLORS.border,
+                background: COLORS.panel,
               }}
             >
               <BookOpen
-                className="mx-auto text-purple-400"
-                size={42}
+                className="mx-auto"
+                size={55}
+                color={COLORS.purpleLight}
               />
 
-              <h2 className="mt-5 text-xl font-semibold">
+              <h2 className="mt-5 text-2xl font-bold">
                 No curriculum found
               </h2>
 
               <p
-                className="mx-auto mt-2 max-w-lg text-sm leading-6"
+                className="mx-auto mt-2 max-w-xl text-sm leading-6"
                 style={{
                   color: COLORS.muted,
                 }}
@@ -3117,27 +2583,53 @@ export default function AdminLMS() {
                 currently have any LMS
                 sections or lessons.
               </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  uiAction(
+                    "Add Section UI is ready."
+                  )
+                }
+                className="mx-auto mt-6 flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+                style={{
+                  background:
+                    "linear-gradient(135deg,#9B2CFF,#FF2AAE)",
+                }}
+              >
+                <Plus size={18} />
+                Add First Section
+              </button>
             </div>
           ) : (
             /* =================================================
-               CURRICULUM
+               SECTIONS
             ================================================= */
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               {sections.map(
-                (section, index) => {
+                (section, sectionIndex) => {
+                  const sectionId =
+                    section?.id ??
+                    `section-${sectionIndex}`;
+
                   const isOpen =
                     openSections[
-                      section.id
+                      sectionId
                     ] !== false;
 
                   const lessons =
-                    section.lessons || [];
+                    section?.lessons || [];
+
+                  const sectionState =
+                    getSectionPublishState(
+                      section
+                    );
 
                   return (
-                    <section
-                      key={section.id}
-                      className="overflow-hidden rounded-2xl border"
+                    <div
+                      key={sectionId}
+                      className="admin-lms-section overflow-hidden rounded-2xl border"
                       style={{
                         borderColor:
                           COLORS.border,
@@ -3145,321 +2637,470 @@ export default function AdminLMS() {
                           COLORS.panel,
                       }}
                     >
-                      {/* =====================================
-                          SECTION HEADER
-                      ===================================== */}
+                      {/* SECTION HEADER */}
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleSection(
-                            section.id
-                          )
-                        }
-                        className="flex w-full flex-col gap-4 p-5 text-left transition hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between"
+                      <div
+                        className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.012))",
+                        }}
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          {isOpen ? (
-                            <ChevronDown
-                              size={19}
-                              className="shrink-0"
-                            />
-                          ) : (
-                            <ChevronRight
-                              size={19}
-                              className="shrink-0"
-                            />
-                          )}
-
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 text-sm font-bold text-purple-300">
-                            {index + 1}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              toggleSection(
+                                sectionId
+                              )
+                            }
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition hover:bg-white/10"
+                          >
+                            {isOpen ? (
+                              <ChevronDown
+                                size={19}
+                              />
+                            ) : (
+                              <ChevronRight
+                                size={19}
+                              />
+                            )}
+                          </button>
 
                           <div className="min-w-0">
-                            <p className="truncate font-semibold">
-                              {section.title ||
-                                "Untitled section"}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="truncate text-lg font-bold">
+                                Section{" "}
+                                {sectionIndex +
+                                  1}
+                                :{" "}
+                                {section?.title ||
+                                  section?.name ||
+                                  "Untitled Section"}
+                              </h3>
 
-                            <p
-                              className="mt-1 text-xs"
+                              <span
+                                className="rounded-full px-2.5 py-1 text-[10px] font-semibold"
+                                style={{
+                                  background:
+                                    sectionState.background,
+                                  color:
+                                    sectionState.color,
+                                }}
+                              >
+                                {
+                                  sectionState.label
+                                }
+                              </span>
+                            </div>
+
+                            <div
+                              className="mt-1 flex flex-wrap items-center gap-3 text-xs"
                               style={{
                                 color:
                                   COLORS.muted,
                               }}
                             >
-                              {lessons.length}{" "}
-                              lesson
-                              {lessons.length ===
-                              1
-                                ? ""
-                                : "s"}
+                              <span>
+                                {lessons.length}{" "}
+                                {lessons.length ===
+                                1
+                                  ? "lesson"
+                                  : "lessons"}
+                              </span>
 
-                              {Number(
-                                section.is_published
-                              ) === 1
-                                ? " • Published"
-                                : " • Draft"}
-                            </p>
+                              {section?.description && (
+                                <>
+                                  <span className="opacity-30">
+                                    |
+                                  </span>
+
+                                  <span>
+                                    {
+                                      section.description
+                                    }
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 pl-12 sm:pl-0">
-                          <span className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/50">
-                            Admin
-                            Preview
-                          </span>
-                        </div>
-                      </button>
+                        <div className="flex items-center gap-1 self-end lg:self-auto">
+                          <ActionButton
+                            icon={
+                              <Pencil
+                                size={17}
+                              />
+                            }
+                            label="Edit section"
+                            onClick={() =>
+                              uiAction(
+                                "Edit Section UI is ready."
+                              )
+                            }
+                          />
 
-                      {/* =====================================
-                          SECTION CONTENT
-                      ===================================== */}
+                          <ActionButton
+                            icon={
+                              <Trash2
+                                size={17}
+                              />
+                            }
+                            label="Delete section"
+                            danger
+                            onClick={() =>
+                              uiAction(
+                                "Delete Section UI is ready."
+                              )
+                            }
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              uiAction(
+                                "Add Lesson UI is ready."
+                              )
+                            }
+                            className="ml-2 flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:bg-white/10"
+                            style={{
+                              borderColor:
+                                COLORS.borderStrong,
+                              color:
+                                COLORS.purpleLight,
+                            }}
+                          >
+                            <Plus
+                              size={16}
+                            />
+                            Add Lesson
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* LESSONS */}
 
                       {isOpen && (
                         <div
-                          className="border-t px-4 pb-4"
+                          className="border-t"
                           style={{
                             borderColor:
                               COLORS.border,
                           }}
                         >
-                          {section.description && (
-                            <p
-                              className="py-4 text-sm leading-6"
+                          {lessons.length ===
+                          0 ? (
+                            <div
+                              className="px-6 py-10 text-center"
                               style={{
                                 color:
                                   COLORS.muted,
                               }}
                             >
-                              {
-                                section.description
-                              }
-                            </p>
-                          )}
-
-                          {lessons.length ===
-                          0 ? (
-                            <div
-                              className="rounded-xl border border-dashed p-8 text-center"
-                              style={{
-                                borderColor:
-                                  COLORS.border,
-                              }}
-                            >
-                              <BookOpen
-                                className="mx-auto text-purple-400/70"
+                              <FileText
+                                className="mx-auto opacity-50"
                                 size={30}
                               />
 
-                              <p
-                                className="mt-3 text-sm"
-                                style={{
-                                  color:
-                                    COLORS.muted,
-                                }}
-                              >
+                              <p className="mt-3 text-sm">
                                 No lessons in
                                 this section.
                               </p>
                             </div>
                           ) : (
-                            <div className="space-y-2 pt-4">
-                              {lessons.map(
-                                (lesson) => (
-                                  <LessonRow
+                            lessons.map(
+                              (
+                                lesson,
+                                lessonIndex
+                              ) => {
+                                const publishState =
+                                  getPublishState(
+                                    lesson
+                                  );
+
+                                const lessonTitle =
+                                  lesson?.title ||
+                                  lesson?.name ||
+                                  lesson?.lesson_name ||
+                                  `Lesson ${
+                                    lessonIndex +
+                                    1
+                                  }`;
+
+                                const description =
+                                  lesson?.description ||
+                                  lesson?.short_description ||
+                                  lesson?.summary ||
+                                  "";
+
+                                return (
+                                  <div
                                     key={
-                                      lesson.id
+                                      lesson?.id ??
+                                      `${sectionId}-${lessonIndex}`
                                     }
-                                    lesson={
-                                      lesson
-                                    }
-                                  />
-                                )
-                              )}
-                            </div>
+                                    className="admin-lms-lesson grid items-center gap-4 border-b px-5 py-4 last:border-b-0 lg:grid-cols-[35px_minmax(260px,1fr)_120px_90px_110px_120px]"
+                                    style={{
+                                      borderColor:
+                                        COLORS.border,
+                                    }}
+                                  >
+                                    {/* DRAG HANDLE */}
+
+                                    <div
+                                      className="hidden lg:flex items-center justify-center"
+                                      style={{
+                                        color:
+                                          "#777281",
+                                      }}
+                                    >
+                                      <GripVertical
+                                        size={20}
+                                      />
+                                    </div>
+
+                                    {/* LESSON */}
+
+                                    <div className="flex min-w-0 items-center gap-3">
+                                      <div
+                                        className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+                                        style={{
+                                          background:
+                                            "rgba(255,255,255,.06)",
+                                          color:
+                                            COLORS.purpleLight,
+                                        }}
+                                      >
+                                        {lesson?.thumbnail ||
+                                        lesson?.image ? (
+                                          <img
+                                            src={
+                                              lesson?.thumbnail ||
+                                              lesson?.image
+                                            }
+                                            alt=""
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : (
+                                          getLessonIcon(
+                                            lesson?.lesson_type ||
+                                              lesson?.type
+                                          )
+                                        )}
+                                      </div>
+
+                                      <div className="min-w-0">
+                                        <h4 className="truncate text-sm font-bold">
+                                          {
+                                            lessonTitle
+                                          }
+                                        </h4>
+
+                                        {description && (
+                                          <p
+                                            className="mt-1 truncate text-xs"
+                                            style={{
+                                              color:
+                                                COLORS.muted,
+                                            }}
+                                          >
+                                            {
+                                              description
+                                            }
+                                          </p>
+                                        )}
+
+                                        <div className="mt-2 flex items-center gap-2 lg:hidden">
+                                          <LessonTypeBadge
+                                            type={
+                                              lesson?.lesson_type ||
+                                              lesson?.type
+                                            }
+                                          />
+
+                                          <span
+                                            className="text-xs"
+                                            style={{
+                                              color:
+                                                COLORS.muted,
+                                            }}
+                                          >
+                                            {getLessonDuration(
+                                              lesson
+                                            )}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* TYPE */}
+
+                                    <div className="hidden lg:block">
+                                      <LessonTypeBadge
+                                        type={
+                                          lesson?.lesson_type ||
+                                          lesson?.type
+                                        }
+                                      />
+                                    </div>
+
+                                    {/* DURATION */}
+
+                                    <div
+                                      className="hidden items-center gap-1.5 text-sm lg:flex"
+                                      style={{
+                                        color:
+                                          COLORS.muted,
+                                      }}
+                                    >
+                                      <Clock3
+                                        size={14}
+                                      />
+
+                                      {getLessonDuration(
+                                        lesson
+                                      )}
+                                    </div>
+
+                                    {/* STATUS */}
+
+                                    <div className="hidden lg:block">
+                                      <span
+                                        className="inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold"
+                                        style={{
+                                          background:
+                                            publishState.background,
+                                          color:
+                                            publishState.color,
+                                        }}
+                                      >
+                                        {
+                                          publishState.label
+                                        }
+                                      </span>
+                                    </div>
+
+                                    {/* ACTIONS */}
+
+                                    <div className="flex items-center justify-end gap-1">
+                                      <ActionButton
+                                        icon={
+                                          <Eye
+                                            size={17}
+                                          />
+                                        }
+                                        label="Preview lesson"
+                                        onClick={() =>
+                                          uiAction(
+                                            "Preview Lesson UI is ready."
+                                          )
+                                        }
+                                      />
+
+                                      <ActionButton
+                                        icon={
+                                          <Pencil
+                                            size={17}
+                                          />
+                                        }
+                                        label="Edit lesson"
+                                        onClick={() =>
+                                          uiAction(
+                                            "Edit Lesson UI is ready."
+                                          )
+                                        }
+                                      />
+
+                                      <ActionButton
+                                        icon={
+                                          <Trash2
+                                            size={17}
+                                          />
+                                        }
+                                        label="Delete lesson"
+                                        danger
+                                        onClick={() =>
+                                          uiAction(
+                                            "Delete Lesson UI is ready."
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            )
                           )}
                         </div>
                       )}
-                    </section>
+                    </div>
                   );
                 }
               )}
             </div>
           )}
+
+          {/* FOOTER INFO */}
+
+          {activeTab === "content" &&
+            sections.length > 0 && (
+              <div
+                className="flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between"
+                style={{
+                  borderColor: COLORS.border,
+                  background:
+                    "rgba(255,255,255,.018)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <CalendarDays
+                    size={18}
+                    color={COLORS.purpleLight}
+                  />
+
+                  <div>
+                    <div className="text-sm font-semibold">
+                      Curriculum overview
+                    </div>
+
+                    <div
+                      className="mt-1 text-xs"
+                      style={{
+                        color: COLORS.muted,
+                      }}
+                    >
+                      {publishedSections} of{" "}
+                      {sections.length} sections
+                      published ·{" "}
+                      {publishedLessons} of{" "}
+                      {totalLessons} lessons
+                      published
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{
+                      background:
+                        COLORS.success,
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      color: COLORS.muted,
+                    }}
+                  >
+                    Published
+                  </span>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </>
-  );
-}
-
-/* =========================================================
-   LESSON ROW
-========================================================= */
-
-function LessonRow({ lesson }) {
-  const type =
-    lesson?.lesson_type ||
-    lesson?.type;
-
-  const lessonType =
-    normalizeLessonType(type);
-
-  const title =
-    lesson?.title ||
-    "Untitled lesson";
-
-  const duration =
-    lesson?.duration_minutes;
-
-  const isPreview =
-    Number(lesson?.is_preview) === 1;
-
-  const isPublished =
-    Number(lesson?.is_published) === 1;
-
-  return (
-    <div
-      className="flex flex-col gap-3 rounded-xl border p-4 transition hover:border-purple-500/20 sm:flex-row sm:items-center sm:justify-between"
-      style={{
-        borderColor: COLORS.border,
-        background: COLORS.panel2,
-      }}
-    >
-      {/* LEFT */}
-
-      <div className="flex min-w-0 items-center gap-3">
-        <GripVertical
-          size={16}
-          className="shrink-0 text-white/20"
-        />
-
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-300">
-          {getLessonIcon(type)}
-        </div>
-
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">
-            {title}
-          </p>
-
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            <span
-              className="text-purple-300"
-            >
-              {getLessonTypeLabel(type)}
-            </span>
-
-            {duration !==
-              null &&
-              duration !==
-                undefined &&
-              duration !==
-                "" && (
-                <span
-                  style={{
-                    color:
-                      COLORS.muted,
-                  }}
-                >
-                  • {duration} min
-                </span>
-              )}
-
-            {isPreview && (
-              <span
-                style={{
-                  color:
-                    COLORS.muted,
-                }}
-              >
-                • Preview
-              </span>
-            )}
-
-            <span
-              style={{
-                color:
-                  COLORS.muted,
-              }}
-            >
-              •{" "}
-              {isPublished
-                ? "Published"
-                : "Draft"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT */}
-
-      <div className="flex items-center gap-2 pl-12 sm:pl-0">
-        {lessonType ===
-          "YOUTUBE" &&
-          lesson?.youtube_url && (
-            <a
-              href={
-                lesson.youtube_url
-              }
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-purple-300 transition hover:bg-white/5"
-            >
-              <ExternalLink
-                size={14}
-              />
-              Open
-            </a>
-          )}
-
-        {[
-          "VIDEO",
-          "RECORDING",
-          "PDF",
-          "LIVE",
-          "EXTERNAL",
-        ].includes(
-          lessonType
-        ) &&
-          lesson?.resource_url && (
-            <a
-              href={
-                lesson.resource_url
-              }
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-purple-300 transition hover:bg-white/5"
-            >
-              <ExternalLink
-                size={14}
-              />
-              Open
-            </a>
-          )}
-
-        <span className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/40">
-          View only
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   STAT
-========================================================= */
-
-function Stat({ label, value }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-      <p className="text-xs uppercase tracking-wider text-white/45">
-        {label}
-      </p>
-
-      <p className="mt-2 text-2xl font-bold text-white">
-        {value}
-      </p>
-    </div>
   );
 }
