@@ -599,9 +599,14 @@ function App() {
               />
 
               <Route
-                path="/admin/lms"
-                element={<AdminLMS />}
-              />
+  path="/admin/lms"
+  element={<AdminLMS />}
+/>
+
+<Route
+  path="/admin/lms/:classId"
+  element={<AdminLMS />}
+/>
 
               <Route
                 path="/admin/recordings"
