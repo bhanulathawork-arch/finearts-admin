@@ -1249,7 +1249,7 @@
 //               </h2>
 //             </div>
 //           ) : (
-//             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+//             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 //               {classes.map((item) => {
 //                 const id =
 //                   item?.id ??
@@ -2912,35 +2912,35 @@
 
 
 
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import toast from "react-hot-toast";
-import {
-  ArrowLeft,
-  BarChart3,
-  BookOpen,
-  CalendarDays,
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  Clock3,
-  ExternalLink,
-  Eye,
-  FileText,
-  GripVertical,
-  Loader2,
-  Lock,
-  LockOpen,
-  Pencil,
-  PlayCircle,
-  Plus,
-  Radio,
-  Save,
-  Trash2,
-  Users,
-  Video,
-  X,
-} from "lucide-react";
+// import { useEffect, useMemo, useState } from "react";
+// import { useNavigate, useParams } from "react-router-dom";
+// import toast from "react-hot-toast";
+// import {
+//   ArrowLeft,
+//   BarChart3,
+//   BookOpen,
+//   CalendarDays,
+//   CheckCircle2,
+//   ChevronDown,
+//   ChevronRight,
+//   Clock3,
+//   ExternalLink,
+//   Eye,
+//   FileText,
+//   GripVertical,
+//   Loader2,
+//   Lock,
+//   LockOpen,
+//   Pencil,
+//   PlayCircle,
+//   Plus,
+//   Radio,
+//   Save,
+//   Trash2,
+//   Users,
+//   Video,
+//   X,
+// } from "lucide-react";
 
 import API from "../services/api";
 
@@ -4230,7 +4230,7 @@ export default function AdminLMS() {
               </h2>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {classes.map((item) => {
                 const id =
                   item?.id ??
@@ -5963,3 +5963,6 @@ function convertYoutubeUrl(url) {
     return url;
   }
 }
+
+
+
