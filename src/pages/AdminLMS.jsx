@@ -22,6 +22,7 @@ import {
   Loader2,
   ChevronRight,
    ArrowLeft,
+   CheckCircle2,
 } from "lucide-react";
 /* =========================================================
    COLORS
