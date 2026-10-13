@@ -2381,7 +2381,7 @@
 //                   className="text-white"
 //                 />
 
-//                 <h1 className="text-3xl md:text-4xl font-bold">
+//                 <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
 //                   My Classes
 //                 </h1>
 //               </div>
@@ -5610,7 +5610,7 @@ export default function TrainerClasses() {
                   className="text-white"
                 />
 
-                <h1 className="text-3xl md:text-4xl font-bold">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
                   My Classes
                 </h1>
               </div>

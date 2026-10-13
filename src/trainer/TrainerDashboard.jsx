@@ -125,7 +125,7 @@ export default function TrainerDashboard() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold gradient-text">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
           Dashboard
         </h1>
 

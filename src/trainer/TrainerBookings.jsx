@@ -192,7 +192,10 @@ export default function TrainerBookings() {
     <div className="p-8 text-white">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-purple-400">
+        
+<h1 className="text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+
+
           Trainer Bookings
         </h1>
         <p className="text-white mt-2">

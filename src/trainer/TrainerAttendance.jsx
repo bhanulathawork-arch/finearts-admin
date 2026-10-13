@@ -1610,7 +1610,8 @@ export default function TrainerAttendance() {
 
         <div>
 
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          
+<h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
 
             Attendance
 

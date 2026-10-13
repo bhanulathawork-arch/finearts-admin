@@ -1080,7 +1080,7 @@ const saveAssignment = async (event) => {
 
             <div>
 
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
 
                 Assignments
 
