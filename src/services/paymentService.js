@@ -51,9 +51,10 @@ export const createRazorpayOrder = async (
 ) => {
 
 
-  const API_URL =
+const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://finearts-backend.onrender.com/api";
+
 
   const res = await fetch(
     `${API_BASE}/payments/create-order`,
@@ -94,9 +95,11 @@ export const verifyRazorpayPayment = async (
   token
 ) => {
 
-  const API_BASE =
+
+const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://finearts-backend.onrender.com/api";
+
 
   const res = await fetch(
     `${API_BASE}/payments/verify`,

@@ -11,9 +11,10 @@ import {
    API BASE URL
 ========================================================= */
 
-const API_BASE_URL =
+
+const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://finearts-backend.onrender.com/api";
 
 /* =========================================================
    AXIOS INSTANCE
