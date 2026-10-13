@@ -352,7 +352,7 @@ export default function TrainerLive() {
 
           <div>
 
-            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
 
               Live Classes
 
