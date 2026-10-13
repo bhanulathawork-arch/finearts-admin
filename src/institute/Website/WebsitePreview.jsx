@@ -1331,14 +1331,18 @@ const WebsitePreview = () => {
     );
 
 
-
 const resolveInstituteId = useCallback(() => {
-  const searchParams = new URLSearchParams(
-    window.location.search
-  );
+  /*
+   * ============================================================
+   * NORMALIZE INSTITUTE ID
+   * ============================================================
+   */
 
   const normalizeId = (value) => {
-    if (value === undefined || value === null) {
+    if (
+      value === undefined ||
+      value === null
+    ) {
       return null;
     }
 
@@ -1352,129 +1356,126 @@ const resolveInstituteId = useCallback(() => {
       return null;
     }
 
-    return id;
+    const parsedId = Number(id);
+
+    if (
+      !Number.isInteger(parsedId) ||
+      parsedId <= 0
+    ) {
+      return null;
+    }
+
+    return String(parsedId);
   };
 
-  
-  const routeState = location?.state || {};
+  /*
+   * ============================================================
+   * 1. ROUTER STATE
+   * ============================================================
+   *
+   * WebsiteDashboard sends the institute ID here.
+   *
+   * Example:
+   *
+   * navigate("/institute/website/preview", {
+   *   state: {
+   *     instituteId: 31,
+   *     preview: true,
+   *   },
+   * });
+   */
+
+  const routeState =
+    location?.state || {};
 
   const routeStateId =
-    normalizeId(routeState?.instituteId) ||
-    normalizeId(routeState?.institute_id) ||
-    normalizeId(routeState?.institute?.id) ||
-    normalizeId(routeState?.institute?.institute_id) ||
-    normalizeId(routeState?.website?.instituteId) ||
-    normalizeId(routeState?.website?.institute_id);
-
-  // ============================================================
-  // 2. URL QUERY PARAMETER
-  // ============================================================
-
-  const urlId =
-    normalizeId(searchParams.get("institute_id")) ||
-    normalizeId(searchParams.get("instituteId")) ||
-    normalizeId(searchParams.get("id"));
-
-  // ============================================================
-  // 3. STORED INSTITUTE OBJECT
-  // ============================================================
-
-  let storedInstitute = null;
-
-  try {
-    const rawInstitute = localStorage.getItem("institute");
-
-    if (rawInstitute) {
-      storedInstitute = JSON.parse(rawInstitute);
-    }
-  } catch (parseError) {
-    console.warn(
-      "Could not parse stored institute object:",
-      parseError
-    );
-  }
-
-  const storedInstituteId =
-    normalizeId(storedInstitute?.institute?.id) ||
     normalizeId(
-      storedInstitute?.institute?.institute_id
+      routeState?.instituteId
     ) ||
-    normalizeId(storedInstitute?.instituteId) ||
-    normalizeId(storedInstitute?.institute_id) ||
-    normalizeId(storedInstitute?.id) ||
-    normalizeId(storedInstitute?.data?.id) ||
     normalizeId(
-      storedInstitute?.data?.institute_id
+      routeState?.institute_id
+    ) ||
+    normalizeId(
+      routeState?.institute?.id
     );
 
-  // ============================================================
-  // 4. CURRENT INSTITUTE STORAGE
-  // ============================================================
-
-  const currentStorageId =
-    normalizeId(
-      localStorage.getItem("currentInstituteId")
-    ) ||
-    normalizeId(
-      sessionStorage.getItem("currentInstituteId")
-    ) ||
-    normalizeId(
-      localStorage.getItem("current_institute_id")
-    ) ||
-    normalizeId(
-      sessionStorage.getItem("current_institute_id")
-    ) ||
-    normalizeId(
-      localStorage.getItem("institute_id")
-    ) ||
-    normalizeId(
-      sessionStorage.getItem("institute_id")
-    ) ||
-    normalizeId(
-      localStorage.getItem("websiteInstituteId")
-    ) ||
-    normalizeId(
-      sessionStorage.getItem("websiteInstituteId")
-    );
-
-  // ============================================================
-  // 5. EXISTING WEBSITE DATA
-  // ============================================================
+  /*
+   * ============================================================
+   * 2. EXISTING WEBSITE DATA
+   * ============================================================
+   *
+   * This comes from the public website API.
+   */
 
   const websiteDataId =
-    normalizeId(websiteData?.instituteId) ||
-    normalizeId(websiteData?.institute?.id) ||
+    normalizeId(
+      websiteData?.instituteId
+    ) ||
+    normalizeId(
+      websiteData?.institute_id
+    ) ||
+    normalizeId(
+      websiteData?.institute?.id
+    ) ||
     normalizeId(
       websiteData?.institute?.institute_id
     );
 
+  /*
+   * ============================================================
+   * 3. PREVIEW-SPECIFIC STORAGE
+   * ============================================================
+   *
+   * Only use previewInstituteId as a fallback.
+   *
+   * DO NOT use generic:
+   *
+   * instituteId
+   * currentInstituteId
+   * current_institute_id
+   * institute_id
+   * studentInstituteId
+   *
+   * because those can contain stale IDs.
+   */
 
   const previewStorageId =
     normalizeId(
-      sessionStorage.getItem("previewInstituteId")
+      sessionStorage.getItem(
+        "previewInstituteId"
+      )
     ) ||
     normalizeId(
-      localStorage.getItem("previewInstituteId")
-    ) ||
-    normalizeId(
-      sessionStorage.getItem("studentInstituteId")
-    ) ||
-    normalizeId(
-      localStorage.getItem("studentInstituteId")
+      localStorage.getItem(
+        "previewInstituteId"
+      )
     );
 
-  // ============================================================
-  // FINAL RESOLUTION
-  // ============================================================
+  /*
+   * ============================================================
+   * 4. FINAL RESOLUTION
+   * ============================================================
+   *
+   * Priority:
+   *
+   * Router state
+   *      ↓
+   * Website API data
+   *      ↓
+   * Preview-specific storage
+   */
 
   const resolved =
     routeStateId ||
-    urlId ||
-    storedInstituteId ||
-    currentStorageId ||
     websiteDataId ||
     previewStorageId ||
     null;
+
+  /*
+   * ============================================================
+   * DEBUG
+   * ============================================================
+   */
 
   console.log(
     "=========================================="
@@ -1490,27 +1491,12 @@ const resolveInstituteId = useCallback(() => {
   );
 
   console.log(
-    "URL institute ID:",
-    urlId
-  );
-
-  console.log(
-    "Stored institute object ID:",
-    storedInstituteId
-  );
-
-  console.log(
-    "Current institute storage ID:",
-    currentStorageId
-  );
-
-  console.log(
     "Website data institute ID:",
     websiteDataId
   );
 
   console.log(
-    "Preview/student storage ID:",
+    "Preview storage institute ID:",
     previewStorageId
   );
 
@@ -1523,10 +1509,11 @@ const resolveInstituteId = useCallback(() => {
     "=========================================="
   );
 
-  return normalizeId(resolved);
+  return resolved;
 }, [
   location?.state,
   websiteData?.instituteId,
+  websiteData?.institute_id,
   websiteData?.institute?.id,
   websiteData?.institute?.institute_id,
 ]);
@@ -1551,43 +1538,60 @@ const loadWebsite = useCallback(
       // STEP 1: RESOLVE INSTITUTE ID
       // ========================================================
 
-      let currentInstituteId =
+      const resolvedInstituteId =
         resolveInstituteId();
 
+      console.log(
+        "RESOLVE INSTITUTE ID RESULT:",
+        resolvedInstituteId
+      );
+
       // ========================================================
-      // STEP 2: CHECK INSTITUTE ID
+      // STEP 2: VALIDATE INSTITUTE ID
       // ========================================================
 
-      if (!currentInstituteId) {
+      if (!resolvedInstituteId) {
         throw new Error(
           "Preview institute ID is missing. Please open the website preview from the institute dashboard."
         );
       }
 
-      currentInstituteId =
-        String(currentInstituteId).trim();
+      const currentInstituteId =
+        String(resolvedInstituteId).trim();
+
+      const parsedInstituteId =
+        Number(currentInstituteId);
+
+      if (
+        !Number.isInteger(parsedInstituteId) ||
+        parsedInstituteId <= 0
+      ) {
+        throw new Error(
+          "Invalid preview institute ID."
+        );
+      }
 
       // ========================================================
-      // STEP 3: SAVE CORRECT INSTITUTE ID
+      // STEP 3: SAVE PREVIEW INSTITUTE ID
       // ========================================================
 
       console.log(
-        "Final Preview Institute ID:",
-        currentInstituteId
+        "FINAL PREVIEW INSTITUTE ID:",
+        parsedInstituteId
       );
 
       setPreviewInstituteId(
-        currentInstituteId
+        String(parsedInstituteId)
       );
 
       localStorage.setItem(
         "previewInstituteId",
-        currentInstituteId
+        String(parsedInstituteId)
       );
 
       sessionStorage.setItem(
         "previewInstituteId",
-        currentInstituteId
+        String(parsedInstituteId)
       );
 
       if (cancelledCheck()) {
@@ -1595,7 +1599,7 @@ const loadWebsite = useCallback(
       }
 
       setInstituteId(
-        currentInstituteId
+        String(parsedInstituteId)
       );
 
       // ========================================================
@@ -1603,22 +1607,39 @@ const loadWebsite = useCallback(
       // ========================================================
 
       console.log(
-        "Loading PUBLIC website:",
-        currentInstituteId
+        "=========================================="
+      );
+
+      console.log(
+        "REQUESTING PUBLIC WEBSITE"
+      );
+
+      console.log(
+        "Institute ID:",
+        parsedInstituteId
+      );
+
+      console.log(
+        "API URL:",
+        `/websites/public/${parsedInstituteId}?preview=true`
       );
 
       console.log(
         "Firebase authentication NOT required."
       );
 
+      console.log(
+        "=========================================="
+      );
+
       const response =
         await getPublicWebsiteData(
-          currentInstituteId,
+          parsedInstituteId,
           true
         );
 
       console.log(
-        "Public website response:",
+        "PUBLIC WEBSITE RESPONSE:",
         response
       );
 
@@ -1635,33 +1656,72 @@ const loadWebsite = useCallback(
           response
         );
 
-      const resolvedWebsiteInstituteId =
-        normalized?.instituteId ||
-        currentInstituteId;
+      // ========================================================
+      // STEP 6: RESOLVE RESPONSE INSTITUTE ID
+      // ========================================================
+
+      const responseInstituteId =
+        normalized?.instituteId ??
+        normalized?.institute_id ??
+        response?.instituteId ??
+        response?.institute_id ??
+        parsedInstituteId;
+
+      const finalInstituteId =
+        Number(responseInstituteId);
+
+      if (
+        !Number.isInteger(finalInstituteId) ||
+        finalInstituteId <= 0
+      ) {
+        throw new Error(
+          "Invalid institute ID returned by website API."
+        );
+      }
+
+      // ========================================================
+      // STEP 7: SAVE WEBSITE DATA
+      // ========================================================
 
       setWebsiteData({
         ...normalized,
 
         instituteId:
-          String(
-            resolvedWebsiteInstituteId
-          ),
+          String(finalInstituteId),
+
+        institute_id:
+          finalInstituteId,
       });
 
       setInstituteId(
-        String(
-          resolvedWebsiteInstituteId
-        )
+        String(finalInstituteId)
       );
 
       console.log(
-        "Website loaded successfully for institute:",
-        resolvedWebsiteInstituteId
+        "=========================================="
+      );
+
+      console.log(
+        "WEBSITE LOADED SUCCESSFULLY"
+      );
+
+      console.log(
+        "Requested Institute ID:",
+        parsedInstituteId
+      );
+
+      console.log(
+        "Response Institute ID:",
+        finalInstituteId
+      );
+
+      console.log(
+        "=========================================="
       );
 
     } catch (error) {
       console.error(
-        "Website preview loading error:",
+        "WEBSITE PREVIEW LOADING ERROR:",
         error
       );
 
@@ -1671,6 +1731,7 @@ const loadWebsite = useCallback(
           "Failed to load website preview."
         );
       }
+
     } finally {
       if (!cancelledCheck()) {
         setLoading(false);
@@ -1682,7 +1743,54 @@ const loadWebsite = useCallback(
     normalizeWebsiteResponse,
   ]
 );
+console.log("========== PREVIEW ID DEBUG ==========");
 
+console.log(
+  "Router state:",
+  location?.state
+);
+
+console.log(
+  "Router instituteId:",
+  location?.state?.instituteId
+);
+
+console.log(
+  "Router institute_id:",
+  location?.state?.institute_id
+);
+
+console.log(
+  "Website data:",
+  websiteData
+);
+
+console.log(
+  "Website data instituteId:",
+  websiteData?.instituteId
+);
+
+console.log(
+  "Website data institute_id:",
+  websiteData?.institute_id
+);
+
+console.log(
+  "Session previewInstituteId:",
+  sessionStorage.getItem(
+    "previewInstituteId"
+  )
+);
+
+console.log(
+  "Local previewInstituteId:",
+  localStorage.getItem(
+    "previewInstituteId"
+  )
+);
+
+console.log(
+  "======================================");
   /* =======================================================
      LOAD WEBSITE
   ======================================================= */

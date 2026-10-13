@@ -45,194 +45,98 @@ export default function WebsiteDashboard() {
    *
    * =========================================================
    */
-  const getCurrentInstituteId = () => {
-    const candidates = [
-      // Direct website response
-      website?.instituteId,
-      website?.institute_id,
-      website?.institute?.id,
-      website?.institute?.instituteId,
-      website?.institute?.institute_id,
+const getCurrentInstituteId = () => {
+  console.log("==========================================");
+  console.log("GET CURRENT INSTITUTE ID");
+  console.log("WEBSITE OBJECT:", website);
 
-      // Website nested object
-      website?.website?.instituteId,
-      website?.website?.institute_id,
-      website?.website?.institute?.id,
-      website?.website?.institute?.instituteId,
-      website?.website?.institute?.institute_id,
+  const rawInstituteId =
+    website?.instituteId ??
+    website?.institute_id ??
+    website?.institute?.id ??
+    website?.institute?.instituteId ??
+    website?.institute?.institute_id ??
+    null;
 
-      // Other possible response structures
-      website?.data?.instituteId,
-      website?.data?.institute_id,
-      website?.data?.institute?.id,
-      website?.data?.institute?.instituteId,
-      website?.data?.institute?.institute_id,
+  console.log(
+    "RAW WEBSITE INSTITUTE ID:",
+    rawInstituteId
+  );
 
-      // Local storage
-      localStorage.getItem("instituteId"),
-      localStorage.getItem("institute_id"),
-      localStorage.getItem("currentInstituteId"),
-      localStorage.getItem("current_institute_id"),
+  const id = Number(rawInstituteId);
 
-      // Session storage
-      sessionStorage.getItem("instituteId"),
-      sessionStorage.getItem("institute_id"),
-      sessionStorage.getItem("currentInstituteId"),
-      sessionStorage.getItem("current_institute_id"),
-    ];
+  console.log(
+    "NORMALIZED INSTITUTE ID:",
+    id
+  );
 
-    const instituteId = candidates.find((value) => {
-      if (
-        value === undefined ||
-        value === null ||
-        value === ""
-      ) {
-        return false;
-      }
+  console.log("==========================================");
 
-      const normalized = String(value).trim();
+  if (!Number.isInteger(id) || id <= 0) {
+    return null;
+  }
 
-      return (
-        normalized !== "" &&
-        normalized !== "null" &&
-        normalized !== "undefined"
-      );
-    });
-
-    return instituteId
-      ? String(instituteId).trim()
-      : null;
-  };
+  return String(id);
+};
 
   /*
    * =========================================================
    * OPEN WEBSITE PREVIEW
    * =========================================================
    */
-  const handlePreview = () => {
-    const instituteId = getCurrentInstituteId();
+const handlePreview = () => {
+  const instituteId = getCurrentInstituteId();
 
-    console.log(
-      "=========================================="
+  console.log("==========================================");
+  console.log("OPENING WEBSITE PREVIEW");
+  console.log("Website:", website);
+  console.log("Institute ID:", instituteId);
+  console.log("==========================================");
+
+  if (!instituteId) {
+    console.error(
+      "PREVIEW: Institute ID not available from website API response"
     );
 
-    console.log(
-      "OPENING WEBSITE PREVIEW"
-    );
+    toast.error("Institute ID not found.");
+    return;
+  }
 
-    console.log(
-      "Institute ID:",
-      instituteId
-    );
+  const id = Number(instituteId);
 
-    console.log(
-      "Website data:",
-      website
-    );
+  if (!Number.isInteger(id) || id <= 0) {
+    toast.error("Invalid Institute ID.");
+    return;
+  }
 
-    console.log(
-      "=========================================="
-    );
+  // ONLY preview-specific storage
+  setPreviewInstituteId(String(id));
 
-    /*
-     * No institute ID
-     */
-    if (!instituteId) {
-      console.error(
-        "PREVIEW: INSTITUTE ID NOT FOUND"
-      );
+  localStorage.setItem(
+    "previewInstituteId",
+    String(id)
+  );
 
-      console.error(
-        "localStorage instituteId:",
-        localStorage.getItem("instituteId")
-      );
+  sessionStorage.setItem(
+    "previewInstituteId",
+    String(id)
+  );
 
-      console.error(
-        "localStorage institute_id:",
-        localStorage.getItem("institute_id")
-      );
+  console.log(
+    "PREVIEW INSTITUTE ID SAVED:",
+    id
+  );
 
-      console.error(
-        "sessionStorage instituteId:",
-        sessionStorage.getItem("instituteId")
-      );
-
-      console.error(
-        "sessionStorage institute_id:",
-        sessionStorage.getItem("institute_id")
-      );
-
-      toast.error(
-        "Institute ID not found. Please refresh the page and try again."
-      );
-
-      return;
+  navigate(
+    "/institute/website/preview",
+    {
+      state: {
+        instituteId: id,
+        preview: true,
+      },
     }
-
-    try {
-      /*
-       * Save the institute ID before navigation.
-       *
-       * websiteService already saves:
-       * - previewInstituteId
-       * - instituteId
-       *
-       * in localStorage and sessionStorage.
-       */
-      setPreviewInstituteId(instituteId);
-
-      /*
-       * Also explicitly save current institute ID.
-       *
-       * This gives the preview page an additional fallback.
-       */
-      localStorage.setItem(
-        "instituteId",
-        String(instituteId)
-      );
-
-      sessionStorage.setItem(
-        "instituteId",
-        String(instituteId)
-      );
-
-      console.log(
-        "PREVIEW INSTITUTE ID SAVED:",
-        instituteId
-      );
-
-      /*
-       * Navigate using React Router.
-       *
-       * We intentionally do NOT use:
-       *
-       * window.location
-       * or
-       * <a href="">
-       *
-       * because we need to establish the preview
-       * institute ID before navigation.
-       */
-      navigate(
-        "/institute/website/preview",
-        {
-          state: {
-            instituteId: Number(instituteId),
-            preview: true,
-          },
-        }
-      );
-    } catch (error) {
-      console.error(
-        "FAILED TO OPEN WEBSITE PREVIEW:",
-        error
-      );
-
-      toast.error(
-        "Unable to open website preview."
-      );
-    }
-  };
+  );
+};
 
   /*
    * =========================================================

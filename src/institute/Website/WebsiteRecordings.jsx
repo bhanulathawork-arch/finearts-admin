@@ -1,1728 +1,9815 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+
+
+import { useEffect, useMemo, useState } from "react";
+
+
+
+import { useNavigate } from "react-router-dom";
+
+
+
+
 
 import {
-  HiOutlineBell,
-  HiOutlineBookOpen,
-  HiOutlineCalendar,
-  HiOutlineVideoCamera,
-  HiOutlinePlay,
-  HiOutlineUser,
-  HiOutlineDocumentText,
-  HiOutlineCreditCard,
-  HiOutlineSearch,
-  HiOutlineMenu,
-  HiOutlineX,
-  HiOutlineDownload,
-  HiOutlineClock,
-  HiOutlineExternalLink,
-  HiOutlineHome,
+
+
+
+  HiPlay,
+
+
+
+  HiCalendar,
+
+
+
+  HiDownload,
+
+
+
+  HiEye,
+
+
+
+  HiSearch,
+
+
+
+  HiVideoCamera,
+
+
+
+  HiChevronDown,
+
+
+
+  HiChevronLeft,
+
+
+
+  HiChevronRight,
+
+
+
+  HiUser,
+
+
+
+  HiRefresh,
+
+
+
+  HiX,
+
+
+
+  HiBookOpen,
+
+
+
+  HiClock,
+
+
+
+  HiLocationMarker,
+
+
+
 } from "react-icons/hi";
 
-import {
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom";
+
+
+
+
+
 
 import API from "../../services/api";
 
+
+
+
+
+
+
 /* =========================================================
-   DEFAULT BRANDING
-========================================================= */
 
-const DEFAULT_BRANDING = {
-  pageBackgroundColor: "#020914",
-  navbarColor: "#020B18",
-  cardBackgroundColor: "#031120",
 
-  headingColor: "#FFFFFF",
-  subheadingColor: "#7DB7FF",
-  textColor: "#FFFFFF",
 
-  iconColor: "#1687FF",
-  buttonColor: "#087CFF",
-  buttonTextColor: "#FFFFFF",
+   RESPONSE HELPERS
 
-  fontHeading: "Inter",
-  fontSubheading: "Inter",
-  fontBody: "Inter",
+
+
+\========================================================= */
+
+
+
+
+
+
+
+const getArrayFromResponse = (response) => {
+
+
+
+  const data = response?.data;
+
+
+
+
+
+
+
+  if (Array.isArray(data)) {
+
+
+
+    return data;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.data)) {
+
+
+
+    return data.data;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.data?.courses)) {
+
+
+
+    return data.data.courses;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.courses)) {
+
+
+
+    return data.courses;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.data?.classes)) {
+
+
+
+    return data.data.classes;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.classes)) {
+
+
+
+    return data.classes;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.items)) {
+
+
+
+    return data.items;
+
+
+
+  }
+
+
+
+
+
+
+
+  if (Array.isArray(data?.data?.items)) {
+
+
+
+    return data.data.items;
+
+
+
+  }
+
+
+
+
+
+
+
+  return [];
+
+
+
 };
 
-/* =========================================================
-   BRANDING
-========================================================= */
 
-const getBrandingValue = (
-  branding,
-  camelKey,
-  snakeKey,
-  fallback
+
+
+
+
+
+/* =========================================================
+
+
+
+   GENERIC VALUE HELPERS
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+const firstValue = (
+
+
+
+  object,
+
+
+
+  keys,
+
+
+
+  fallback = ""
+
+
+
 ) => {
-  const value =
-    branding?.[camelKey] ??
-    branding?.[snakeKey];
 
-  return value !== undefined &&
-    value !== null &&
-    value !== ""
-    ? value
-    : fallback;
-};
 
-const normalizeBranding = (
-  branding = {}
-) => ({
-  pageBackgroundColor:
-    getBrandingValue(
-      branding,
-      "pageBackgroundColor",
-      "page_background_color",
-      DEFAULT_BRANDING.pageBackgroundColor
-    ),
 
-  navbarColor:
-    getBrandingValue(
-      branding,
-      "navbarColor",
-      "navbar_color",
-      DEFAULT_BRANDING.navbarColor
-    ),
+  for (const key of keys) {
 
-  cardBackgroundColor:
-    getBrandingValue(
-      branding,
-      "cardBackgroundColor",
-      "card_background_color",
-      DEFAULT_BRANDING.cardBackgroundColor
-    ),
 
-  headingColor:
-    getBrandingValue(
-      branding,
-      "headingColor",
-      "heading_color",
-      DEFAULT_BRANDING.headingColor
-    ),
 
-  subheadingColor:
-    getBrandingValue(
-      branding,
-      "subheadingColor",
-      "subheading_color",
-      DEFAULT_BRANDING.subheadingColor
-    ),
+    const value = object?.[key];
 
-  textColor:
-    getBrandingValue(
-      branding,
-      "textColor",
-      "text_color",
-      DEFAULT_BRANDING.textColor
-    ),
 
-  iconColor:
-    getBrandingValue(
-      branding,
-      "iconColor",
-      "icon_color",
-      DEFAULT_BRANDING.iconColor
-    ),
 
-  buttonColor:
-    getBrandingValue(
-      branding,
-      "buttonColor",
-      "button_color",
-      DEFAULT_BRANDING.buttonColor
-    ),
 
-  buttonTextColor:
-    getBrandingValue(
-      branding,
-      "buttonTextColor",
-      "button_text_color",
-      DEFAULT_BRANDING.buttonTextColor
-    ),
 
-  fontHeading:
-    getBrandingValue(
-      branding,
-      "fontHeading",
-      "font_heading",
-      DEFAULT_BRANDING.fontHeading
-    ),
 
-  fontBody:
-    getBrandingValue(
-      branding,
-      "fontBody",
-      "font_body",
-      DEFAULT_BRANDING.fontBody
-    ),
-});
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
-const getValue = (...values) => {
-  for (const value of values) {
     if (
+
+
+
       value !== undefined &&
+
+
+
       value !== null &&
+
+
+
       value !== ""
+
+
+
     ) {
+
+
+
       return value;
+
+
+
     }
+
+
+
   }
 
-  return null;
+
+
+
+
+
+
+  return fallback;
+
+
+
 };
 
-const getRecordingTitle = (
-  recording
+
+
+
+
+
+
+const firstNestedValue = (
+
+
+
+  object,
+
+
+
+  paths,
+
+
+
+  fallback = ""
+
+
+
 ) => {
-  return getValue(
-    recording?.title,
-    recording?.recording_title,
-    recording?.session_title,
-    recording?.class_title,
-    "Class Recording"
-  );
-};
 
-const getCourseName = (
-  recording
-) => {
-  return getValue(
-    recording?.class_title,
-    recording?.course_title,
-    recording?.class_name,
-    "Course"
-  );
-};
 
-const getSessionName = (
-  recording
-) => {
-  return getValue(
-    recording?.session_title,
-    recording?.session_name,
-    recording?.title,
-    "Live Session"
-  );
-};
 
-const getTrainerName = (
-  recording
-) => {
-  return getValue(
-    recording?.trainer_name,
-    recording?.trainer_full_name,
-    recording?.instructor_name,
-    "Trainer"
-  );
-};
+  for (const path of paths) {
 
-const getTrainerImage = (
-  recording
-) => {
-  return getValue(
-    recording?.trainer_image,
-    recording?.trainer_profile_image,
-    recording?.profile_image,
-    ""
-  );
-};
 
-const getRecordingUrl = (
-  recording
-) => {
-  return getValue(
-    recording?.recording_url,
-    recording?.play_url,
-    recording?.video_url,
-    recording?.external_storage_url,
-    ""
-  );
-};
 
-const getDownloadUrl = (
-  recording
-) => {
-  return getValue(
-    recording?.download_url,
-    recording?.recording_url,
-    ""
-  );
-};
+    let value = object;
 
-const getThumbnail = (
-  recording
-) => {
-  return getValue(
-    recording?.thumbnail,
-    recording?.thumbnail_url,
-    recording?.image,
-    recording?.image_url,
-    recording?.class_image,
-    recording?.course_image,
-    ""
-  );
-};
 
-const formatDuration = (
-  seconds
-) => {
-  const total =
-    Number(seconds) || 0;
 
-  if (!total) {
-    return "--";
-  }
 
-  const hours =
-    Math.floor(
-      total / 3600
-    );
 
-  const minutes =
-    Math.floor(
-      (total % 3600) / 60
-    );
 
-  const secs =
-    total % 60;
 
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
+    for (const key of path) {
 
-  if (minutes > 0) {
-    return `${minutes}m`;
-  }
 
-  return `${secs}s`;
-};
 
-const formatDate = (
-  value
-) => {
-  if (!value) {
-    return "--";
-  }
+      value = value?.[key];
 
-  const date =
-    new Date(value);
 
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return "--";
-  }
 
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
     }
-  );
-};
 
-const formatTime = (
-  value
-) => {
-  if (!value) {
-    return "";
+
+
+
+
+
+
+    if (
+
+
+
+      value !== undefined &&
+
+
+
+      value !== null &&
+
+
+
+      value !== ""
+
+
+
+    ) {
+
+
+
+      return value;
+
+
+
+    }
+
+
+
   }
 
-  const match =
-    String(value).match(
-      /(\d{1,2}):(\d{2})/
-    );
 
-  if (!match) {
-    return "";
-  }
 
-  let hour =
-    Number(match[1]);
 
-  const minute =
-    Number(match[2]);
 
-  const period =
-    hour >= 12
-      ? "PM"
-      : "AM";
 
-  hour =
-    hour % 12 || 12;
 
-  return `${String(
-    hour
-  ).padStart(
-    2,
-    "0"
-  )}:${String(
-    minute
-  ).padStart(
-    2,
-    "0"
-  )} ${period}`;
+  return fallback;
+
+
+
 };
 
-const getRecordingDate =
-  recording =>
-    getValue(
-      recording?.recorded_at,
-      recording?.recording_start,
-      recording?.created_at,
-      recording?.session_date
-    );
 
-const getResponseData = (
-  response
-) => {
-  return (
-    response?.data?.data ??
-    response?.data?.recordings ??
-    response?.data ??
-    []
-  );
-};
+
+
+
+
 
 /* =========================================================
-   SIDEBAR
-========================================================= */
 
-function Sidebar({
-  navigate,
-  mobileOpen,
-  setMobileOpen,
-}) {
-  const items = [
-    {
-      label: "Dashboard",
-      icon: <HiOutlineHome />,
-      path:
-        "/institute/website/preview",
-    },
 
-    {
-      label: "My Learning",
-      icon: <HiOutlineBookOpen />,
-      path:
-        "/institute/website/preview/lms/my-learning",
-    },
 
-    {
-      label: "Live Sessions",
-      icon:
-        <HiOutlineVideoCamera />,
-      path:
-        "/institute/website/preview/lms/live-sessions",
-    },
+   CLASS DATA
 
-    {
-      label: "Recordings",
-      icon:
-        <HiOutlinePlay />,
-      path:
-        "/institute/website/preview/lms/recordings",
-    },
 
-    {
-      label: "My Bookings",
-      icon:
-        <HiOutlineCalendar />,
-      path:
-        "/institute/website/preview/lms/my-bookings",
-    },
 
-    {
-      label: "Assignments",
-      icon:
-        <HiOutlineDocumentText />,
-      path:
-        "/institute/website/preview/lms/assignments",
-    },
+\========================================================= */
 
-    {
-      label: "Attendance",
-      icon:
-        <HiOutlineCalendar />,
-      path:
-        "/institute/website/preview/lms/attendance",
-    },
 
-    {
-      label: "Payment Details",
-      icon:
-        <HiOutlineCreditCard />,
-      path:
-        "/institute/website/preview/lms/payment-details",
-    },
 
-    {
-      label: "Profile",
-      icon:
-        <HiOutlineUser />,
-      path:
-        "/institute/website/preview/lms/profile",
-    },
-  ];
 
-  return (
-    <>
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
-          onClick={() =>
-            setMobileOpen(false)
-          }
-        />
-      )}
 
-      <aside
-        className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-[270px]
-          flex-col
-          border-r border-white/[0.07]
-          bg-[#020B18]
-          transition-transform duration-300
-          ${
-            mobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
-          }
-        `}
-      >
-        {/* LOGO */}
 
-        <div className="flex h-[90px] items-center border-b border-white/[0.06] px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center text-3xl text-blue-400">
-              ♫
-            </div>
 
-            <div>
-              <h1 className="text-[25px] font-bold leading-none">
-                Fine
-                <span className="text-blue-400">
-                  Arts
-                </span>
-              </h1>
+const getClassId = (item) => {
 
-              <p className="mt-1 text-xs text-white/50">
-                Student LMS
-              </p>
-            </div>
-          </div>
 
-          <button
-            className="ml-auto text-white/60 lg:hidden"
-            onClick={() =>
-              setMobileOpen(false)
-            }
-          >
-            <HiOutlineX
-              size={22}
-            />
-          </button>
-        </div>
 
-        {/* NAV */}
+  return firstValue(
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="space-y-2">
-            {items.map(
-              item => {
-                const active =
-                  item.label ===
-                  "Recordings";
 
-                return (
-                  <button
-                    key={
-                      item.label
-                    }
-                    onClick={() => {
-                      setMobileOpen(
-                        false
-                      );
 
-                      navigate(
-                        item.path
-                      );
-                    }}
-                    className={`
-                      flex w-full
-                      items-center gap-4
-                      rounded-xl
-                      px-4 py-3.5
-                      text-left
-                      transition
-                      ${
-                        active
-                          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_0_25px_rgba(0,110,255,.35)]"
-                          : "text-white/75 hover:bg-white/[0.04] hover:text-white"
-                      }
-                    `}
-                  >
-                    <span className="flex w-6 justify-center text-[21px]">
-                      {
-                        item.icon
-                      }
-                    </span>
+    item,
 
-                    <span className="text-sm font-medium">
-                      {
-                        item.label
-                      }
-                    </span>
-                  </button>
-                );
-              }
-            )}
-          </div>
-        </nav>
 
-        {/* FOOTER */}
 
-        <div className="border-t border-white/[0.05] px-8 py-7">
-          <div className="font-serif text-xl italic leading-8 text-blue-300">
-            <div>
-              Art
-            </div>
-            <div>
-              Builds
-            </div>
-            <div>
-              A Better
-            </div>
-            <div>
-              You”
-            </div>
-          </div>
+    [
 
-          <div className="mt-4 h-1 w-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-        </div>
-      </aside>
-    </>
-  );
-}
 
-/* =========================================================
-   HEADER
-========================================================= */
 
-function TopHeader({
-  navigate,
-  student,
-  setMobileOpen,
-}) {
-  const studentName =
-    getValue(
-      student?.name,
-      student?.full_name,
-      student?.displayName,
-      "Priya Sharma"
+      "class_id",
+
+
+
+      "classId",
+
+
+
+      "course_id",
+
+
+
+      "courseId",
+
+
+
+      "id",
+
+
+
+    ],
+
+
+
+    null
+
+
+
+  ) ??
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "id"],
+
+
+
+        ["course", "id"],
+
+
+
+        ["class_details", "id"],
+
+
+
+      ],
+
+
+
+      null
+
+
+
     );
 
-  const studentImage =
-    getValue(
-      student?.profile_image,
-      student?.photoURL,
-      student?.avatar,
+
+
+};
+
+
+
+
+
+
+
+const getClassName = (item) => {
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "class_title",
+
+
+
+        "class_name",
+
+
+
+        "course_title",
+
+
+
+        "course_name",
+
+
+
+        "title",
+
+
+
+        "name",
+
+
+
+      ],
+
+
+
       ""
-    );
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "title"],
+
+
+
+        ["class", "name"],
+
+
+
+        ["course", "title"],
+
+
+
+        ["course", "name"],
+
+
+
+        ["class_details", "title"],
+
+
+
+        ["class_details", "name"],
+
+
+
+      ],
+
+
+
+      "Untitled Class"
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getClassImage = (item) => {
+
+
 
   return (
-    <header className="sticky top-0 z-30 h-[82px] border-b border-white/[0.07] bg-[#020914]/90 backdrop-blur-xl">
-      <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">
 
-        <button
-          onClick={() =>
-            setMobileOpen(
-              true
-            )
-          }
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] lg:hidden"
-        >
-          <HiOutlineMenu
-            size={22}
-          />
-        </button>
 
-        {/* SEARCH */}
 
-        <div className="relative w-full max-w-[515px]">
-          <HiOutlineSearch
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"
-            size={21}
-          />
+    firstValue(
 
-          <input
-            placeholder="Search classes, sessions, recordings or topics..."
-            className="h-12 w-full rounded-xl border border-blue-500/20 bg-[#061426] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/35"
-          />
-        </div>
 
-        <div className="ml-auto flex items-center">
 
-          {/* NOTIFICATION */}
+      item,
 
-          <button className="relative flex h-[58px] w-[58px] items-center justify-center border-l border-white/[0.06]">
-            <HiOutlineBell
-              size={25}
-            />
 
-            <span className="absolute right-1 top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold">
-              3
-            </span>
-          </button>
 
-          {/* PROFILE */}
+      [
 
-          <button
-            onClick={() =>
-              navigate(
-                "/institute/website/preview/lms/profile"
-              )
-            }
-            className="flex items-center gap-3 border-l border-white/[0.06] px-4"
-          >
-            <div className="h-11 w-11 overflow-hidden rounded-full bg-blue-500/10">
-              {studentImage ? (
-                <img
-                  src={
-                    studentImage
-                  }
-                  alt={
-                    studentName
-                  }
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <HiOutlineUser
-                    size={21}
-                    className="text-blue-400"
-                  />
-                </div>
-              )}
-            </div>
 
-            <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold">
-                {
-                  studentName
-                }
-              </p>
 
-              <p className="text-xs text-white/45">
-                Student
-              </p>
-            </div>
+        "class_image",
 
-            <span className="hidden text-white/50 sm:block">
-             ⌄
-            </span>
-          </button>
-        </div>
-      </div>
-    </header>
+
+
+        "class_image_url",
+
+
+
+        "classImage",
+
+
+
+        "classImageUrl",
+
+
+
+        "course_image",
+
+
+
+        "course_image_url",
+
+
+
+        "image_url",
+
+
+
+        "image",
+
+
+
+        "thumbnail",
+
+
+
+        "thumbnail_url",
+
+
+
+        "cover_image",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "image"],
+
+
+
+        ["class", "image_url"],
+
+
+
+        ["class", "thumbnail"],
+
+
+
+        ["class", "thumbnail_url"],
+
+
+
+        ["class_details", "image"],
+
+
+
+        ["class_details", "image_url"],
+
+
+
+        ["course", "image"],
+
+
+
+        ["course", "image_url"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
   );
-}
 
-/* =========================================================
-   RECORDING CARD
-========================================================= */
 
-function RecordingCard({
-  recording,
-}) {
-  const title =
-    getRecordingTitle(
-      recording
+
+};
+
+
+
+
+
+
+
+const getMode = (item) => {
+
+
+
+  const value =
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "mode",
+
+
+
+        "class_mode",
+
+
+
+        "learning_mode",
+
+
+
+        "delivery_mode",
+
+
+
+        "session_mode",
+
+
+
+        "class_type",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "mode"],
+
+
+
+        ["class", "class_mode"],
+
+
+
+        ["class_details", "mode"],
+
+
+
+        ["course", "mode"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
     );
 
-  const course =
-    getCourseName(
-      recording
-    );
+
+
+
+
+
+
+  return String(value || "")
+
+
+
+    .trim()
+
+
+
+    .toUpperCase();
+
+
+
+};
+
+
+
+
+
+
+
+const getCategory = (item) => {
+
+
+
+  const category =
+
+
+
+    item?.category ||
+
+
+
+    item?.category_details ||
+
+
+
+    item?.class?.category ||
+
+
+
+    item?.class_details?.category;
+
+
+
+
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "category_name",
+
+
+
+        "categoryName",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    (typeof category === "string"
+
+
+
+      ? category
+
+
+
+      : "") ||
+
+
+
+    firstValue(
+
+
+
+      category,
+
+
+
+      [
+
+
+
+        "name",
+
+
+
+        "title",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getSubcategory = (item) => {
+
+
+
+  const subcategory =
+
+
+
+    item?.subcategory ||
+
+
+
+    item?.subcategory_details ||
+
+
+
+    item?.class?.subcategory ||
+
+
+
+    item?.class_details?.subcategory;
+
+
+
+
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "subcategory_name",
+
+
+
+        "subcategoryName",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    (typeof subcategory === "string"
+
+
+
+      ? subcategory
+
+
+
+      : "") ||
+
+
+
+    firstValue(
+
+
+
+      subcategory,
+
+
+
+      [
+
+
+
+        "name",
+
+
+
+        "title",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getTrainer = (item) => {
+
+
 
   const trainer =
-    getTrainerName(
-      recording
-    );
 
-  const trainerImage =
-    getTrainerImage(
-      recording
-    );
 
-  const thumbnail =
-    getThumbnail(
-      recording
-    );
 
-  const recordingUrl =
-    getRecordingUrl(
-      recording
-    );
+    item?.trainer ||
 
-  const downloadUrl =
-    getDownloadUrl(
-      recording
-    );
+
+
+    item?.trainer_details ||
+
+
+
+    item?.class?.trainer ||
+
+
+
+    item?.class_details?.trainer ||
+
+
+
+    item?.course?.trainer;
+
+
+
+
+
+
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-blue-500/20 bg-[#031120] transition hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-[0_10px_35px_rgba(0,100,255,.15)]">
 
-      {/* THUMBNAIL */}
 
-      <div className="relative h-[185px] overflow-hidden bg-gradient-to-br from-blue-950 to-purple-950">
 
-        {thumbnail ? (
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "trainer_name",
+
+
+
+        "trainerName",
+
+
+
+        "trainer_full_name",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstValue(
+
+
+
+      trainer,
+
+
+
+      [
+
+
+
+        "full_name",
+
+
+
+        "fullName",
+
+
+
+        "name",
+
+
+
+        "trainer_name",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    [
+
+
+
+      trainer?.first_name,
+
+
+
+      trainer?.last_name,
+
+
+
+    ]
+
+
+
+      .filter(Boolean)
+
+
+
+      .join(" ") ||
+
+
+
+    "Trainer"
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getTrainerImage = (item) => {
+
+
+
+  const trainer =
+
+
+
+    item?.trainer ||
+
+
+
+    item?.trainer_details ||
+
+
+
+    item?.class?.trainer ||
+
+
+
+    item?.class_details?.trainer;
+
+
+
+
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "trainer_image",
+
+
+
+        "trainer_image_url",
+
+
+
+        "trainerImage",
+
+
+
+        "trainer_profile_image",
+
+
+
+        "trainer_profile_image_url",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstValue(
+
+
+
+      trainer,
+
+
+
+      [
+
+
+
+        "image",
+
+
+
+        "image_url",
+
+
+
+        "profile_image",
+
+
+
+        "profileImage",
+
+
+
+        "profile_image_url",
+
+
+
+        "avatar",
+
+
+
+        "avatar_url",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getDuration = (item) => {
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "duration",
+
+
+
+        "duration_weeks",
+
+
+
+        "course_duration",
+
+
+
+        "weeks",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "duration"],
+
+
+
+        ["class_details", "duration"],
+
+
+
+        ["course", "duration"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getLevel = (item) => {
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "level",
+
+
+
+        "difficulty",
+
+
+
+        "class_level",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "level"],
+
+
+
+        ["class_details", "level"],
+
+
+
+        ["course", "level"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    "Beginner"
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getAvailableDays = (item) => {
+
+
+
+  const value =
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "available_days",
+
+
+
+        "availableDays",
+
+
+
+        "days",
+
+
+
+        "class_days",
+
+
+
+        "week_days",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "available_days"],
+
+
+
+        ["class", "days"],
+
+
+
+        ["class_details", "available_days"],
+
+
+
+        ["course", "available_days"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    );
+
+
+
+
+
+
+
+  if (Array.isArray(value)) {
+
+
+
+    return value.join(", ");
+
+
+
+  }
+
+
+
+
+
+
+
+  return value;
+
+
+
+};
+
+
+
+
+
+
+
+const getStartDate = (item) => {
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "start_date",
+
+
+
+        "startDate",
+
+
+
+        "class_start_date",
+
+
+
+        "course_start_date",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "start_date"],
+
+
+
+        ["class_details", "start_date"],
+
+
+
+        ["course", "start_date"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getStartTime = (item) => {
+
+
+
+  return (
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "start_time",
+
+
+
+        "startTime",
+
+
+
+        "class_start_time",
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    ) ||
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "start_time"],
+
+
+
+        ["class_details", "start_time"],
+
+
+
+        ["course", "start_time"],
+
+
+
+      ],
+
+
+
+      ""
+
+
+
+    )
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getPrice = (item) => {
+
+
+
+  return firstValue(
+
+
+
+    item,
+
+
+
+    [
+
+
+
+      "price",
+
+
+
+      "class_price",
+
+
+
+      "course_price",
+
+
+
+      "amount",
+
+
+
+    ],
+
+
+
+    null
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getLessons = (item) => {
+
+
+
+  const value =
+
+
+
+    firstValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        "total_lessons",
+
+
+
+        "lesson_count",
+
+
+
+        "lessons_count",
+
+
+
+      ],
+
+
+
+      null
+
+
+
+    ) ??
+
+
+
+    firstNestedValue(
+
+
+
+      item,
+
+
+
+      [
+
+
+
+        ["class", "total_lessons"],
+
+
+
+        ["class", "lesson_count"],
+
+
+
+        ["class_details", "total_lessons"],
+
+
+
+      ],
+
+
+
+      null
+
+
+
+    );
+
+
+
+
+
+
+
+  if (value !== null) {
+
+
+
+    return Number(value) || 0;
+
+
+
+  }
+
+
+
+
+
+
+
+  const lessons =
+
+
+
+    item?.lessons ||
+
+
+
+    item?.class?.lessons ||
+
+
+
+    item?.class_details?.lessons;
+
+
+
+
+
+
+
+  return Array.isArray(lessons)
+
+
+
+    ? lessons.length
+
+
+
+    : 0;
+
+
+
+};
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   MEDIA URL
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+const resolveMediaUrl = (value) => {
+
+
+
+  if (!value) {
+
+
+
+    return "";
+
+
+
+  }
+
+
+
+
+
+
+
+  const url = String(value).trim();
+
+
+
+
+
+
+
+  if (!url) {
+
+
+
+    return "";
+
+
+
+  }
+
+
+
+
+
+
+
+  if (
+
+
+
+    url.startsWith("http\://") ||
+
+
+
+    url.startsWith("https\://") ||
+
+
+
+    url.startsWith("data:") ||
+
+
+
+    url.startsWith("blob:")
+
+
+
+  ) {
+
+
+
+    return url;
+
+
+
+  }
+
+
+
+
+
+
+
+  try {
+
+
+
+    const base =
+
+
+
+      API?.defaults?.baseURL ||
+
+
+
+      window.location.origin;
+
+
+
+
+
+
+
+    const origin = new URL(
+
+
+
+      base,
+
+
+
+      window.location.origin
+
+
+
+    ).origin;
+
+
+
+
+
+
+
+    return url.startsWith("/")
+
+
+
+      ? `${origin}${url}`
+
+
+
+      : `${origin}/${url}`;
+
+
+
+  } catch {
+
+
+
+    return url;
+
+
+
+  }
+
+
+
+};
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   DATE FORMAT
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+const formatDate = (value) => {
+
+
+
+  if (!value) {
+
+
+
+    return "";
+
+
+
+  }
+
+
+
+
+
+
+
+  const date = new Date(value);
+
+
+
+
+
+
+
+  if (Number.isNaN(date.getTime())) {
+
+
+
+    return String(value);
+
+
+
+  }
+
+
+
+
+
+
+
+  return date.toLocaleDateString(
+
+
+
+    "en-IN",
+
+
+
+    {
+
+
+
+      day: "2-digit",
+
+
+
+      month: "short",
+
+
+
+      year: "numeric",
+
+
+
+    }
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   RECORDING HELPERS
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+const getRecordingUrl = (item) => {
+
+
+
+  return (
+
+
+
+    item?.recording_url ||
+
+
+
+    item?.recordingUrl ||
+
+
+
+    item?.url ||
+
+
+
+    item?.video_url ||
+
+
+
+    item?.videoUrl ||
+
+
+
+    item?.recording?.recording_url ||
+
+
+
+    item?.recording?.recordingUrl ||
+
+
+
+    item?.recording?.url ||
+
+
+
+    item?.session?.recording_url ||
+
+
+
+    item?.session?.recordingUrl ||
+
+
+
+    item?.session?.recording?.url ||
+
+
+
+    null
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getRecordingClassId = (item) => {
+
+
+
+  return (
+
+
+
+    item?.class_id ||
+
+
+
+    item?.classId ||
+
+
+
+    item?.course_id ||
+
+
+
+    item?.courseId ||
+
+
+
+    item?.class?.id ||
+
+
+
+    item?.class_details?.id ||
+
+
+
+    item?.session?.class_id ||
+
+
+
+    item?.session?.classId ||
+
+
+
+    item?.session?.class?.id ||
+
+
+
+    null
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const getRecordingClassName = (item) => {
+
+
+
+  return (
+
+
+
+    item?.class_title ||
+
+
+
+    item?.class_name ||
+
+
+
+    item?.class?.title ||
+
+
+
+    item?.class?.name ||
+
+
+
+    item?.class_details?.title ||
+
+
+
+    item?.class_details?.name ||
+
+
+
+    item?.session?.class_title ||
+
+
+
+    item?.session?.class_name ||
+
+
+
+    item?.session?.class?.title ||
+
+
+
+    item?.session?.class?.name ||
+
+
+
+    null
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+
+
+const normalizeRecording = (
+
+
+
+  item,
+
+
+
+  index
+
+
+
+) => {
+
+
+
+  return {
+
+
+
+    id:
+
+
+
+      item?.id ||
+
+
+
+      item?.recording_id ||
+
+
+
+      item?.recordingId ||
+
+
+
+      item?.session_id ||
+
+
+
+      item?.sessionId ||
+
+
+
+      `recording-${index}`,
+
+
+
+
+
+
+
+    title:
+
+
+
+      item?.title ||
+
+
+
+      item?.session_title ||
+
+
+
+      item?.session_name ||
+
+
+
+      item?.recording_title ||
+
+
+
+      item?.recordingTitle ||
+
+
+
+      "Recorded Session",
+
+
+
+
+
+
+
+    classId:
+
+
+
+      getRecordingClassId(item),
+
+
+
+
+
+
+
+    className:
+
+
+
+      getRecordingClassName(item),
+
+
+
+
+
+
+
+    trainer:
+
+
+
+      item?.trainer_name ||
+
+
+
+      item?.trainerName ||
+
+
+
+      item?.trainer?.name ||
+
+
+
+      item?.trainer?.full_name ||
+
+
+
+      "Trainer",
+
+
+
+
+
+
+
+    trainerImage:
+
+
+
+      item?.trainer_image ||
+
+
+
+      item?.trainerImage ||
+
+
+
+      item?.trainer?.image ||
+
+
+
+      item?.trainer?.image_url ||
+
+
+
+      item?.trainer?.profile_image ||
+
+
+
+      "",
+
+
+
+
+
+
+
+    image:
+
+
+
+      item?.class_image ||
+
+
+
+      item?.class_image_url ||
+
+
+
+      item?.class?.image ||
+
+
+
+      item?.class?.image_url ||
+
+
+
+      "",
+
+
+
+
+
+
+
+    date:
+
+
+
+      item?.session_date ||
+
+
+
+      item?.sessionDate ||
+
+
+
+      item?.recording_date ||
+
+
+
+      item?.recordingDate ||
+
+
+
+      item?.date ||
+
+
+
+      item?.created_at ||
+
+
+
+      item?.createdAt ||
+
+
+
+      null,
+
+
+
+
+
+
+
+    duration:
+
+
+
+      item?.recording_duration ||
+
+
+
+      item?.recordingDuration ||
+
+
+
+      item?.duration ||
+
+
+
+      null,
+
+
+
+
+
+
+
+    views:
+
+
+
+      item?.recording_views ??
+
+
+
+      item?.recordingViews ??
+
+
+
+      item?.views ??
+
+
+
+      item?.view_count ??
+
+
+
+      null,
+
+
+
+
+
+
+
+    url:
+
+
+
+      getRecordingUrl(item),
+
+
+
+
+
+
+
+    downloadUrl:
+
+
+
+      item?.recording_download_url ||
+
+
+
+      item?.recordingDownloadUrl ||
+
+
+
+      item?.download_url ||
+
+
+
+      item?.downloadUrl ||
+
+
+
+      null,
+
+
+
+
+
+
+
+    recordingType:
+
+
+
+      item?.recording_type ||
+
+
+
+      item?.recordingType ||
+
+
+
+      item?.type ||
+
+
+
+      "VIDEO",
+
+
+
+  };
+
+
+
+};
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   API
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+
+
+const fetchUserOfflineClasses = async () => {
+
+  try {
+
+    const response = await API.get("/bookings/my-bookings");
+
+
+
+    console.log(
+
+      "MY BOOKINGS API RESPONSE:",
+
+      response?.data
+
+    );
+
+
+
+    const bookings = getArrayFromResponse(response);
+
+
+
+    console.log(
+
+      "MY BOOKINGS:",
+
+      bookings
+
+    );
+
+
+
+    /*
+
+     * IMPORTANT:
+
+     * This page must show ONLY classes that the
+
+     * currently logged-in student has actually booked.
+
+     */
+
+    const activeBookings = bookings.filter((booking) => {
+
+      const status = String(
+
+        booking?.status ??
+
+          booking?.booking_status ??
+
+          ""
+
+      )
+
+        .trim()
+
+        .toUpperCase();
+
+
+
+      const paymentStatus = String(
+
+        booking?.payment_status ??
+
+          booking?.paymentStatus ??
+
+          booking?.payment?.status ??
+
+          ""
+
+      )
+
+        .trim()
+
+        .toUpperCase();
+
+
+
+      const validBookingStatus =
+
+        status === "" ||
+
+        ["CONFIRMED", "ACTIVE", "COMPLETED"].includes(
+
+          status
+
+        );
+
+
+
+      const validPayment =
+
+        paymentStatus === "" ||
+
+        ["PAID", "SUCCESS", "COMPLETED"].includes(
+
+          paymentStatus
+
+        );
+
+
+
+      return validBookingStatus && validPayment;
+
+    });
+
+
+
+    /*
+
+     * Convert each booking into the class shape used by
+
+     * OfflineClassCard, then keep ONLY OFFLINE classes.
+
+     */
+
+    const offlineClasses = activeBookings
+
+      .map((booking) => {
+
+        const classData =
+
+          booking?.class ||
+
+          booking?.course ||
+
+          booking?.class_details ||
+
+          booking?.course_details ||
+
+          {};
+
+
+
+        const classId =
+
+          booking?.class_id ??
+
+          booking?.classId ??
+
+          booking?.course_id ??
+
+          booking?.courseId ??
+
+          classData?.id ??
+
+          null;
+
+
+
+        if (
+
+          classId === null ||
+
+          classId === undefined ||
+
+          classId === ""
+
+        ) {
+
+          return null;
+
+        }
+
+
+
+        const mode = String(
+
+          classData?.mode ??
+
+            classData?.class_mode ??
+
+            booking?.mode ??
+
+            booking?.class_mode ??
+
+            booking?.booking_mode ??
+
+            ""
+
+        )
+
+          .trim()
+
+          .toUpperCase();
+
+
+
+        if (mode !== "OFFLINE") {
+
+          return null;
+
+        }
+
+
+
+        return {
+
+          ...classData,
+
+
+
+          id: Number(classId),
+
+          class_id: Number(classId),
+
+
+
+          title:
+
+            classData?.title ||
+
+            classData?.name ||
+
+            booking?.class_title ||
+
+            booking?.class_name ||
+
+            booking?.course_title ||
+
+            booking?.course_name ||
+
+            "Untitled Class",
+
+
+
+          image:
+
+            classData?.image ||
+
+            classData?.image_url ||
+
+            booking?.class_image ||
+
+            booking?.class_image_url ||
+
+            booking?.course_image ||
+
+            booking?.course_image_url ||
+
+            null,
+
+
+
+          class_image:
+
+            classData?.image ||
+
+            classData?.image_url ||
+
+            booking?.class_image ||
+
+            booking?.class_image_url ||
+
+            booking?.course_image ||
+
+            booking?.course_image_url ||
+
+            null,
+
+
+
+          mode: "OFFLINE",
+
+
+
+          trainer_id:
+
+            classData?.trainer_id ??
+
+            booking?.trainer_id ??
+
+            null,
+
+
+
+          trainer_name:
+
+            classData?.trainer_name ||
+
+            booking?.trainer_name ||
+
+            booking?.trainer?.full_name ||
+
+            booking?.trainer?.name ||
+
+            "Trainer",
+
+
+
+          trainer_image:
+
+            classData?.trainer_image ||
+
+            booking?.trainer_image ||
+
+            booking?.trainer?.profile_image ||
+
+            booking?.trainer?.image ||
+
+            null,
+
+
+
+          booking_id:
+
+            booking?.id ??
+
+            booking?.booking_id ??
+
+            null,
+
+
+
+          enrollment_id:
+
+            booking?.id ??
+
+            booking?.booking_id ??
+
+            null,
+
+
+
+          booking_status:
+
+            booking?.status ||
+
+            booking?.booking_status ||
+
+            null,
+
+
+
+          payment_status:
+
+            booking?.payment_status ||
+
+            booking?.paymentStatus ||
+
+            null,
+
+
+
+          enrolled_on:
+
+            booking?.created_at ||
+
+            booking?.booked_at ||
+
+            booking?.enrolled_on ||
+
+            null,
+
+
+
+          booking,
+
+        };
+
+      })
+
+      .filter(Boolean);
+
+
+
+    /*
+
+     * One card per class.
+
+     * If duplicate booking records exist for the same class,
+
+     * show that class only once.
+
+     */
+
+    const uniqueOfflineClasses = Array.from(
+
+      new Map(
+
+        offlineClasses.map((course) => [
+
+          String(course.id),
+
+          course,
+
+        ])
+
+      ).values()
+
+    );
+
+
+
+    console.log(
+
+      "FINAL BOOKED OFFLINE CLASSES:",
+
+      uniqueOfflineClasses
+
+    );
+
+
+
+    return uniqueOfflineClasses;
+
+  } catch (error) {
+
+    console.error(
+
+      "FAILED TO LOAD BOOKED OFFLINE CLASSES:",
+
+      error?.response?.data ||
+
+        error?.message ||
+
+        error
+
+    );
+
+
+
+    throw error;
+
+  }
+
+};
+
+
+
+const fetchUserRecordings =
+
+
+
+  async () => {
+
+
+
+    const response =
+
+
+
+      await API.get(
+
+
+
+        "/recordings/users"
+
+
+
+      );
+
+
+
+
+
+
+
+    const recordings =
+
+
+
+      getArrayFromResponse(
+
+
+
+        response
+
+
+
+      );
+
+
+
+
+
+
+
+    console.log(
+
+
+
+      "USER RECORDINGS:",
+
+
+
+      recordings
+
+
+
+    );
+
+
+
+
+
+
+
+    return recordings;
+
+
+
+  };
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   CLASS CARD
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+function OfflineClassCard({
+
+
+
+  course,
+
+
+
+  recordings,
+
+
+
+  onViewRecordings,
+
+
+
+}) {
+
+
+
+  const navigate = useNavigate();
+
+
+
+  const classId =
+
+
+
+    getClassId(course);
+
+
+
+
+
+
+
+  const className =
+
+
+
+    getClassName(course);
+
+
+
+
+
+
+
+  const image =
+
+
+
+    resolveMediaUrl(
+
+
+
+      getClassImage(course)
+
+
+
+    );
+
+
+
+
+
+
+
+  const trainer =
+
+
+
+    getTrainer(course);
+
+
+
+
+
+
+
+  const trainerImage =
+
+
+
+    resolveMediaUrl(
+
+
+
+      getTrainerImage(course)
+
+
+
+    );
+
+
+
+
+
+
+
+  const category =
+
+
+
+    getCategory(course);
+
+
+
+
+
+
+
+  const subcategory =
+
+
+
+    getSubcategory(course);
+
+
+
+
+
+
+
+  const duration =
+
+
+
+    getDuration(course);
+
+
+
+
+
+
+
+  const level =
+
+
+
+    getLevel(course);
+
+
+
+
+
+
+
+  const days =
+
+
+
+    getAvailableDays(course);
+
+
+
+
+
+
+
+  const startDate =
+
+
+
+    getStartDate(course);
+
+
+
+
+
+
+
+  const startTime =
+
+
+
+    getStartTime(course);
+
+
+
+
+
+
+
+  const price =
+
+
+
+    getPrice(course);
+
+
+
+
+
+
+
+  const lessons =
+
+
+
+    getLessons(course);
+
+
+
+
+
+
+
+  const classRecordings =
+
+
+
+    recordings.filter(
+
+
+
+      (recording) => {
+
+
+
+        if (
+
+
+
+          recording.classId !==
+
+
+
+            null &&
+
+
+
+          recording.classId !==
+
+
+
+            undefined &&
+
+
+
+          classId !== null &&
+
+
+
+          classId !== undefined
+
+
+
+        ) {
+
+
+
+          return (
+
+
+
+            String(
+
+
+
+              recording.classId
+
+
+
+            ) ===
+
+
+
+            String(classId)
+
+
+
+          );
+
+
+
+        }
+
+
+
+
+
+
+
+        return (
+
+
+
+          String(
+
+
+
+            recording.className ||
+
+
+
+              ""
+
+
+
+          )
+
+
+
+            .trim()
+
+
+
+            .toLowerCase() ===
+
+
+
+          String(className || "")
+
+
+
+            .trim()
+
+
+
+            .toLowerCase()
+
+
+
+        );
+
+
+
+      }
+
+
+
+    );
+
+
+
+
+
+
+
+  return (
+
+
+
+    <article
+
+      onClick={() => {
+
+        const id = getClassId(course);
+
+        if (id === null || id === undefined || id === "") {
+
+          console.error("Cannot navigate: class ID is missing", course);
+
+          return;
+
+        }
+
+        navigate(`/institute/website/preview/lms/my-learning/${id}`);
+
+      }}
+
+      className="group cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#050505] transition duration-300 hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-950/20"
+
+    >
+
+
+
+
+
+
+
+      {/* IMAGE */}
+
+
+
+
+
+
+
+      <div className="relative h-[200px] overflow-hidden bg-[#050b14]">
+
+
+
+
+
+
+
+        {image ? (
+
+
+
           <img
-            src={
-              thumbnail
-            }
-            alt={
-              title
-            }
+
+
+
+            src={image}
+
+
+
+            alt={className}
+
+
+
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+
+
+
+            onError={(event) => {
+
+
+
+              event.currentTarget.style.display =
+
+
+
+                "none";
+
+
+
+            }}
+
+
+
           />
+
+
+
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <HiOutlinePlay
-              size={65}
-              className="text-blue-400/60"
+
+
+
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#24102b] via-[#11111a] to-[#17101e]">
+
+
+
+            <HiBookOpen
+
+
+
+              size={55}
+
+
+
+              className="text-blue-400/50"
+
+
+
             />
+
+
+
           </div>
+
+
+
         )}
+
+
+
+
+
+
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-        {/* PLAY */}
 
-        <a
-          href={
-            recordingUrl ||
-            "#"
-          }
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white opacity-90 shadow-[0_0_30px_rgba(0,110,255,.5)] transition hover:scale-110"
-        >
-          <HiOutlinePlay
-            size={26}
-          />
-        </a>
 
-        {/* DURATION */}
 
-        <span className="absolute bottom-3 right-3 rounded-md bg-black/80 px-2 py-1 text-xs font-semibold">
-          {formatDuration(
-            recording?.duration_seconds
-          )}
+
+
+
+        {/* OFFLINE */}
+
+
+
+
+
+
+
+        <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+
+
+
+          OFFLINE
+
+
+
         </span>
 
-        {/* TYPE */}
 
-        <span className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-3 py-1 text-[11px] font-bold">
-          {String(
-            recording?.recording_type ||
-              "VIDEO"
-          ).toUpperCase()}
+
+
+
+
+
+        {/* BOOKED */}
+
+
+
+
+
+
+
+        <span className="absolute right-4 top-4 rounded-full bg-green-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
+
+
+
+          BOOKED
+
+
+
         </span>
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
 
       {/* CONTENT */}
 
+
+
+
+
+
+
       <div className="p-5">
 
-        <h3 className="line-clamp-2 min-h-[48px] text-lg font-bold">
-          {
-            title
-          }
+
+
+
+
+
+
+        {/* TITLE */}
+
+
+
+
+
+
+
+        <h3 className="min-h-[50px] text-xl font-bold leading-6 text-white">
+
+
+
+          {className}
+
+
+
         </h3>
 
-        <p className="mt-2 truncate text-sm text-blue-400">
-          {
-            course
-          }
-        </p>
+
+
+
+
+
+
+        {/* CATEGORY */}
+
+
+
+
+
+
+
+        {(category ||
+
+
+
+          subcategory) && (
+
+
+
+          <div className="mt-2 flex flex-wrap gap-2">
+
+
+
+
+
+
+
+            {category && (
+
+
+
+              <span className="rounded-full bg-blue-500/15 px-3 py-1 text-xs text-blue-300">
+
+
+
+                {category}
+
+
+
+              </span>
+
+
+
+            )}
+
+
+
+
+
+
+
+            {subcategory && (
+
+
+
+              <span className="rounded-full bg-blue-500/15 px-3 py-1 text-xs text-blue-300">
+
+
+
+                {subcategory}
+
+
+
+              </span>
+
+
+
+            )}
+
+
+
+
+
+
+
+          </div>
+
+
+
+        )}
+
+
+
+
+
+
+
+        {/* TRAINER */}
+
+
+
+
+
+
 
         <div className="mt-4 flex items-center gap-3">
 
-          <div className="h-9 w-9 overflow-hidden rounded-full bg-blue-500/10">
-            {trainerImage ? (
-              <img
-                src={
-                  trainerImage
-                }
-                alt={
-                  trainer
-                }
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <HiOutlineUser
-                  size={17}
-                  className="text-blue-400"
-                />
-              </div>
-            )}
-          </div>
 
-          <div>
-            <p className="text-sm font-medium">
-              {
-                trainer
-              }
-            </p>
 
-            <p className="text-xs text-white/40">
-              {
-                formatDate(
-                  getRecordingDate(
-                    recording
-                  )
-                )
-              }
-            </p>
-          </div>
-        </div>
 
-        {/* ACTIONS */}
 
-        <div className="mt-5 flex gap-2">
 
-          <a
-            href={
-              recordingUrl ||
-              "#"
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 text-sm font-bold transition hover:bg-blue-500"
-          >
-            <HiOutlinePlay
-              size={18}
+
+          {trainerImage ? (
+
+
+
+            <img
+
+
+
+              src={trainerImage}
+
+
+
+              alt={trainer}
+
+
+
+              className="h-9 w-9 rounded-full object-cover"
+
+
+
             />
 
-            Watch
-          </a>
 
-          {downloadUrl && (
-            <a
-              href={
-                downloadUrl
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="flex h-[46px] w-[48px] items-center justify-center rounded-lg border border-blue-500/50 text-blue-300 transition hover:bg-blue-500/10"
-              title="Download"
-            >
-              <HiOutlineDownload
-                size={19}
-              />
-            </a>
+
+          ) : (
+
+
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-500">
+
+
+
+              <HiUser size={17} />
+
+
+
+            </div>
+
+
+
           )}
 
-          {recordingUrl && (
-            <a
-              href={
-                recordingUrl
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-[46px] w-[48px] items-center justify-center rounded-lg border border-blue-500/50 text-blue-300 transition hover:bg-blue-500/10"
-              title="Open recording"
-            >
-              <HiOutlineExternalLink
-                size={18}
-              />
-            </a>
-          )}
+
+
+
+
+
+
+          <div>
+
+
+
+            <p className="text-[11px] text-white/50">
+
+
+
+              Trainer
+
+
+
+            </p>
+
+
+
+
+
+
+
+            <p className="text-sm font-medium text-white">
+
+
+
+              {trainer}
+
+
+
+            </p>
+
+
+
+          </div>
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+        {/* DETAILS */}
+
+
+
+
+
+
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+
+
+
+
+
+
+
+          <DetailItem
+
+
+
+            icon={<HiBookOpen />}
+
+
+
+            label="Lessons"
+
+
+
+            value={
+
+
+
+              lessons
+
+
+
+                ? lessons
+
+
+
+                : "N/A"
+
+
+
+            }
+
+
+
+          />
+
+
+
+
+
+
+
+          <DetailItem
+
+
+
+            icon={<HiClock />}
+
+
+
+            label="Duration"
+
+
+
+            value={
+
+
+
+              duration ||
+
+
+
+              "Flexible"
+
+
+
+            }
+
+
+
+          />
+
+
+
+
+
+
+
+          <DetailItem
+
+
+
+            icon={<HiCalendar />}
+
+
+
+            label="Start Date"
+
+
+
+            value={
+
+
+
+              startDate
+
+
+
+                ? formatDate(
+
+
+
+                    startDate
+
+
+
+                  )
+
+
+
+                : "N/A"
+
+
+
+            }
+
+
+
+          />
+
+
+
+
+
+
+
+          <DetailItem
+
+
+
+            icon={<HiClock />}
+
+
+
+            label="Start Time"
+
+
+
+            value={
+
+
+
+              startTime ||
+
+
+
+              "N/A"
+
+
+
+            }
+
+
+
+          />
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {/* DAYS */}
+
+
+
+
+
+
+
+        {days && (
+
+
+
+          <div className="mt-4 flex items-center gap-2 text-sm text-white/70">
+
+
+
+
+
+
+
+            <HiCalendar
+
+
+
+              size={17}
+
+
+
+              className="text-blue-400"
+
+
+
+            />
+
+
+
+
+
+
+
+            <span>
+
+
+
+              {days}
+
+
+
+            </span>
+
+
+
+
+
+
+
+          </div>
+
+
+
+        )}
+
+
+
+
+
+
+
+        {/* LEVEL */}
+
+
+
+
+
+
+
+        <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
+
+
+
+
+
+
+
+          <span className="text-blue-400">
+
+
+
+            Level:
+
+
+
+          </span>
+
+
+
+
+
+
+
+          <span className="text-white">
+
+
+
+            {level}
+
+
+
+          </span>
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {/* PRICE */}
+
+
+
+
+
+
+
+        {price !== null &&
+
+
+
+          price !== undefined &&
+
+
+
+          price !== "" && (
+
+
+
+            <div className="mt-4 text-xl font-bold text-white">
+
+
+
+              ₹{price}
+
+
+
+            </div>
+
+
+
+          )}
+
+
+
+
+
+
+
+        {/* RECORDING COUNT */}
+
+
+
+
+
+
+
+        <div className="mt-4 flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
+
+
+
+
+
+
+
+          <span className="text-xs text-white/60">
+
+
+
+            Available Recordings
+
+
+
+          </span>
+
+
+
+
+
+
+
+          <span className="font-semibold text-blue-300">
+
+
+
+            {classRecordings.length}
+
+
+
+          </span>
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {/* BUTTON */}
+
+
+
+
+
+{/*&#x20;
+
+        <button
+
+          type="button"
+
+          onClick={(event) => {
+
+            event.stopPropagation();
+
+            onViewRecordings(classId, className);
+
+          }}
+
+
+
+          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-sm font-semibold text-white transition hover:brightness-110"
+
+
+
+
+
+        > */}
+
+
+
+<button
+
+  type="button"
+
+  onClick={(event) => {
+
+    event.stopPropagation();
+
+
+
+    if (
+
+      classId === null ||
+
+      classId === undefined ||
+
+      classId === ""
+
+    ) {
+
+      console.error("Class ID is missing:", classId);
+
+      return;
+
+    }
+
+
+
+    navigate(`/institute/website/preview/lms/my-learning/${classId}`);
+
+  }}
+
+  className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-sm font-semibold text-white transition hover:brightness-110"
+
+>
+
+  <HiPlay className="text-lg" />
+
+  {classRecordings.length > 0
+
+    ? "View Recordings"
+
+    : "Open My Learning"}
+
+</button>
+
+{/*&#x20;
+
+          <HiPlay size={17} />
+
+
+
+
+
+
+
+          {classRecordings.length >
+
+
+
+          0
+
+
+
+            ? "View Recordings"
+
+
+
+            : "No Recordings Yet"} */}
+
+
+
+{/*         </button> */}
+
+
+
+
+
+
+
       </div>
-    </div>
+
+
+
+    </article>
+
+
+
   );
+
+
+
 }
 
+
+
+
+
+
+
 /* =========================================================
-   MAIN
-========================================================= */
 
-export default function WebsiteRecordings() {
-  const navigate =
-    useNavigate();
 
-  const outletContext =
-    useOutletContext() ||
-    {};
 
-  const {
-    branding:
-      outletBranding = {},
-  } = outletContext;
+   DETAIL ITEM
 
-  const branding =
-    useMemo(
-      () =>
-        normalizeBranding(
-          outletBranding
-        ),
-      [
-        outletBranding,
-      ]
-    );
 
-  /* =======================================================
-     STATE
-  ======================================================= */
 
-  const [
-    recordings,
-    setRecordings,
-  ] = useState([]);
+\========================================================= */
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
 
-  const [
-    error,
-    setError,
-  ] = useState("");
 
-  const [
-    search,
-    setSearch,
-  ] = useState("");
 
-  const [
-    classFilter,
-    setClassFilter,
-  ] = useState(
-    "ALL"
-  );
 
-  const [
-    trainerFilter,
-    setTrainerFilter,
-  ] = useState(
-    "ALL"
-  );
 
-  const [
-    mobileOpen,
-    setMobileOpen,
-  ] = useState(false);
 
-  const [
-    student,
-    setStudent,
-  ] = useState(null);
+function DetailItem({
 
-  /* =======================================================
-     STUDENT
-  ======================================================= */
 
-  useEffect(() => {
-    try {
-      const saved =
-        localStorage.getItem(
-          "studentUser"
-        );
 
-      if (saved) {
-        setStudent(
-          JSON.parse(
-            saved
-          )
-        );
-      }
-    } catch {
-      setStudent(null);
-    }
-  }, []);
+  icon,
 
-  /* =======================================================
-     FETCH RECORDINGS
-  ======================================================= */
 
-  const fetchRecordings =
-    async () => {
-      try {
-        setLoading(
-          true
-        );
 
-        setError("");
+  label,
 
-        const params = {};
 
-        if (
-          search.trim()
-        ) {
-          params.search =
-            search.trim();
-        }
 
-        if (
-          classFilter !==
-          "ALL"
-        ) {
-          params.class_id =
-            classFilter;
-        }
+  value,
 
-        if (
-          trainerFilter !==
-          "ALL"
-        ) {
-          params.trainer_id =
-            trainerFilter;
-        }
 
-        /*
-         * Student recordings endpoint.
-         *
-         * The backend service already filters
-         * recordings using the logged-in account
-         * and confirmed/paid bookings.
-         */
 
-        const response =
-          await API.get(
-            "/recordings/students",
-            {
-              params,
-            }
-          );
+}) {
 
-        const data =
-          getResponseData(
-            response
-          );
 
-        setRecordings(
-          Array.isArray(
-            data
-          )
-            ? data
-            : []
-        );
-      } catch (err) {
-        console.error(
-          "Failed to load recordings:",
-          err
-        );
-
-        setError(
-          err?.response
-            ?.data?.message ||
-            "Unable to load recordings."
-        );
-
-        setRecordings(
-          []
-        );
-      } finally {
-        setLoading(
-          false
-        );
-      }
-    };
-
-  useEffect(() => {
-    fetchRecordings();
-  }, [
-    search,
-    classFilter,
-    trainerFilter,
-  ]);
-
-  /* =======================================================
-     FILTER OPTIONS
-  ======================================================= */
-
-  const classOptions =
-    useMemo(() => {
-      const values =
-        recordings
-          .map(
-            recording =>
-              getCourseName(
-                recording
-              )
-          )
-          .filter(
-            Boolean
-          );
-
-      return [
-        "ALL",
-        ...Array.from(
-          new Set(
-            values
-          )
-        ),
-      ];
-    }, [
-      recordings,
-    ]);
-
-  const trainerOptions =
-    useMemo(() => {
-      const values =
-        recordings
-          .map(
-            recording =>
-              getTrainerName(
-                recording
-              )
-          )
-          .filter(
-            Boolean
-          );
-
-      return [
-        "ALL",
-        ...Array.from(
-          new Set(
-            values
-          )
-        ),
-      ];
-    }, [
-      recordings,
-    ]);
-
-  /* =======================================================
-     LOCAL FILTER
-  ======================================================= */
-
-  const filteredRecordings =
-    useMemo(() => {
-      return recordings.filter(
-        recording => {
-          const title =
-            getRecordingTitle(
-              recording
-            ).toLowerCase();
-
-          const course =
-            getCourseName(
-              recording
-            ).toLowerCase();
-
-          const trainer =
-            getTrainerName(
-              recording
-            ).toLowerCase();
-
-          const keyword =
-            search
-              .toLowerCase()
-              .trim();
-
-          const matchesSearch =
-            !keyword ||
-            title.includes(
-              keyword
-            ) ||
-            course.includes(
-              keyword
-            ) ||
-            trainer.includes(
-              keyword
-            );
-
-          const matchesClass =
-            classFilter ===
-              "ALL" ||
-            course ===
-              String(
-                classFilter
-              ).toLowerCase();
-
-          const matchesTrainer =
-            trainerFilter ===
-              "ALL" ||
-            trainer ===
-              String(
-                trainerFilter
-              ).toLowerCase();
-
-          return (
-            matchesSearch &&
-            matchesClass &&
-            matchesTrainer
-          );
-        }
-      );
-    }, [
-      recordings,
-      search,
-      classFilter,
-      trainerFilter,
-    ]);
-
-  /* =======================================================
-     STATS
-  ======================================================= */
-
-  const totalRecordings =
-    recordings.length;
-
-  const totalDuration =
-    recordings.reduce(
-      (sum, recording) =>
-        sum +
-        Number(
-          recording?.duration_seconds ||
-            0
-        ),
-      0
-    );
-
-  const totalHours =
-    (
-      totalDuration /
-      3600
-    ).toFixed(1);
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
 
   return (
-    <div
-      className="min-h-screen bg-[#020914] text-white"
-      style={{
-        fontFamily: `'${branding.fontBody}', sans-serif`,
-      }}
-    >
 
-      {/* SIDEBAR */}
 
-      <Sidebar
-        navigate={
-          navigate
-        }
-        mobileOpen={
-          mobileOpen
-        }
-        setMobileOpen={
-          setMobileOpen
-        }
-      />
 
-      {/* MAIN */}
+    <div className="rounded-lg bg-white/[0.03] p-3">
 
-      <div className="lg:pl-[270px]">
 
-        {/* HEADER */}
 
-        <TopHeader
-          navigate={
-            navigate
-          }
-          student={
-            student
-          }
-          setMobileOpen={
-            setMobileOpen
-          }
-        />
 
-        <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 lg:px-8">
 
-          {/* =================================================
-              PAGE HEADER
-          ================================================= */}
 
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
 
-            <div>
-              <h1
-                className="text-4xl font-bold tracking-tight sm:text-5xl"
-                style={{
-                  color:
-                    branding.headingColor,
-                }}
-              >
-                My{" "}
-                <span className="text-blue-500">
-                  Recordings
-                </span>
-              </h1>
+      <div className="flex items-center gap-2 text-xs text-white/50">
 
-              <p className="mt-2 text-base text-white/70">
-                Rewatch your completed live
-                classes, practice at your own
-                pace and continue learning.
-              </p>
-            </div>
 
-            {/* BANNER */}
 
-            <div className="relative flex min-h-[90px] min-w-[310px] items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 px-6">
+        <span className="text-blue-400">
 
-              <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-purple-300/10 blur-2xl" />
 
-              <HiOutlinePlay
-                size={40}
-                className="mr-5"
+
+          {icon}
+
+
+
+        </span>
+
+
+
+
+
+
+
+        {label}
+
+
+
+      </div>
+
+
+
+
+
+
+
+      <p className="mt-1 text-sm font-medium text-white">
+
+
+
+        {value}
+
+
+
+      </p>
+
+
+
+
+
+
+
+    </div>
+
+
+
+  );
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   RECORDING CARD
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+function RecordingCard({
+
+
+
+  recording,
+
+
+
+  onPlay,
+
+
+
+  onDownload,
+
+
+
+}) {
+
+
+
+  const initials =
+
+
+
+    recording.trainer
+
+
+
+      ? recording.trainer
+
+
+
+          .split(" ")
+
+
+
+          .filter(Boolean)
+
+
+
+          .map(
+
+
+
+            (word) =>
+
+
+
+              word[0]
+
+
+
+          )
+
+
+
+          .join("")
+
+
+
+          .slice(0, 2)
+
+
+
+          .toUpperCase()
+
+
+
+      : null;
+
+
+
+
+
+
+
+  return (
+
+
+
+    <article className="group overflow-hidden rounded-xl border border-white/10 bg-[#050505] transition duration-300 hover:-translate-y-1 hover:border-blue-500/40">
+
+
+
+
+
+
+
+      <div className="relative h-[170px] overflow-hidden">
+
+
+
+
+
+
+
+        {recording.image ? (
+
+
+
+          <img
+
+
+
+            src={resolveMediaUrl(
+
+
+
+              recording.image
+
+
+
+            )}
+
+
+
+            alt={
+
+
+
+              recording.title ||
+
+
+
+              "Recording"
+
+
+
+            }
+
+
+
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+
+
+
+          />
+
+
+
+        ) : (
+
+
+
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#17101E] via-[#0F1119] to-[#24102B]">
+
+
+
+            <HiVideoCamera
+
+
+
+              size={42}
+
+
+
+              className="text-blue-400/40"
+
+
+
+            />
+
+
+
+          </div>
+
+
+
+        )}
+
+
+
+
+
+
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+
+
+
+
+
+
+        <div className="absolute left-2 top-2 rounded-md bg-black/70 px-2 py-1 text-[10px] font-semibold uppercase text-blue-300">
+
+
+
+          {recording.recordingType}
+
+
+
+        </div>
+
+
+
+
+
+
+
+      </div>
+
+
+
+
+
+
+
+      <div className="p-4">
+
+
+
+
+
+
+
+        <h3 className="min-h-[44px] text-[16px] font-bold leading-[22px] text-white">
+
+
+
+          {recording.title}
+
+
+
+        </h3>
+
+
+
+
+
+
+
+        {recording.trainer && (
+
+
+
+          <div className="mt-3 flex items-center gap-2">
+
+
+
+
+
+
+
+            {recording.trainerImage ? (
+
+
+
+              <img
+
+
+
+                src={resolveMediaUrl(
+
+
+
+                  recording.trainerImage
+
+
+
+                )}
+
+
+
+                alt={
+
+
+
+                  recording.trainer
+
+
+
+                }
+
+
+
+                className="h-7 w-7 rounded-full object-cover"
+
+
+
               />
 
-              <div>
-                <h3 className="text-lg font-bold">
-                  Learn Anytime
-                </h3>
 
-                <p className="text-sm text-white/75">
-                  Watch. Practice. Improve!
-                </p>
+
+            ) : (
+
+
+
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/15 text-[9px] font-bold text-blue-300">
+
+
+
+                {initials || (
+
+
+
+                  <HiUser size={14} />
+
+
+
+                )}
+
+
+
               </div>
-            </div>
+
+
+
+            )}
+
+
+
+
+
+
+
+            <span className="text-[13px] text-white/75">
+
+
+
+              {recording.trainer}
+
+
+
+            </span>
+
+
+
+
+
+
+
           </div>
 
-          {/* =================================================
-              STATS
-          ================================================= */}
 
-          <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-            <div className="rounded-xl border border-blue-500/20 bg-[#031120] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
-                  <HiOutlinePlay
-                    size={24}
-                  />
-                </div>
+        )}
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-white/45">
-                    Total Recordings
-                  </p>
 
-                  <p className="mt-1 text-2xl font-bold">
-                    {
-                      totalRecordings
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-blue-500/20 bg-[#031120] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
-                  <HiOutlineClock
-                    size={24}
-                  />
-                </div>
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-white/45">
-                    Learning Hours
-                  </p>
 
-                  <p className="mt-1 text-2xl font-bold">
-                    {
-                      totalHours
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-blue-500/20 bg-[#031120] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-green-400">
-                  <HiOutlineVideoCamera
-                    size={24}
-                  />
-                </div>
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-white/45">
-                    Available Videos
-                  </p>
+        <div className="mt-3">
 
-                  <p className="mt-1 text-2xl font-bold">
-                    {
-                      totalRecordings
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
+
+
+          <span className="inline-flex rounded-full bg-[#492b58] px-3 py-1 text-[11px] text-[#ead9f2]">
+
+
+
+            {recording.className}
+
+
+
+          </span>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div className="mt-4 flex items-center justify-between text-[11px] text-white">
+
+
+
+
+
+
+
+          {recording.date ? (
+
+
+
+            <span className="flex items-center gap-1.5">
+
+
+
+              <HiCalendar size={15} />
+
+
+
+              {formatDate(
+
+
+
+                recording.date
+
+
+
+              )}
+
+
+
+            </span>
+
+
+
+          ) : (
+
+
+
+            <span />
+
+
+
+          )}
+
+
+
+
+
+
+
+          {recording.views !== null &&
+
+
+
+            recording.views !== undefined && (
+
+
+
+              <span className="flex items-center gap-1.5">
+
+
+
+                <HiEye size={15} />
+
+
+
+                {recording.views} views
+
+
+
+              </span>
+
+
+
+            )}
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div className="mt-4 flex gap-2">
+
+
+
+
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            onClick={() =>
+
+
+
+              onPlay(recording)
+
+
+
+            }
+
+
+
+            className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-[12px] font-semibold hover:brightness-110"
+
+
+
+          >
+
+
+
+            <HiPlay size={15} />
+
+
+
+            Play Recording
+
+
+
+          </button>
+
+
+
+
+
+
+
+          {recording.downloadUrl && (
+
+
+
+            <button
+
+
+
+              type="button"
+
+
+
+              onClick={() =>
+
+
+
+                onDownload(
+
+
+
+                  recording
+
+
+
+                )
+
+
+
+              }
+
+
+
+              className="flex h-10 w-11 items-center justify-center rounded-lg border border-blue-500/50 bg-[#050505] hover:bg-blue-500/10"
+
+
+
+              title="Download recording"
+
+
+
+            >
+
+
+
+              <HiDownload size={18} />
+
+
+
+            </button>
+
+
+
+          )}
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+      </div>
+
+
+
+    </article>
+
+
+
+  );
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   MAIN COMPONENT
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+export default function WebsiteRecordings() {
+
+
+
+  const navigate = useNavigate();
+
+
+
+  const [
+
+
+
+    offlineClasses,
+
+
+
+    setOfflineClasses,
+
+
+
+  ] = useState([]);
+
+
+
+
+
+
+
+  const [
+
+
+
+    recordings,
+
+
+
+    setRecordings,
+
+
+
+  ] = useState([]);
+
+
+
+
+
+
+
+  const [loading, setLoading] =
+
+
+
+    useState(true);
+
+
+
+
+
+
+
+  const [refreshing, setRefreshing] =
+
+
+
+    useState(false);
+
+
+
+
+
+
+
+  const [error, setError] =
+
+
+
+    useState("");
+
+
+
+
+
+
+
+  const [search, setSearch] =
+
+
+
+    useState("");
+
+
+
+
+
+
+
+  const [selectedClassId, setSelectedClassId] =
+
+
+
+    useState("ALL");
+
+
+
+
+
+
+
+  const [
+
+
+
+    selectedRecording,
+
+
+
+    setSelectedRecording,
+
+
+
+  ] = useState(null);
+
+
+
+
+
+
+
+  const [page, setPage] =
+
+
+
+    useState(1);
+
+
+
+
+
+
+
+  const pageSize = 8;
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     LOAD USER OFFLINE CLASSES + RECORDINGS
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const loadData = async (
+
+
+
+    isRefresh = false
+
+
+
+  ) => {
+
+
+
+    try {
+
+
+
+      if (isRefresh) {
+
+
+
+        setRefreshing(true);
+
+
+
+      } else {
+
+
+
+        setLoading(true);
+
+
+
+      }
+
+
+
+
+
+
+
+      setError("");
+
+
+
+
+
+
+
+      const [
+
+
+
+        classes,
+
+
+
+        recordingData,
+
+
+
+      ] = await Promise.all([
+
+
+
+        fetchUserOfflineClasses(),
+
+
+
+        fetchUserRecordings(),
+
+
+
+      ]);
+
+
+
+
+
+
+
+      const normalizedRecordings =
+
+
+
+        recordingData.map(
+
+
+
+          (item, index) =>
+
+
+
+            normalizeRecording(
+
+
+
+              item,
+
+
+
+              index
+
+
+
+            )
+
+
+
+        );
+
+
+
+
+
+
+
+      setOfflineClasses(
+
+
+
+        classes
+
+
+
+      );
+
+
+
+
+
+
+
+      setRecordings(
+
+
+
+        normalizedRecordings
+
+
+
+      );
+
+
+
+
+
+
+
+    } catch (err) {
+
+
+
+      console.error(
+
+
+
+        "RECORDINGS PAGE ERROR:",
+
+
+
+        err
+
+
+
+      );
+
+
+
+
+
+
+
+      setOfflineClasses([]);
+
+
+
+      setRecordings([]);
+
+
+
+
+
+
+
+      setError(
+
+
+
+        err?.response?.data
+
+
+
+          ?.message ||
+
+
+
+          err?.response?.data
+
+
+
+            ?.error ||
+
+
+
+          err?.message ||
+
+
+
+          "Failed to load your offline classes."
+
+
+
+      );
+
+
+
+    } finally {
+
+
+
+      setLoading(false);
+
+
+
+      setRefreshing(false);
+
+
+
+    }
+
+
+
+  };
+
+
+
+
+
+
+
+  useEffect(() => {
+
+
+
+    loadData();
+
+
+
+  }, []);
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     FILTER CLASSES
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const filteredClasses =
+
+
+
+    useMemo(() => {
+
+
+
+      const query =
+
+
+
+        search
+
+
+
+          .trim()
+
+
+
+          .toLowerCase();
+
+
+
+
+
+
+
+      return offlineClasses.filter(
+
+
+
+        (course) => {
+
+
+
+          const classId =
+
+
+
+            getClassId(course);
+
+
+
+
+
+
+
+          const className =
+
+
+
+            getClassName(course);
+
+
+
+
+
+
+
+          const trainer =
+
+
+
+            getTrainer(course);
+
+
+
+
+
+
+
+          const category =
+
+
+
+            getCategory(course);
+
+
+
+
+
+
+
+          const matchesSearch =
+
+
+
+            !query ||
+
+
+
+            [
+
+
+
+              className,
+
+
+
+              trainer,
+
+
+
+              category,
+
+
+
+              getSubcategory(
+
+
+
+                course
+
+
+
+              ),
+
+
+
+            ].some(
+
+
+
+              (value) =>
+
+
+
+                String(
+
+
+
+                  value || ""
+
+
+
+                )
+
+
+
+                  .toLowerCase()
+
+
+
+                  .includes(query)
+
+
+
+            );
+
+
+
+
+
+
+
+          const matchesClass =
+
+
+
+            selectedClassId ===
+
+
+
+              "ALL" ||
+
+
+
+            String(classId) ===
+
+
+
+              String(
+
+
+
+                selectedClassId
+
+
+
+              );
+
+
+
+
+
+
+
+          return (
+
+
+
+            matchesSearch &&
+
+
+
+            matchesClass
+
+
+
+          );
+
+
+
+        }
+
+
+
+      );
+
+
+
+    }, [
+
+
+
+      offlineClasses,
+
+
+
+      search,
+
+
+
+      selectedClassId,
+
+
+
+    ]);
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     CLASS OPTIONS
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const classOptions =
+
+
+
+    useMemo(() => {
+
+
+
+      return offlineClasses.map(
+
+
+
+        (course) => ({
+
+
+
+          id:
+
+
+
+            getClassId(course),
+
+
+
+          name:
+
+
+
+            getClassName(course),
+
+
+
+        })
+
+
+
+      );
+
+
+
+    }, [offlineClasses]);
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     PAGINATION
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const totalPages =
+
+
+
+    Math.max(
+
+
+
+      1,
+
+
+
+      Math.ceil(
+
+
+
+        filteredClasses.length /
+
+
+
+          pageSize
+
+
+
+      )
+
+
+
+    );
+
+
+
+
+
+
+
+  const currentPage =
+
+
+
+    Math.min(
+
+
+
+      page,
+
+
+
+      totalPages
+
+
+
+    );
+
+
+
+
+
+
+
+  const visibleClasses =
+
+
+
+    filteredClasses.slice(
+
+
+
+      (currentPage - 1) *
+
+
+
+        pageSize,
+
+
+
+      currentPage * pageSize
+
+
+
+    );
+
+
+
+
+
+
+
+  useEffect(() => {
+
+
+
+    setPage(1);
+
+
+
+  }, [
+
+
+
+    search,
+
+
+
+    selectedClassId,
+
+
+
+  ]);
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     VIEW RECORDINGS
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+//   const viewClassRecordings = (
+
+
+
+//     classId,
+
+
+
+//     className
+
+
+
+//   ) => {
+
+
+
+//     setSelectedClassId(
+
+
+
+//       classId ??
+
+
+
+//         "ALL"
+
+
+
+//     );
+
+
+
+
+
+
+
+//     setSearch(
+
+
+
+//       className || ""
+
+
+
+//     );
+
+
+
+
+
+
+
+//     setTimeout(() => {
+
+
+
+//       document
+
+
+
+//         .getElementById(
+
+
+
+//           "recordings-section"
+
+
+
+//         )
+
+
+
+//         ?.scrollIntoView({
+
+
+
+//           behavior:
+
+
+
+//             "smooth",
+
+
+
+//           block: "start",
+
+
+
+//         });
+
+
+
+//     }, 100);
+
+
+
+//   };
+
+
+
+const viewClassRecordings = (classId) => {
+
+  if (
+
+    classId === null ||
+
+    classId === undefined ||
+
+    classId === ""
+
+  ) {
+
+    console.error(
+
+      "Cannot navigate: class ID is missing",
+
+      classId
+
+    );
+
+    return;
+
+  }
+
+
+
+  console.log(
+
+    "Navigating to My Learning:",
+
+    `/my-learning/${classId}`
+
+  );
+
+
+
+  navigate(`/institute/website/preview/lms/my-learning/${classId}`);
+
+};
+
+
+
+  /* =======================================================
+
+
+
+     SELECTED CLASS RECORDINGS
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const selectedClassRecordings =
+
+
+
+    useMemo(() => {
+
+
+
+      if (
+
+
+
+        selectedClassId ===
+
+
+
+        "ALL"
+
+
+
+      ) {
+
+
+
+        return [];
+
+
+
+      }
+
+
+
+
+
+
+
+      const selectedClass =
+
+
+
+        offlineClasses.find(
+
+
+
+          (course) =>
+
+
+
+            String(
+
+
+
+              getClassId(course)
+
+
+
+            ) ===
+
+
+
+            String(
+
+
+
+              selectedClassId
+
+
+
+            )
+
+
+
+        );
+
+
+
+
+
+
+
+      if (!selectedClass) {
+
+
+
+        return [];
+
+
+
+      }
+
+
+
+
+
+
+
+      const classId =
+
+
+
+        getClassId(
+
+
+
+          selectedClass
+
+
+
+        );
+
+
+
+
+
+
+
+      const className =
+
+
+
+        getClassName(
+
+
+
+          selectedClass
+
+
+
+        );
+
+
+
+
+
+
+
+      return recordings.filter(
+
+
+
+        (recording) => {
+
+
+
+          if (
+
+
+
+            recording.classId !==
+
+
+
+              null &&
+
+
+
+            recording.classId !==
+
+
+
+              undefined &&
+
+
+
+            classId !== null &&
+
+
+
+            classId !== undefined
+
+
+
+          ) {
+
+
+
+            return (
+
+
+
+              String(
+
+
+
+                recording.classId
+
+
+
+              ) ===
+
+
+
+              String(classId)
+
+
+
+            );
+
+
+
+          }
+
+
+
+
+
+
+
+          return (
+
+
+
+            String(
+
+
+
+              recording.className ||
+
+
+
+                ""
+
+
+
+            )
+
+
+
+              .trim()
+
+
+
+              .toLowerCase() ===
+
+
+
+            String(
+
+
+
+              className || ""
+
+
+
+            )
+
+
+
+              .trim()
+
+
+
+              .toLowerCase()
+
+
+
+          );
+
+
+
+        }
+
+
+
+      );
+
+
+
+    }, [
+
+
+
+      selectedClassId,
+
+
+
+      offlineClasses,
+
+
+
+      recordings,
+
+
+
+    ]);
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     PLAY RECORDING
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const openRecording = (
+
+
+
+    recording
+
+
+
+  ) => {
+
+
+
+    if (!recording?.url) {
+
+
+
+      return;
+
+
+
+    }
+
+
+
+
+
+
+
+    setSelectedRecording(
+
+
+
+      recording
+
+
+
+    );
+
+
+
+
+
+
+
+    setTimeout(() => {
+
+
+
+      document
+
+
+
+        .getElementById(
+
+
+
+          "recording-player"
+
+
+
+        )
+
+
+
+        ?.scrollIntoView({
+
+
+
+          behavior:
+
+
+
+            "smooth",
+
+
+
+          block: "start",
+
+
+
+        });
+
+
+
+    }, 50);
+
+
+
+  };
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     CLOSE PLAYER
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const closeRecording = () => {
+
+
+
+    setSelectedRecording(
+
+
+
+      null
+
+
+
+    );
+
+
+
+  };
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     DOWNLOAD
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  const downloadRecording =
+
+
+
+    async (recording) => {
+
+
+
+      const url =
+
+
+
+        recording?.downloadUrl;
+
+
+
+
+
+
+
+      if (!url) {
+
+
+
+        alert(
+
+
+
+          "Download is not available for this recording."
+
+
+
+        );
+
+
+
+        return;
+
+
+
+      }
+
+
+
+
+
+
+
+      try {
+
+
+
+        const response =
+
+
+
+          await fetch(url);
+
+
+
+
+
+
+
+        if (!response.ok) {
+
+
+
+          throw new Error(
+
+
+
+            `Download failed: ${response.status}`
+
+
+
+          );
+
+
+
+        }
+
+
+
+
+
+
+
+        const blob =
+
+
+
+          await response.blob();
+
+
+
+
+
+
+
+        const blobUrl =
+
+
+
+          window.URL.createObjectURL(
+
+
+
+            blob
+
+
+
+          );
+
+
+
+
+
+
+
+        const anchor =
+
+
+
+          document.createElement(
+
+
+
+            "a"
+
+
+
+          );
+
+
+
+
+
+
+
+        anchor.href =
+
+
+
+          blobUrl;
+
+
+
+
+
+
+
+        anchor.download =
+
+
+
+          `${
+
+
+
+            recording.title ||
+
+
+
+            "recording"
+
+
+
+          }.mp4`;
+
+
+
+
+
+
+
+        document.body.appendChild(
+
+
+
+          anchor
+
+
+
+        );
+
+
+
+
+
+
+
+        anchor.click();
+
+
+
+
+
+
+
+        anchor.remove();
+
+
+
+
+
+
+
+        window.URL.revokeObjectURL(
+
+
+
+          blobUrl
+
+
+
+        );
+
+
+
+      } catch (err) {
+
+
+
+        console.error(
+
+
+
+          "DOWNLOAD ERROR:",
+
+
+
+          err
+
+
+
+        );
+
+
+
+
+
+
+
+        alert(
+
+
+
+          "This recording cannot be downloaded."
+
+
+
+        );
+
+
+
+      }
+
+
+
+    };
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     LOADING
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  if (loading) {
+
+
+
+    return (
+
+
+
+      <State
+
+
+
+        title="Loading Your Classes..."
+
+
+
+        icon={
+
+
+
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/10 border-t-blue-500" />
+
+
+
+        }
+
+
+
+      />
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     ERROR
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  if (
+
+
+
+    error &&
+
+
+
+    offlineClasses.length === 0
+
+
+
+  ) {
+
+
+
+    return (
+
+
+
+      <div className="min-h-screen bg-black text-white">
+
+
+
+        <State
+
+
+
+          title="Unable to Load Classes"
+
+
+
+          message={error}
+
+
+
+          icon={
+
+
+
+            <HiBookOpen
+
+
+
+              size={38}
+
+
+
+            />
+
+
+
+          }
+
+
+
+        />
+
+
+
+
+
+
+
+        <div className="flex justify-center pb-10">
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            onClick={() =>
+
+
+
+              loadData(true)
+
+
+
+            }
+
+
+
+            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-3 text-sm font-semibold"
+
+
+
+          >
+
+
+
+            Try Again
+
+
+
+          </button>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+
+
+  /* =======================================================
+
+
+
+     UI
+
+
+
+  ======================================================= */
+
+
+
+
+
+
+
+  return (
+
+
+
+    <div className="min-h-screen bg-black text-white">
+
+
+
+
+
+
+
+      <main className="mx-auto max-w-[1600px] px-5 py-7 xl:px-8">
+
+
+
+
+
+
+
+        {/* =================================================
+
+
+
+            HEADER
+
+
+
+        ================================================= */}
+
+
+
+
+
+
+
+        <div className="mb-7 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+
+
+
+
+
+
+
+          <div>
+
+
+
+
+
+
+
+            <h1 className="text-[40px] font-bold leading-none tracking-tight">
+
+
+
+
+
+
+
+              My{" "}
+
+
+
+
+
+
+
+              <span className="bg-gradient-to-r from-blue-500 to-blue-400 bg-clip-text text-transparent">
+
+
+
+                Offline Classes
+
+
+
+              </span>
+
+
+
+
+
+
+
+            </h1>
+
+
+
+
+
+
+
+            <p className="mt-3 text-[17px] text-white">
+
+
+
+              Your booked offline classes and recordings.
+
+
+
+            </p>
+
+
+
+
+
+
+
+            <p className="mt-2 text-sm text-white/70">
+
+
+
+              {offlineClasses.length} offline class
+
+
+
+              {offlineClasses.length !==
+
+
+
+              1
+
+
+
+                ? "es"
+
+
+
+                : ""}{" "}
+
+
+
+              booked
+
+
+
+            </p>
+
+
+
+
+
+
+
           </div>
 
-          {/* =================================================
-              FILTER BAR
-          ================================================= */}
 
-          <div className="mt-7 rounded-xl border border-blue-500/20 bg-[#031120] p-4">
 
-            <div className="flex flex-col gap-3 lg:flex-row">
 
-              {/* SEARCH */}
 
-              <div className="relative flex-1">
-                <HiOutlineSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
-                  size={20}
-                />
 
-                <input
-                  value={
-                    search
-                  }
-                  onChange={event =>
-                    setSearch(
-                      event
-                        .target
-                        .value
-                    )
-                  }
-                  placeholder="Search recordings, classes or trainers..."
-                  className="h-12 w-full rounded-xl border border-blue-500/20 bg-[#061426] pl-11 pr-4 text-sm outline-none placeholder:text-white/35 focus:border-blue-500/50"
-                />
-              </div>
 
-              {/* COURSE */}
+          {/* SEARCH + FILTER */}
+
+
+
+
+
+
+
+          <div className="grid w-full gap-3 sm:grid-cols-[minmax(260px,1fr)_220px] xl:w-auto">
+
+
+
+
+
+
+
+            <div className="relative">
+
+
+
+
+
+
+
+              <HiSearch
+
+
+
+                size={22}
+
+
+
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white"
+
+
+
+              />
+
+
+
+
+
+
+
+              <input
+
+
+
+                value={search}
+
+
+
+                onChange={(event) =>
+
+
+
+                  setSearch(
+
+
+
+                    event.target
+
+
+
+                      .value
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                placeholder="Search offline classes..."
+
+
+
+                className="h-12 w-full rounded-xl border border-white/10 bg-[#050505] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white focus:border-blue-500/60"
+
+
+
+              />
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <div className="relative">
+
+
+
+
+
+
 
               <select
+
+
+
                 value={
-                  classFilter
+
+
+
+                  selectedClassId
+
+
+
                 }
-                onChange={event =>
-                  setClassFilter(
-                    event
-                      .target
+
+
+
+                onChange={(
+
+
+
+                  event
+
+
+
+                ) =>
+
+
+
+                  setSelectedClassId(
+
+
+
+                    event.target
+
+
+
                       .value
+
+
+
                   )
+
+
+
                 }
-                className="h-12 rounded-xl border border-blue-500/20 bg-[#061426] px-4 text-sm outline-none lg:w-[210px]"
+
+
+
+                className="h-12 w-full appearance-none rounded-xl border border-white/10 bg-[#050505] px-4 pr-10 text-sm text-white outline-none focus:border-blue-500/60"
+
+
+
               >
+
+
+
+
+
+
+
+                <option
+
+
+
+                  value="ALL"
+
+
+
+                  className="bg-[#050505]"
+
+
+
+                >
+
+
+
+                  All Classes
+
+
+
+                </option>
+
+
+
+
+
+
+
                 {classOptions.map(
-                  option => (
+
+
+
+                  (option) => (
+
+
+
                     <option
+
+
+
                       key={
-                        option
+
+
+
+                        option.id
+
+
+
                       }
+
+
+
                       value={
-                        option
+
+
+
+                        option.id
+
+
+
                       }
-                      className="bg-[#061426]"
+
+
+
+                      className="bg-[#050505]"
+
+
+
                     >
-                      {option ===
-                      "ALL"
-                        ? "All Courses"
-                        : option}
+
+
+
+                      {
+
+
+
+                        option.name
+
+
+
+                      }
+
+
+
                     </option>
+
+
+
                   )
+
+
+
                 )}
+
+
+
+
+
+
+
               </select>
 
-              {/* TRAINER */}
 
-              <select
-                value={
-                  trainerFilter
-                }
-                onChange={event =>
-                  setTrainerFilter(
-                    event
-                      .target
-                      .value
-                  )
-                }
-                className="h-12 rounded-xl border border-blue-500/20 bg-[#061426] px-4 text-sm outline-none lg:w-[210px]"
-              >
-                {trainerOptions.map(
-                  option => (
-                    <option
-                      key={
-                        option
-                      }
-                      value={
-                        option
-                      }
-                      className="bg-[#061426]"
-                    >
-                      {option ===
-                      "ALL"
-                        ? "All Trainers"
-                        : option}
-                    </option>
-                  )
-                )}
-              </select>
+
+
+
+
+
+              <HiChevronDown
+
+
+
+                size={18}
+
+
+
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white"
+
+
+
+              />
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
           </div>
 
-          {/* =================================================
-              RECORDINGS
-          ================================================= */}
 
-          <div className="mt-7">
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {/* =================================================
+
+
+
+            OFFLINE CLASS CARDS
+
+
+
+        ================================================= */}
+
+
+
+
+
+
+
+        {visibleClasses.length >
+
+
+
+        0 ? (
+
+
+
+          <section>
+
+
+
+
+
+
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+
+
+
+
+
+
+
+              {visibleClasses.map(
+
+
+
+                (
+
+
+
+                  course,
+
+
+
+                  index
+
+
+
+                ) => (
+
+
+
+                  <OfflineClassCard
+
+
+
+                    key={
+
+
+
+                      getClassId(
+
+
+
+                        course
+
+
+
+                      ) ??
+
+
+
+                      index
+
+
+
+                    }
+
+
+
+                    course={
+
+
+
+                      course
+
+
+
+                    }
+
+
+
+                    recordings={
+
+
+
+                      recordings
+
+
+
+                    }
+
+
+
+                    onViewRecordings={
+
+
+
+                      viewClassRecordings
+
+
+
+                    }
+
+
+
+                  />
+
+
+
+                )
+
+
+
+              )}
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+            {/* PAGINATION */}
+
+
+
+
+
+
+
+            {filteredClasses.length >
+
+
+
+              pageSize && (
+
+
+
+              <div className="mt-7 flex items-center justify-center gap-2">
+
+
+
+
+
+
+
+                <PageButton
+
+
+
+                  disabled={
+
+
+
+                    currentPage ===
+
+
+
+                    1
+
+
+
+                  }
+
+
+
+                  onClick={() =>
+
+
+
+                    setPage(
+
+
+
+                      (value) =>
+
+
+
+                        Math.max(
+
+
+
+                          1,
+
+
+
+                          value -
+
+
+
+                            1
+
+
+
+                        )
+
+
+
+                    )
+
+
+
+                  }
+
+
+
+                >
+
+
+
+                  <HiChevronLeft />
+
+
+
+                </PageButton>
+
+
+
+
+
+
+
+                {Array.from(
+
+
+
+                  {
+
+
+
+                    length:
+
+
+
+                      totalPages,
+
+
+
+                  },
+
+
+
+                  (
+
+
+
+                    _,
+
+
+
+                    index
+
+
+
+                  ) =>
+
+
+
+                    index + 1
+
+
+
+                ).map(
+
+
+
+                  (number) => (
+
+
+
+                    <PageButton
+
+
+
+                      key={
+
+
+
+                        number
+
+
+
+                      }
+
+
+
+                      active={
+
+
+
+                        currentPage ===
+
+
+
+                        number
+
+
+
+                      }
+
+
+
+                      onClick={() =>
+
+
+
+                        setPage(
+
+
+
+                          number
+
+
+
+                        )
+
+
+
+                      }
+
+
+
+                    >
+
+
+
+                      {
+
+
+
+                        number
+
+
+
+                      }
+
+
+
+                    </PageButton>
+
+
+
+                  )
+
+
+
+                )}
+
+
+
+
+
+
+
+                <PageButton
+
+
+
+                  disabled={
+
+
+
+                    currentPage ===
+
+
+
+                    totalPages
+
+
+
+                  }
+
+
+
+                  onClick={() =>
+
+
+
+                    setPage(
+
+
+
+                      (value) =>
+
+
+
+                        Math.min(
+
+
+
+                          totalPages,
+
+
+
+                          value +
+
+
+
+                            1
+
+
+
+                        )
+
+
+
+                    )
+
+
+
+                  }
+
+
+
+                >
+
+
+
+                  <HiChevronRight />
+
+
+
+                </PageButton>
+
+
+
+
+
+
+
+              </div>
+
+
+
+            )}
+
+
+
+
+
+
+
+          </section>
+
+
+
+        ) : (
+
+
+
+
+
+
+
+          <div className="flex min-h-[350px] items-center justify-center rounded-2xl border border-white/10 bg-[#050505]">
+
+
+
+
+
+
+
+            <div className="max-w-md px-6 text-center">
+
+
+
+
+
+
+
+              <HiBookOpen
+
+
+
+                size={50}
+
+
+
+                className="mx-auto text-blue-400"
+
+
+
+              />
+
+
+
+
+
+
+
+              <h3 className="mt-4 text-lg font-semibold">
+
+
+
+                No Offline Classes Found
+
+
+
+              </h3>
+
+
+
+
+
+
+
+              <p className="mt-2 text-sm text-white/60">
+
+
+
+                You don't have any booked offline classes matching your search.
+
+
+
+              </p>
+
+
+
+
+
+
+
+              {(search ||
+
+
+
+                selectedClassId !==
+
+
+
+                  "ALL") && (
+
+
+
+                <button
+
+
+
+                  type="button"
+
+
+
+                  onClick={() => {
+
+
+
+                    setSearch(
+
+
+
+                      ""
+
+
+
+                    );
+
+
+
+
+
+
+
+                    setSelectedClassId(
+
+
+
+                      "ALL"
+
+
+
+                    );
+
+
+
+                  }}
+
+
+
+                  className="mt-5 rounded-xl border border-blue-500/40 px-5 py-2.5 text-sm text-blue-300 hover:bg-blue-500/10"
+
+
+
+                >
+
+
+
+                  Clear Filters
+
+
+
+                </button>
+
+
+
+              )}
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+          </div>
+
+
+
+
+
+
+
+        )}
+
+
+
+
+
+
+
+        {/* =================================================
+
+
+
+            RECORDINGS SECTION
+
+
+
+        ================================================= */}
+
+
+
+
+
+
+
+        {selectedClassId !==
+
+
+
+          "ALL" && (
+
+
+
+          <section
+
+
+
+            id="recordings-section"
+
+
+
+            className="mt-12"
+
+
+
+          >
+
+
+
+
+
+
 
             <div className="mb-5 flex items-center justify-between">
 
+
+
+
+
+
+
               <div>
+
+
+
+
+
+
+
                 <h2 className="text-2xl font-bold">
-                  Recorded Classes
+
+
+
+                  Class Recordings
+
+
+
                 </h2>
 
-                <p className="mt-1 text-sm text-blue-400">
-                  Watch your previous live sessions
-                  anytime.
+
+
+
+
+
+
+                <p className="mt-1 text-sm text-white/60">
+
+
+
+                  Recordings available for this offline class.
+
+
+
                 </p>
+
+
+
+
+
+
+
               </div>
 
-              <span className="text-sm text-white/40">
-                {
-                  filteredRecordings.length
-                }{" "}
-                recordings
-              </span>
+
+
+
+
+
+
+              <button
+
+
+
+                type="button"
+
+
+
+                onClick={() => {
+
+
+
+                  setSelectedClassId(
+
+
+
+                    "ALL"
+
+
+
+                  );
+
+
+
+
+
+
+
+                  setSelectedRecording(
+
+
+
+                    null
+
+
+
+                  );
+
+
+
+                }}
+
+
+
+                className="rounded-lg border border-white/10 px-4 py-2 text-sm text-white hover:bg-white/5"
+
+
+
+              >
+
+
+
+                Show All Classes
+
+
+
+              </button>
+
+
+
+
+
+
+
             </div>
 
-            {/* LOADING */}
 
-            {loading && (
-              <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-blue-500/20 bg-[#031120]">
-                <div className="text-center">
-                  <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500" />
 
-                  <p className="mt-4 text-sm text-white/50">
-                    Loading recordings...
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {/* ERROR */}
 
-            {!loading &&
-              error && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-                  <HiOutlineVideoCamera
-                    size={45}
-                    className="mx-auto text-red-400/60"
-                  />
 
-                  <h3 className="mt-4 text-lg font-semibold">
-                    Unable to load recordings
-                  </h3>
 
-                  <p className="mt-2 text-sm text-white/50">
-                    {
-                      error
-                    }
-                  </p>
+            {selectedRecording && (
 
-                  <button
-                    onClick={
-                      fetchRecordings
-                    }
-                    className="mt-5 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
 
-            {/* GRID */}
 
-            {!loading &&
-              !error &&
-              filteredRecordings.length >
-                0 && (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {filteredRecordings.map(
-                    recording => (
-                      <RecordingCard
-                        key={
-                          recording.id
-                        }
-                        recording={
-                          recording
-                        }
-                      />
-                    )
-                  )}
-                </div>
-              )}
+              <section
 
-            {/* EMPTY */}
 
-            {!loading &&
-              !error &&
-              filteredRecordings.length ===
-                0 && (
-                <div className="rounded-xl border border-dashed border-white/10 bg-[#031120] py-20 text-center">
 
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/10">
-                    <HiOutlinePlay
-                      size={38}
-                      className="text-blue-400/60"
-                    />
+                id="recording-player"
+
+
+
+                className="mb-8 overflow-hidden rounded-2xl border border-blue-500/30 bg-[#0b0c12] shadow-2xl"
+
+
+
+              >
+
+
+
+
+
+
+
+                <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+
+
+
+
+
+
+
+                  <div>
+
+
+
+
+
+
+
+                    <h2 className="text-lg font-bold">
+
+
+
+                      {
+
+
+
+                        selectedRecording.title
+
+
+
+                      }
+
+
+
+                    </h2>
+
+
+
+
+
+
+
+                    <p className="mt-1 text-xs text-white/60">
+
+
+
+                      {
+
+
+
+                        selectedRecording.className
+
+
+
+                      }
+
+
+
+                    </p>
+
+
+
+
+
+
+
                   </div>
 
-                  <h3 className="mt-5 text-xl font-semibold">
-                    No recordings found
-                  </h3>
 
-                  <p className="mx-auto mt-2 max-w-md text-sm text-white/45">
-                    Completed live sessions will
-                    appear here once recordings are
-                    available for your enrolled
-                    classes.
-                  </p>
+
+
+
+
 
                   <button
-                    onClick={() => {
-                      setSearch(
-                        ""
-                      );
-                      setClassFilter(
-                        "ALL"
-                      );
-                      setTrainerFilter(
-                        "ALL"
-                      );
-                    }}
-                    className="mt-5 rounded-lg border border-blue-500 px-5 py-2.5 text-sm font-semibold text-blue-300"
+
+
+
+                    type="button"
+
+
+
+                    onClick={
+
+
+
+                      closeRecording
+
+
+
+                    }
+
+
+
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5"
+
+
+
                   >
-                    Clear Filters
+
+
+
+                    <HiX size={20} />
+
+
+
                   </button>
+
+
+
+
+
+
+
                 </div>
-              )}
-          </div>
-        </main>
-      </div>
+
+
+
+
+
+
+
+                <div className="w-full bg-black">
+
+
+
+
+
+
+
+                  {selectedRecording.url?.includes(
+
+
+
+                    "youtube.com"
+
+
+
+                  ) ||
+
+
+
+                  selectedRecording.url?.includes(
+
+
+
+                    "youtu.be"
+
+
+
+                  ) ? (
+
+
+
+
+
+
+
+                    <iframe
+
+
+
+                      src={
+
+
+
+                        selectedRecording.url
+
+
+
+                          .replace(
+
+
+
+                            "watch?v=",
+
+
+
+                            "embed/"
+
+
+
+                          )
+
+
+
+                      }
+
+
+
+                      title={
+
+
+
+                        selectedRecording.title
+
+
+
+                      }
+
+
+
+                      className="aspect-video w-full"
+
+
+
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+
+
+
+                      allowFullScreen
+
+
+
+                    />
+
+
+
+
+
+
+
+                  ) : (
+
+
+
+
+
+
+
+                    <video
+
+
+
+                      src={
+
+
+
+                        selectedRecording.url
+
+
+
+                      }
+
+
+
+                      controls
+
+
+
+                      autoPlay
+
+
+
+                      playsInline
+
+
+
+                      className="aspect-video w-full bg-black object-contain"
+
+
+
+                    >
+
+
+
+                      Your browser does not support video playback.
+
+
+
+                    </video>
+
+
+
+
+
+
+
+                  )}
+
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+              </section>
+
+
+
+            )}
+
+
+
+
+
+
+
+            {selectedClassRecordings.length >
+
+
+
+            0 ? (
+
+
+
+
+
+
+
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+
+
+
+
+
+
+
+                {selectedClassRecordings.map(
+
+
+
+                  (
+
+
+
+                    recording
+
+
+
+                  ) => (
+
+
+
+                    <RecordingCard
+
+
+
+                      key={
+
+
+
+                        recording.id
+
+
+
+                      }
+
+
+
+                      recording={
+
+
+
+                        recording
+
+
+
+                      }
+
+
+
+                      onPlay={
+
+
+
+                        openRecording
+
+
+
+                      }
+
+
+
+                      onDownload={
+
+
+
+                        downloadRecording
+
+
+
+                      }
+
+
+
+                    />
+
+
+
+                  )
+
+
+
+                )}
+
+
+
+
+
+
+
+              </div>
+
+
+
+
+
+
+
+            ) : (
+
+
+
+
+
+
+
+              <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-white/10 bg-[#050505]">
+
+
+
+
+
+
+
+                <div className="text-center">
+
+
+
+
+
+
+
+                  <HiVideoCamera
+
+
+
+                    size={48}
+
+
+
+                    className="mx-auto text-white/40"
+
+
+
+                  />
+
+
+
+
+
+
+
+                  <h3 className="mt-4 text-lg font-semibold">
+
+
+
+                    No Recordings Yet
+
+
+
+                  </h3>
+
+
+
+
+
+
+
+                  <p className="mt-2 text-sm text-white/60">
+
+
+
+                    Recordings for this class will appear here when available.
+
+
+
+                  </p>
+
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+              </div>
+
+
+
+
+
+
+
+            )}
+
+
+
+
+
+
+
+          </section>
+
+
+
+        )}
+
+
+
+
+
+
+
+        {/* REFRESH */}
+
+
+
+
+
+
+
+        <div className="mt-8 flex justify-center">
+
+
+
+
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            onClick={() =>
+
+
+
+              loadData(true)
+
+
+
+            }
+
+
+
+            disabled={
+
+
+
+              refreshing
+
+
+
+            }
+
+
+
+            className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#050505] px-5 py-3 text-sm font-semibold text-white hover:border-blue-500/40"
+
+
+
+          >
+
+
+
+
+
+
+
+            <HiRefresh
+
+
+
+              className={
+
+
+
+                refreshing
+
+
+
+                  ? "animate-spin"
+
+
+
+                  : ""
+
+
+
+              }
+
+
+
+            />
+
+
+
+
+
+
+
+            Refresh Classes
+
+
+
+
+
+
+
+          </button>
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+      </main>
+
+
+
+
+
+
+
     </div>
+
+
+
   );
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   PAGE BUTTON
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+function PageButton({
+
+
+
+  children,
+
+
+
+  active,
+
+
+
+  disabled,
+
+
+
+  onClick,
+
+
+
+}) {
+
+
+
+  return (
+
+
+
+    <button
+
+
+
+      type="button"
+
+
+
+      disabled={disabled}
+
+
+
+      onClick={onClick}
+
+
+
+      className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm transition ${
+
+
+
+        active
+
+
+
+          ? "border-transparent bg-gradient-to-r from-[#8d22ed] to-[#d82be9] text-white"
+
+
+
+          : "border-white/10 bg-[#050505] text-white hover:border-blue-500/40"
+
+
+
+      } ${
+
+
+
+        disabled
+
+
+
+          ? "cursor-not-allowed opacity-30"
+
+
+
+          : ""
+
+
+
+      }`}
+
+
+
+    >
+
+
+
+      {children}
+
+
+
+    </button>
+
+
+
+  );
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================================================
+
+
+
+   STATE
+
+
+
+\========================================================= */
+
+
+
+
+
+
+
+function State({
+
+
+
+  icon,
+
+
+
+  title,
+
+
+
+  message,
+
+
+
+}) {
+
+
+
+  return (
+
+
+
+    <div className="flex min-h-screen items-center justify-center bg-black px-5 text-white">
+
+
+
+
+
+
+
+      <div className="max-w-md text-center">
+
+
+
+
+
+
+
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
+
+
+
+          {icon}
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <h1 className="mt-6 text-3xl font-bold">
+
+
+
+          {title}
+
+
+
+        </h1>
+
+
+
+
+
+
+
+        {message && (
+
+
+
+          <p className="mt-4 text-white/70">
+
+
+
+            {message}
+
+
+
+          </p>
+
+
+
+        )}
+
+
+
+
+
+
+
+      </div>
+
+
+
+
+
+
+
+    </div>
+
+
+
+  );
+
+
+
 }

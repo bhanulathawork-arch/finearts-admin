@@ -205,46 +205,55 @@ function Subcategories() {
   };
 
   return (
-    <div className="p-8 text-white">
+    <div className="p-0 text-white">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-4xl font-bold text-purple-400">Subcategories</h1>
-          <p className="text-white mt-2">Manage your subcategories</p>
-        </div>
+     {/* Header */}
+<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+  <div>
+    <h1 className="text-4xl font-bold text-purple-400">
+      Subcategories
+    </h1>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
-        >
-          + Add Subcategory
-        </button>
-      </div>
+    <p className="text-white mt-2">
+      Manage your subcategories
+    </p>
+  </div>
+
+  <button
+    onClick={() => setShowModal(true)}
+    className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-white hover:opacity-90 transition-opacity"
+  >
+    + Add Subcategory
+  </button>
+</div>
 
       {/* Full-width Search Bar */}
-      <div className="mb-6">
-        <div className="relative w-full">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white pointer-events-none"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Search subcategories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
-            >
-              <FaTimes size={14} />
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Full-width Search Bar */}
+<div className="mb-4">
+  <div className="relative w-full">
+    <Search
+      className="absolute left-4 top-1/2 -translate-y-1/2 text-white pointer-events-none"
+      size={18}
+    />
+
+    <input
+      type="text"
+      placeholder="Search subcategories..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
+    />
+
+    {searchQuery && (
+      <button
+        onClick={() => setSearchQuery("")}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-white transition-colors"
+      >
+        <FaTimes size={14} />
+      </button>
+    )}
+  </div>
+</div>
 
       {/* Table */}
       <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">

@@ -1,1494 +1,1282 @@
-
 import { useEffect, useMemo, useState } from "react";
-import {
-  CalendarDays,
-  ChevronDown,
-  Download,
-  Film,
-  MoreVertical,
-  Play,
-  RefreshCw,
-  Search,
-  UploadCloud,
-  Users,
-  X,
-} from "lucide-react";
+
+import { getAuth } from "firebase/auth";
+
+import { BookOpen, Search, Video, RefreshCw } from "lucide-react";
+
+import { useNavigate } from "react-router-dom";
+
+import toast from "react-hot-toast";
 
 import API from "../services/api";
 
-/* =========================================================
-   HELPERS
-========================================================= */
 
-const getRows = (response) => {
-  const body = response?.data ?? response;
-
-  if (Array.isArray(body)) return body;
-
-  if (Array.isArray(body?.data)) return body.data;
-  if (Array.isArray(body?.recordings)) return body.recordings;
-  if (Array.isArray(body?.rows)) return body.rows;
-  if (Array.isArray(body?.items)) return body.items;
-
-  return [];
-};
-
-const getId = (row) =>
-  row?.id ??
-  row?.recording_id ??
-  row?.recordingId;
-
-const getTitle = (row) =>
-  row?.title ||
-  row?.recording_title ||
-  row?.name ||
-  "Session Recording";
-
-const getClassId = (row) =>
-  row?.class_id ??
-  row?.classId ??
-  "";
-
-const getSessionId = (row) =>
-  row?.session_id ??
-  row?.sessionId ??
-  "";
-
-const getClassName = (row) =>
-  row?.class_title ||
-  row?.class_name ||
-  row?.className ||
-  row?.course_title ||
-  row?.course_name ||
-  "Class";
-
-const getSessionName = (row) =>
-  row?.session_title ||
-  row?.session_name ||
-  row?.sessionTitle ||
-  "Session";
-
-const getStatus = (row) =>
-  String(
-    row?.status ||
-      row?.recording_status ||
-      "READY"
-  ).toUpperCase();
-
-const getUrl = (row) =>
-  row?.recording_url ||
-  row?.video_url ||
-  row?.videoUrl ||
-  row?.download_url ||
-  row?.play_url ||
-  "";
-
-const getDuration = (row) =>
-  Number(
-    row?.duration_seconds ??
-      row?.duration ??
-      0
-  );
-
-const getDate = (row) =>
-  row?.recorded_at ||
-  row?.recording_date ||
-  row?.session_date ||
-  row?.start_time ||
-  row?.created_at ||
-  null;
-
-const formatDuration = (seconds) => {
-  const value = Number(seconds);
-
-  if (!value || value <= 0) {
-    return "--:--";
-  }
-
-  const hours = Math.floor(value / 3600);
-  const minutes = Math.floor(
-    (value % 3600) / 60
-  );
-  const secs = Math.floor(value % 60);
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(secs).padStart(2, "0")}`;
-  }
-
-  return `${minutes}:${String(secs).padStart(
-    2,
-    "0"
-  )}`;
-};
-
-const formatDate = (value) => {
-  if (!value) {
-    return "Date not available";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
 
 /* =========================================================
-   STATUS BADGE
+
+   AUTH CONFIG
+
 ========================================================= */
 
-function StatusBadge({ status }) {
-  const normalized = String(
-    status || "READY"
-  ).toUpperCase();
 
-  let classes =
-    "bg-white/5 text-white/50 border-white/10";
 
-  if (
-    normalized === "READY" ||
-    normalized === "PUBLISHED"
-  ) {
-    classes =
-      "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-  }
+const getAuthConfig = async () => {
 
-  if (
-    normalized === "DRAFT" ||
-    normalized === "UNLISTED"
-  ) {
-    classes =
-      "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-  }
+  let token = localStorage.getItem("token");
 
-  if (
-    normalized === "PROCESSING" ||
-    normalized === "UPLOADING"
-  ) {
-    classes =
-      "bg-purple-500/10 text-purple-300 border-purple-500/20";
-  }
 
-  if (
-    normalized === "FAILED" ||
-    normalized === "ERROR"
-  ) {
-    classes =
-      "bg-red-500/10 text-red-400 border-red-500/20";
-  }
 
-  return (
-    <span
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${classes}`}
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-      {normalized}
-    </span>
-  );
-}
+  try {
 
-/* =========================================================
-   RECORDING CARD
-========================================================= */
+    const auth = getAuth();
 
-function RecordingCard({
-  recording,
-  onDelete,
-}) {
-  const [menuOpen, setMenuOpen] =
-    useState(false);
 
-  const title = getTitle(recording);
-  const className = getClassName(recording);
-  const sessionName = getSessionName(recording);
-  const classId = getClassId(recording);
-  const sessionId = getSessionId(recording);
-  const status = getStatus(recording);
-  const url = getUrl(recording);
 
-  const duration = formatDuration(
-    getDuration(recording)
-  );
+    if (auth.currentUser) {
 
-  const date = formatDate(
-    getDate(recording)
-  );
+      token = await auth.currentUser.getIdToken(true);
 
-  const watchRecording = () => {
-    if (!url) {
-      alert(
-        "Recording URL is not available."
-      );
-      return;
     }
 
-    window.open(
-      url,
-      "_blank",
-      "noopener,noreferrer"
-    );
+  } catch (error) {
+
+    console.warn("Firebase token error:", error);
+
+  }
+
+
+
+  return {
+
+    headers: token
+
+      ? {
+
+          Authorization: `Bearer ${token}`,
+
+        }
+
+      : {},
+
   };
 
-  const downloadRecording = () => {
-    if (!url) {
-      alert(
-        "Recording URL is not available."
-      );
-      return;
-    }
+};
 
-    const link =
-      document.createElement("a");
 
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.download = title;
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
-
-  const deleteThisRecording = async () => {
-    const id = getId(recording);
-
-    if (!id) {
-      alert("Recording ID is missing.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Delete "${title}"?`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    await onDelete(id);
-  };
-
-  return (
-    <article className="rounded-2xl border border-white/10 bg-[#111117] hover:bg-[#15151d] transition overflow-visible">
-      <div className="flex flex-col lg:flex-row gap-5 p-4">
-
-        {/* THUMBNAIL */}
-        <div className="w-full lg:w-[210px] shrink-0">
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-[#09090d] border border-white/5">
-
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-950/60 via-[#17131e] to-black">
-              <Film
-                size={42}
-                className="text-purple-400/70"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={watchRecording}
-              className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/35 transition group"
-            >
-              <span className="w-12 h-12 rounded-full bg-black/70 border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                <Play
-                  size={19}
-                  fill="white"
-                  className="ml-0.5"
-                />
-              </span>
-            </button>
-
-            <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/80 text-white text-xs">
-              {duration}
-            </span>
-          </div>
-        </div>
-
-        {/* DETAILS */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center">
-
-          <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-3">
-
-            <div className="min-w-0">
-
-              <h3 className="text-lg font-semibold text-white truncate">
-                {title}
-              </h3>
-
-              <div className="flex flex-wrap gap-x-5 gap-y-2 mt-2 text-sm text-white/45">
-
-                <span className="inline-flex items-center gap-2">
-                  <Users size={15} />
-                  {className}
-                </span>
-
-                <span className="inline-flex items-center gap-2">
-                  <CalendarDays size={15} />
-                  {sessionName}
-                </span>
-
-              </div>
-
-              {/* IMPORTANT IDs */}
-              <div className="flex flex-wrap gap-3 mt-3">
-
-                <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs">
-                  Class ID: {classId || "-"}
-                </span>
-
-                <span className="px-2.5 py-1 rounded-lg bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs">
-                  Session ID: {sessionId || "-"}
-                </span>
-
-              </div>
-
-            </div>
-
-            <StatusBadge status={status} />
-
-          </div>
-
-          {/* BOTTOM */}
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-
-            <div className="text-sm text-white/40">
-              {date}
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              <button
-                type="button"
-                onClick={watchRecording}
-                className="h-10 px-4 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-purple-500/15 hover:border-purple-500/30 transition flex items-center gap-2 text-sm"
-              >
-                <Play size={16} />
-                Watch
-              </button>
-
-              {url && (
-                <button
-                  type="button"
-                  onClick={downloadRecording}
-                  className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] flex items-center justify-center"
-                  title="Download"
-                >
-                  <Download size={16} />
-                </button>
-              )}
-
-              <div className="relative">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setMenuOpen(
-                      (value) => !value
-                    )
-                  }
-                  className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] flex items-center justify-center"
-                >
-                  <MoreVertical size={17} />
-                </button>
-
-                {menuOpen && (
-                  <>
-                    <button
-                      type="button"
-                      aria-label="Close menu"
-                      className="fixed inset-0 z-10 cursor-default"
-                      onClick={() =>
-                        setMenuOpen(false)
-                      }
-                    />
-
-                    <div className="absolute right-0 bottom-12 z-20 w-48 rounded-xl border border-white/10 bg-[#18171f] shadow-2xl overflow-hidden">
-
-                      {url && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard?.writeText(
-                              url
-                            );
-
-                            setMenuOpen(false);
-
-                            alert(
-                              "Recording URL copied."
-                            );
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-white/75 hover:bg-white/5"
-                        >
-                          Copy Recording URL
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          watchRecording();
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm text-white/75 hover:bg-white/5"
-                      >
-                        Open Recording
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          deleteThisRecording();
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10"
-                      >
-                        Delete Recording
-                      </button>
-
-                    </div>
-                  </>
-                )}
-
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
 
 /* =========================================================
-   MAIN
+
+   NORMALIZE API RESPONSE
+
 ========================================================= */
+
+
+
+const normalizeClasses = (payload) => {
+
+  const root = payload?.data ?? payload ?? {};
+
+
+
+  const data =
+
+    root?.classes ??
+
+    root?.data?.classes ??
+
+    root?.rows ??
+
+    root?.data ??
+
+    root;
+
+
+
+  return Array.isArray(data) ? data : [];
+
+};
+
+
+
+/* =========================================================
+
+   SAFE TEXT
+
+========================================================= */
+
+
+
+const safeText = (value, fallback = "") => {
+
+  if (value === null || value === undefined) {
+
+    return fallback;
+
+  }
+
+
+
+  if (value instanceof RegExp) {
+
+    return value.toString();
+
+  }
+
+
+
+  if (typeof value === "object") {
+
+    if (value.name !== undefined && value.name !== null) {
+
+      return String(value.name);
+
+    }
+
+
+
+    if (value.full_name !== undefined && value.full_name !== null) {
+
+      return String(value.full_name);
+
+    }
+
+
+
+    return fallback;
+
+  }
+
+
+
+  return String(value);
+
+};
+
+
+
+/* =========================================================
+
+   CLASS TYPE
+
+========================================================= */
+
+
+
+const getClassType = (item) => {
+
+  const value =
+
+    item?.class_type ??
+
+    item?.classType ??
+
+    item?.type ??
+
+    item?.content_type ??
+
+    item?.contentType ??
+
+    "LIVE";
+
+
+
+  const normalized = safeText(value, "LIVE")
+
+    .trim()
+
+    .toUpperCase();
+
+
+
+  /*
+
+    Support old database/API value RECORDED.
+
+
+
+    Current standard:
+
+    LIVE
+
+    RECORDING
+
+  */
+
+
+
+  if (
+
+    normalized === "RECORDING" ||
+
+    normalized === "RECORDED" ||
+
+    normalized === "RECORDING CLASS" ||
+
+    normalized.includes("RECORD")
+
+  ) {
+
+    return "RECORDING";
+
+  }
+
+
+
+  if (
+
+    normalized === "LIVE" ||
+
+    normalized === "LIVE CLASS" ||
+
+    normalized.includes("LIVE")
+
+  ) {
+
+    return "LIVE";
+
+  }
+
+
+
+  return normalized || "LIVE";
+
+};
+
+
+
+/* =========================================================
+
+   CATEGORY NAME
+
+========================================================= */
+
+
+
+const getCategoryName = (item) => {
+
+  const value =
+
+    item?.category_name ??
+
+    item?.categoryName ??
+
+    item?.category?.name ??
+
+    item?.category ??
+
+    "General";
+
+
+
+  return safeText(value, "General");
+
+};
+
+
+
+/* =========================================================
+
+   CLASS TITLE
+
+========================================================= */
+
+
+
+/* =========================================================
+   TRAINER NAME
+========================================================= */
+
+const getTrainerName = (item) => {
+  const value =
+    item?.trainer_name ??
+    item?.trainerName ??
+    item?.assigned_trainer_name ??
+    item?.assignedTrainerName ??
+    item?.trainer_full_name ??
+    item?.trainerFullName ??
+    item?.trainer?.full_name ??
+    item?.trainer?.fullName ??
+    item?.trainer?.name ??
+    item?.assigned_trainer?.full_name ??
+    item?.assigned_trainer?.name ??
+    item?.instructor_name ??
+    item?.instructorName ??
+    item?.instructor?.name ??
+    item?.trainer;
+
+  return safeText(value, "Trainer not assigned");
+};
+
+const getClassTitle = (item) => {
+
+  const value = item?.title ?? item?.name ?? "Untitled Class";
+
+
+
+  return safeText(value, "Untitled Class");
+
+};
+
+
+
+/* =========================================================
+
+   IMAGE
+
+========================================================= */
+
+
+
+const getImage = (item) => {
+
+  const value =
+
+    item?.image ??
+
+    item?.image_url ??
+
+    item?.imageUrl ??
+
+    item?.thumbnail ??
+
+    item?.thumbnail_url ??
+
+    "";
+
+
+
+  /*
+
+    Never use an object or RegExp as an image src.
+
+  */
+
+
+
+  if (value instanceof RegExp) {
+
+    return "";
+
+  }
+
+
+
+  if (typeof value === "object") {
+
+    return "";
+
+  }
+
+
+
+  return String(value || "");
+
+};
+
+
+
+/* =========================================================
+
+   CLASS ID
+
+========================================================= */
+
+
+
+const getClassId = (item) => {
+
+  if (!item || typeof item !== "object") {
+
+    return "";
+
+  }
+
+
+
+  const value =
+
+    item?.id ??
+
+    item?.class_id ??
+
+    item?.classId ??
+
+    "";
+
+
+
+  if (
+
+    value === null ||
+
+    value === undefined ||
+
+    value === ""
+
+  ) {
+
+    return "";
+
+  }
+
+
+
+  /*
+
+    Very important:
+
+    Never allow an object to become [object Object]
+
+    inside the URL.
+
+  */
+
+
+
+  if (typeof value === "object") {
+
+    if (
+
+      value.id !== undefined &&
+
+      value.id !== null &&
+
+      value.id !== ""
+
+    ) {
+
+      return String(value.id);
+
+    }
+
+
+
+    return "";
+
+  }
+
+
+
+  const stringValue = String(value).trim();
+
+
+
+  if (!stringValue) {
+
+    return "";
+
+  }
+
+
+
+  return stringValue;
+
+};
+
+
+
+/* =========================================================
+
+   COMPONENT
+
+========================================================= */
+
+
 
 export default function InstituteRecordings() {
 
-  const [rows, setRows] = useState([]);
+  const navigate = useNavigate();
 
-  const [loading, setLoading] =
-    useState(true);
 
-  const [saving, setSaving] =
-    useState(false);
 
-  const [uploadOpen, setUploadOpen] =
-    useState(false);
+  const [classes, setClasses] = useState([]);
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
-  const [classFilter, setClassFilter] =
-    useState("ALL");
+  const [loading, setLoading] = useState(true);
 
-  const [sessionFilter, setSessionFilter] =
-    useState("ALL");
 
-  const [statusFilter, setStatusFilter] =
-    useState("ALL");
 
-  const [form, setForm] = useState({
-    title: "",
-    class_id: "",
-    session_id: "",
-    recording_url: "",
-    duration_seconds: "3600",
-    status: "PUBLISHED",
-  });
+  /* =======================================================
 
-  /* =========================================================
-     LOAD
-  ========================================================= */
+     FETCH RECORDING CLASSES
 
-  const loadRecordings = async () => {
+  ======================================================= */
 
-    setLoading(true);
+
+
+  const fetchClasses = async () => {
 
     try {
 
-      // IMPORTANT:
-      // Backend route is GET /recordings/institute
+      setLoading(true);
+
+
+
+      const authConfig = await getAuthConfig();
+
+
+
       const response = await API.get(
-        "/recordings/institute"
+
+        "/classes/institute/my-classes",
+
+        authConfig
+
       );
 
-      const data = getRows(response);
 
-      setRows(data);
+
+      console.log(
+
+        "INSTITUTE RECORDING CLASSES RESPONSE:",
+
+        response.data
+
+      );
+
+
+
+      const allClasses = normalizeClasses(response.data);
+
+
+
+      console.log(
+
+        "ALL INSTITUTE CLASSES:",
+
+        allClasses
+
+      );
+
+
+
+      /*
+
+        CURRENT CLASS TYPE:
+
+
+
+        LIVE
+
+        RECORDING
+
+
+
+        We also support old RECORDED values
+
+        through getClassType().
+
+      */
+
+
+
+      const recordingClasses = allClasses.filter(
+
+        (item) => getClassType(item) === "RECORDING"
+
+      );
+
+
+
+      console.log(
+
+        "FILTERED RECORDING CLASSES:",
+
+        recordingClasses
+
+      );
+
+
+
+      setClasses(recordingClasses);
 
     } catch (error) {
 
       console.error(
-        "Load recordings error:",
+
+        "FETCH RECORDING CLASSES ERROR:",
+
         error
+
       );
 
-      setRows([]);
 
-      alert(
+
+      console.error(
+
+        "FETCH RECORDING CLASSES RESPONSE:",
+
+        error?.response?.data
+
+      );
+
+
+
+      toast.error(
+
         error?.response?.data?.message ||
-          "Unable to load recordings."
+
+          "Failed to load recording classes."
+
       );
+
+
+
+      setClasses([]);
 
     } finally {
 
       setLoading(false);
 
     }
+
   };
+
+
+
+  /* =======================================================
+
+     INITIAL LOAD
+
+  ======================================================= */
+
+
 
   useEffect(() => {
-    loadRecordings();
+
+    fetchClasses();
+
   }, []);
 
-  /* =========================================================
-     FILTER OPTIONS
-  ========================================================= */
 
-  const classOptions = useMemo(() => {
 
-    const values = rows
-      .map((row) =>
-        getClassName(row)
-      )
-      .filter(Boolean);
+  /* =======================================================
 
-    return [
-      ...new Set(values),
-    ];
+     SEARCH FILTER
 
-  }, [rows]);
+  ======================================================= */
 
-  const sessionOptions = useMemo(() => {
 
-    const values = rows
-      .map((row) =>
-        getSessionName(row)
-      )
-      .filter(Boolean);
 
-    return [
-      ...new Set(values),
-    ];
+  const filteredClasses = useMemo(() => {
 
-  }, [rows]);
+    const query = search.trim().toLowerCase();
 
-  /* =========================================================
-     FILTER
-  ========================================================= */
 
-  const filteredRows = useMemo(() => {
 
-    const keyword =
-      search.trim().toLowerCase();
+    if (!query) {
 
-    return rows.filter((row) => {
+      return classes;
 
-      const title =
-        getTitle(row).toLowerCase();
+    }
 
-      const className =
-        getClassName(row).toLowerCase();
 
-      const sessionName =
-        getSessionName(row).toLowerCase();
 
-      const status =
-        getStatus(row);
+    return classes.filter((item) => {
 
-      const matchesSearch =
-        !keyword ||
-        title.includes(keyword) ||
-        className.includes(keyword) ||
-        sessionName.includes(keyword);
+      const title = getClassTitle(item).toLowerCase();
 
-      const matchesClass =
-        classFilter === "ALL" ||
-        getClassName(row) ===
-          classFilter;
 
-      const matchesSession =
-        sessionFilter === "ALL" ||
-        getSessionName(row) ===
-          sessionFilter;
 
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        status === statusFilter;
+      const category = getCategoryName(item).toLowerCase();
+
+
+
+      const trainer = getTrainerName(item).toLowerCase();
 
       return (
-        matchesSearch &&
-        matchesClass &&
-        matchesSession &&
-        matchesStatus
+        title.includes(query) ||
+        category.includes(query) ||
+        trainer.includes(query)
       );
 
     });
 
-  }, [
-    rows,
-    search,
-    classFilter,
-    sessionFilter,
-    statusFilter,
-  ]);
+  }, [classes, search]);
 
-  /* =========================================================
-     FORM
-  ========================================================= */
 
-  const resetForm = () => {
 
-    setForm({
-      title: "",
-      class_id: "",
-      session_id: "",
-      recording_url: "",
-      duration_seconds: "3600",
-      status: "PUBLISHED",
-    });
+  /* =======================================================
 
-  };
+     OPEN LMS
 
-  const closeModal = () => {
+  ======================================================= */
 
-    if (saving) return;
 
-    setUploadOpen(false);
-    resetForm();
 
-  };
+  const openLMS = (classItem) => {
 
-  const updateForm = (field, value) => {
+    const classId = getClassId(classItem);
 
-    setForm((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
 
-  };
 
-  /* =========================================================
-     SAVE
-  ========================================================= */
+    console.log(
 
-  const saveRecording = async (event) => {
+      "OPEN LMS CLASS ITEM:",
 
-    event.preventDefault();
+      classItem
 
-    if (!form.title.trim()) {
-      alert(
-        "Recording title is required."
-      );
+    );
+
+
+
+    console.log(
+
+      "OPEN LMS CLASS ID:",
+
+      classId
+
+    );
+
+
+
+    if (!classId) {
+
+      toast.error("Class ID not found.");
+
       return;
-    }
-
-    if (!form.class_id.trim()) {
-      alert(
-        "Class ID is required."
-      );
-      return;
-    }
-
-    if (!form.session_id.trim()) {
-      alert(
-        "Session ID is required."
-      );
-      return;
-    }
-
-    if (!form.recording_url.trim()) {
-      alert(
-        "Recording URL is required."
-      );
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-
-      const payload = {
-        title: form.title.trim(),
-
-        class_id: Number(
-          form.class_id
-        ),
-
-        session_id: Number(
-          form.session_id
-        ),
-
-        recording_url:
-          form.recording_url.trim(),
-
-        duration_seconds:
-          form.duration_seconds
-            ? Number(
-                form.duration_seconds
-              )
-            : 0,
-
-        status: form.status,
-      };
-
-      /*
-       * IMPORTANT:
-       * This endpoint must exist in backend:
-       *
-       * POST /api/recordings/institute
-       */
-
-      await API.post(
-        "/recordings/institute",
-        payload
-      );
-
-      alert(
-        "Recording added successfully."
-      );
-
-      setUploadOpen(false);
-      resetForm();
-
-      await loadRecordings();
-
-    } catch (error) {
-
-      console.error(
-        "Save recording error:",
-        error
-      );
-
-      alert(
-        error?.response?.data?.message ||
-          "Unable to save recording."
-      );
-
-    } finally {
-
-      setSaving(false);
 
     }
-  };
 
-  /* =========================================================
-     DELETE
-  ========================================================= */
 
-  const deleteRecording = async (
-    recordingId
-  ) => {
 
-    try {
+    /*
 
-      await API.delete(
-        `/recordings/institute/${recordingId}`
-      );
+      classId is guaranteed to be a string.
 
-      alert(
-        "Recording deleted successfully."
-      );
+      This prevents:
 
-      await loadRecordings();
 
-    } catch (error) {
 
-      console.error(
-        "Delete recording error:",
-        error
-      );
+      /api/[object Object]
 
-      alert(
-        error?.response?.data?.message ||
-          "Unable to delete recording."
-      );
-    }
-  };
+    */
 
-  /* =========================================================
-     STATS
-  ========================================================= */
 
-  const total =
-    rows.length;
 
-  const published =
-    rows.filter((row) => {
-      const status = getStatus(row);
+    navigate(
 
-      return (
-        status === "PUBLISHED" ||
-        status === "READY"
-      );
-    }).length;
+      `/institute/lms/${encodeURIComponent(classId)}`
 
-  const drafts =
-    rows.filter(
-      (row) =>
-        getStatus(row) === "DRAFT"
-    ).length;
-
-  const completed =
-    rows.filter(
-      (row) =>
-        Number(
-          getDuration(row)
-        ) > 0
-    ).length;
-
-  const hasFilters =
-    search ||
-    classFilter !== "ALL" ||
-    sessionFilter !== "ALL" ||
-    statusFilter !== "ALL";
-
-  const clearFilters = () => {
-
-    setSearch("");
-    setClassFilter("ALL");
-    setSessionFilter("ALL");
-    setStatusFilter("ALL");
+    );
 
   };
 
-  /* =========================================================
+
+
+  /* =======================================================
+
      RENDER
-  ========================================================= */
+
+  ======================================================= */
+
+
 
   return (
-    <div className="min-h-full text-white space-y-6 pb-10">
 
-      {/* HEADER */}
+    <div className="min-h-screen bg-[#07070b] px-5 py-7 text-white sm:px-7 lg:px-8">
 
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="mx-auto max-w-[1450px]">
 
-        <div>
 
-          <h1 className="text-3xl md:text-4xl font-bold">
-            Recordings
-          </h1>
 
-          <p className="text-white/45 mt-1.5">
-            Manage recordings linked to
-            your classes and sessions.
-          </p>
+        {/* =================================================
 
-        </div>
+            HEADER
 
-        <div className="flex items-center gap-3">
+        ================================================= */}
+
+
+
+        <div className="mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+
+
+
+          <div>
+
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl">
+
+              Recording Classes
+
+            </h1>
+
+
+
+            <p className="mt-2 text-sm text-white sm:text-base">
+
+              Manage your recorded classes and open their LMS.
+
+            </p>
+
+          </div>
+
+
 
           <button
+
             type="button"
-            onClick={loadRecordings}
+
+            onClick={fetchClasses}
+
             disabled={loading}
-            className="px-4 py-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] flex items-center gap-2 disabled:opacity-50"
+
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+
           >
+
             <RefreshCw
+
               size={17}
+
               className={
+
                 loading
+
                   ? "animate-spin"
+
                   : ""
+
               }
+
             />
 
+
+
             Refresh
-          </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setUploadOpen(true)
-            }
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 flex items-center gap-2 font-medium"
-          >
-            <UploadCloud size={18} />
-
-            Upload Recording
           </button>
 
         </div>
 
-      </header>
 
-      {/* STATS */}
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* =================================================
 
-        <StatCard
-          title="Total Recordings"
-          value={total}
-        />
+            SEARCH
 
-        <StatCard
-          title="Published"
-          value={published}
-          valueClass="text-emerald-400"
-        />
+        ================================================= */}
 
-        <StatCard
-          title="Drafts"
-          value={drafts}
-        />
 
-        <StatCard
-          title="Completed Sessions"
-          value={completed}
-          valueClass="text-purple-400"
-        />
 
-      </section>
-
-      {/* FILTERS */}
-
-      <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-4">
-
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,1fr)_180px_180px_180px] gap-3">
-
-          {/* SEARCH */}
+        <div className="mb-7 bg-transparent p-0">
 
           <div className="relative">
 
+
+
             <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+
+              size={20}
+
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white"
+
             />
+
+
 
             <input
+
+              type="text"
+
               value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
+
+              onChange={(event) =>
+
+                setSearch(event.target.value)
+
               }
-              placeholder="Search recordings by title, class or session..."
-              className="w-full h-12 pl-11 pr-4 rounded-xl bg-black/20 border border-white/10 outline-none text-sm placeholder:text-white/25 focus:border-purple-500/40"
+
+              placeholder="Search recording classes..."
+
+              className="h-14 w-full rounded-xl border border-white/10 bg-[#15121f] pl-12 pr-4 text-white outline-none placeholder:text-white transition focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/10"
+
             />
 
+
+
           </div>
-
-          <FilterSelect
-            value={classFilter}
-            onChange={setClassFilter}
-            options={classOptions}
-            allLabel="All Classes"
-          />
-
-          <FilterSelect
-            value={sessionFilter}
-            onChange={setSessionFilter}
-            options={sessionOptions}
-            allLabel="All Sessions"
-          />
-
-          <FilterSelect
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              "READY",
-              "PUBLISHED",
-              "DRAFT",
-              "UNLISTED",
-              "PROCESSING",
-              "FAILED",
-            ]}
-            allLabel="All Status"
-          />
 
         </div>
 
-        {hasFilters && (
-          <div className="flex justify-end mt-3">
 
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-xs text-purple-300 hover:text-purple-200 flex items-center gap-1"
-            >
-              <X size={13} />
 
-              Clear filters
-            </button>
+        {/* =================================================
+
+            COUNT
+
+        ================================================= */}
+
+
+
+        {!loading && (
+
+          <div className="mb-5 text-sm font-semibold text-white/70">
+
+            {filteredClasses.length} recording{" "}
+
+            {filteredClasses.length === 1
+
+              ? "class"
+
+              : "classes"}
 
           </div>
+
         )}
 
-      </section>
 
-      {/* RESULTS */}
 
-      {loading ? (
+        {/* =================================================
 
-        <LoadingState />
+            LOADING
 
-      ) : filteredRows.length === 0 ? (
+        ================================================= */}
 
-        <EmptyState
-          hasFilters={Boolean(
-            hasFilters
-          )}
-          onClear={clearFilters}
-          onUpload={() =>
-            setUploadOpen(true)
-          }
-        />
 
-      ) : (
 
-        <div className="space-y-3">
+        {loading && (
 
-          {filteredRows.map(
-            (recording, index) => (
+          <div className="py-20 text-center text-white">
 
-              <RecordingCard
-                key={
-                  getId(recording) ??
-                  `recording-${index}`
-                }
-                recording={recording}
-                onDelete={
-                  deleteRecording
-                }
+            Loading recording classes...
+
+          </div>
+
+        )}
+
+
+
+        {/* =================================================
+
+            EMPTY
+
+        ================================================= */}
+
+
+
+        {!loading &&
+
+          filteredClasses.length === 0 && (
+
+            <div className="rounded-2xl border border-white/10 bg-[#101019] py-20 text-center">
+
+
+
+              <Video
+
+                size={42}
+
+                className="mx-auto mb-4 text-white"
+
               />
 
-            )
-          )}
 
-        </div>
 
-      )}
+              <h3 className="text-lg font-bold text-white">
 
-      {/* =====================================================
-          UPLOAD MODAL
-      ===================================================== */}
+                No recording classes found
 
-      {uploadOpen && (
+              </h3>
 
-        <div className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
 
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#121119] shadow-2xl">
 
-            {/* HEADER */}
+              <p className="mt-2 text-sm text-white">
 
-            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+                {search
 
-              <div className="flex items-center gap-4">
+                  ? "Try a different search."
 
-                <div className="w-11 h-11 rounded-xl bg-purple-500/15 flex items-center justify-center">
+                  : "You do not have any recording classes yet."}
 
-                  <UploadCloud
-                    size={21}
-                    className="text-purple-400"
-                  />
+              </p>
 
-                </div>
 
-                <div>
-
-                  <h2 className="text-xl font-semibold">
-                    Upload Recording
-                  </h2>
-
-                  <p className="text-sm text-white/40 mt-1">
-                    Add a recorded class or
-                    session to your LMS.
-                  </p>
-
-                </div>
-
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center"
-              >
-                <X size={19} />
-              </button>
 
             </div>
 
-            {/* FORM */}
-
-            <form
-              onSubmit={saveRecording}
-              className="p-6 space-y-5"
-            >
-
-              {/* TITLE */}
-
-              <div>
-
-                <label className="block text-sm font-medium text-white/75 mb-2">
-                  Recording Title *
-                </label>
-
-                <input
-                  value={form.title}
-                  onChange={(e) =>
-                    updateForm(
-                      "title",
-                      e.target.value
-                    )
-                  }
-                  placeholder="Example: Introduction to Watercolor Techniques"
-                  required
-                  className="w-full h-12 px-4 rounded-xl bg-black/25 border border-white/10 outline-none focus:border-purple-500/50"
-                />
-
-              </div>
-
-              {/* CLASS + SESSION */}
-
-              <div className="grid md:grid-cols-2 gap-4">
-
-                <div>
-
-                  <label className="block text-sm font-medium text-white/75 mb-2">
-                    Class ID *
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.class_id}
-                    onChange={(e) =>
-                      updateForm(
-                        "class_id",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Example: 29"
-                    required
-                    className="w-full h-12 px-4 rounded-xl bg-black/25 border border-purple-500/20 outline-none focus:border-purple-500/60"
-                  />
-
-                  <p className="text-xs text-purple-300/60 mt-2">
-                    Required to link the
-                    recording to the class.
-                  </p>
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium text-white/75 mb-2">
-                    Session ID *
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.session_id}
-                    onChange={(e) =>
-                      updateForm(
-                        "session_id",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Example: 25"
-                    required
-                    className="w-full h-12 px-4 rounded-xl bg-black/25 border border-pink-500/20 outline-none focus:border-pink-500/60"
-                  />
-
-                  <p className="text-xs text-pink-300/60 mt-2">
-                    Required to link the
-                    recording to the session.
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* URL */}
-
-              <div>
-
-                <label className="block text-sm font-medium text-white/75 mb-2">
-                  Recording URL *
-                </label>
-
-                <input
-                  type="url"
-                  value={form.recording_url}
-                  onChange={(e) =>
-                    updateForm(
-                      "recording_url",
-                      e.target.value
-                    )
-                  }
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  required
-                  className="w-full h-12 px-4 rounded-xl bg-black/25 border border-white/10 outline-none focus:border-purple-500/50"
-                />
-
-                <p className="text-xs text-white/30 mt-2">
-                  YouTube, Vimeo, Cloudinary,
-                  or another accessible recording URL.
-                </p>
-
-              </div>
-
-              {/* DURATION + STATUS */}
-
-              <div className="grid md:grid-cols-2 gap-4">
-
-                <div>
-
-                  <label className="block text-sm font-medium text-white/75 mb-2">
-                    Duration (seconds)
-                  </label>
-
-                  <input
-                    type="number"
-                    min="0"
-                    value={
-                      form.duration_seconds
-                    }
-                    onChange={(e) =>
-                      updateForm(
-                        "duration_seconds",
-                        e.target.value
-                      )
-                    }
-                    placeholder="3600"
-                    className="w-full h-12 px-4 rounded-xl bg-black/25 border border-white/10 outline-none focus:border-purple-500/50"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm font-medium text-white/75 mb-2">
-                    Status
-                  </label>
-
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      updateForm(
-                        "status",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-12 px-4 rounded-xl bg-black/25 border border-white/10 outline-none focus:border-purple-500/50"
-                  >
-                    <option value="DRAFT">
-                      Draft
-                    </option>
-
-                    <option value="PUBLISHED">
-                      Published
-                    </option>
-
-                    <option value="UNLISTED">
-                      Unlisted
-                    </option>
-                  </select>
-
-                </div>
-
-              </div>
-
-              {/* FOOTER */}
-
-              <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
-
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={saving}
-                  className="px-5 py-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 font-medium disabled:opacity-50 flex items-center gap-2"
-                >
-
-                  <UploadCloud size={17} />
-
-                  {saving
-                    ? "Saving..."
-                    : "Save Recording"}
-
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
-        </div>
-
-      )}
-
-    </div>
-  );
-}
-
-/* =========================================================
-   STAT CARD
-========================================================= */
-
-function StatCard({
-  title,
-  value,
-  valueClass = "",
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-
-      <p className="text-sm text-white/40">
-        {title}
-      </p>
-
-      <p
-        className={`text-3xl font-bold mt-2 ${valueClass}`}
-      >
-        {value}
-      </p>
-
-    </div>
-  );
-}
-
-/* =========================================================
-   FILTER SELECT
-========================================================= */
-
-function FilterSelect({
-  value,
-  onChange,
-  options,
-  allLabel,
-}) {
-  return (
-    <div className="relative">
-
-      <select
-        value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        className="appearance-none w-full h-12 pl-4 pr-10 rounded-xl bg-black/20 border border-white/10 outline-none text-sm text-white/80 focus:border-purple-500/40"
-      >
-
-        <option value="ALL">
-          {allLabel}
-        </option>
-
-        {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-          >
-            {option}
-          </option>
-        ))}
-
-      </select>
-
-      <ChevronDown
-        size={16}
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/30"
-      />
-
-    </div>
-  );
-}
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-function LoadingState() {
-  return (
-    <div className="space-y-3">
-
-      {[1, 2, 3].map(
-        (item) => (
-          <div
-            key={item}
-            className="h-[150px] rounded-2xl border border-white/10 bg-white/[0.025] animate-pulse"
-          />
-        )
-      )}
-
-    </div>
-  );
-}
-
-/* =========================================================
-   EMPTY
-========================================================= */
-
-function EmptyState({
-  hasFilters,
-  onClear,
-  onUpload,
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.025] py-20 px-6 text-center">
-
-      <div className="w-16 h-16 mx-auto rounded-2xl bg-purple-500/10 flex items-center justify-center">
-
-        <Film
-          size={32}
-          className="text-purple-400/70"
-        />
-
-      </div>
-
-      <h3 className="mt-5 text-lg font-semibold">
-        {hasFilters
-          ? "No recordings found"
-          : "No recordings available"}
-      </h3>
-
-      <p className="text-sm text-white/35 mt-2">
-        {hasFilters
-          ? "Try changing your search or filters."
-          : "Upload a recording or sync recordings from a Zoom session."}
-      </p>
-
-      <div className="flex justify-center gap-3 mt-6">
-
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm"
-          >
-            Clear Filters
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onUpload}
-          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-sm flex items-center gap-2"
-        >
-          <UploadCloud size={16} />
-          Upload Recording
-        </button>
+          )}
+
+
+
+        {/* =================================================
+
+            CLASS CARDS
+
+        ================================================= */}
+
+
+
+        {!loading &&
+
+          filteredClasses.length > 0 && (
+
+            <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+
+
+              {filteredClasses.map(
+
+                (item, index) => {
+
+                  const classId =
+
+                    getClassId(item);
+
+
+
+                  /*
+
+                    Use class ID as primary key.
+
+                    Use index only as final fallback.
+
+                  */
+
+
+
+                  const cardKey =
+
+                    classId ||
+
+                    `recording-class-${index}`;
+
+
+
+                  const title =
+
+                    getClassTitle(item);
+
+
+
+                  const image =
+
+                    getImage(item);
+
+
+
+                  const category =
+
+                    getCategoryName(item);
+
+
+
+                  return (
+
+                    <div
+
+                      key={cardKey}
+
+                      className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111118] shadow-xl transition duration-300 hover:-translate-y-1 hover:border-pink-500/30"
+
+                    >
+
+
+
+                      {/* ===================================
+
+                          IMAGE
+
+                      =================================== */}
+
+
+
+                      <div className="relative h-40 w-full shrink-0 overflow-hidden bg-[#191523]">
+
+
+
+                        {image ? (
+
+                          <img
+
+                            src={image}
+
+                            alt={title}
+
+                            className="h-full w-full object-cover"
+
+                            onError={(event) => {
+
+                              event.currentTarget.style.display =
+
+                                "none";
+
+                            }}
+
+                          />
+
+                        ) : (
+
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-900/40 via-[#191523] to-pink-900/30">
+
+
+
+                            <BookOpen
+
+                              size={48}
+
+                              className="text-purple-300/50"
+
+                            />
+
+
+
+                          </div>
+
+                        )}
+
+
+
+                        {/* RECORDING BADGE */}
+
+
+
+                        <div className="absolute left-3 top-3 rounded-lg border border-pink-400/20 bg-black/60 px-3 py-1.5 text-xs font-bold text-pink-300 backdrop-blur">
+
+                          RECORDING
+
+                        </div>
+
+
+
+                      </div>
+
+
+
+                      {/* ===================================
+
+                          CONTENT
+
+                      =================================== */}
+
+
+
+                      <div className="flex flex-1 flex-col p-5">
+
+
+
+                        {/* TITLE */}
+
+
+
+                        <h3 className="min-h-[28px] truncate text-lg font-bold leading-7 text-white">
+
+                          {title}
+
+                        </h3>
+
+
+
+                        {/* CATEGORY */}
+
+
+
+                        <div className="mt-4 flex items-center justify-between gap-4">
+
+
+
+                          <p className="text-xs font-semibold uppercase tracking-wider text-white">
+
+                            Category
+
+                          </p>
+
+
+
+                          <p className="truncate text-sm font-semibold text-white">
+
+                            {category}
+
+                          </p>
+
+
+
+                        </div>
+
+
+
+                        {/* TRAINER NAME */}
+
+                        <div className="mt-3 flex items-center justify-between gap-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-white">
+                            Trainer
+                          </p>
+                          <p
+                            className="min-w-0 truncate text-right text-sm font-semibold text-white"
+                            title={getTrainerName(item)}
+                          >
+                            {getTrainerName(item)}
+                          </p>
+                        </div>
+
+                        {/* OPEN LMS */}
+
+
+
+                        <div className="mt-auto pt-5">
+
+
+
+                          <button
+
+                            type="button"
+
+                            onClick={() =>
+
+                              openLMS(item)
+
+                            }
+
+                            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl font-bold text-white transition hover:scale-[1.01]"
+
+                            style={{
+
+                              background:
+
+                                "linear-gradient(135deg,#9b2cff,#ff2aae)",
+
+                            }}
+
+                          >
+
+                            <BookOpen size={18} />
+
+
+
+                            Open LMS
+
+                          </button>
+
+
+
+                        </div>
+
+
+
+                      </div>
+
+
+
+                    </div>
+
+                  );
+
+                }
+
+              )}
+
+
+
+            </div>
+
+          )}
+
+
 
       </div>
 
     </div>
+
   );
+
 }

@@ -1,2768 +1,3569 @@
 
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+
+import { useEffect, useMemo, useState } from "react";
+
+import { useNavigate } from "react-router-dom";
 
 import {
-  HiOutlineBell,
-  HiOutlineBookOpen,
-  HiOutlineCalendar,
-  HiOutlineClock,
-  HiOutlineVideoCamera,
-  HiOutlinePlay,
-  HiOutlineUser,
-  HiOutlineDocumentText,
-  HiOutlineCreditCard,
-  HiOutlineSearch,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
-  HiOutlineHome,
-  HiOutlineMenu,
-  HiOutlineX,
-  HiOutlineBookmark,
-  HiOutlineExternalLink,
+
+  HiCalendar,
+
+  HiClock,
+
+  HiVideoCamera,
+
+  HiLockClosed,
+
+  HiCheckCircle,
+
+  HiExclamationCircle,
+
+  HiSearch,
+
+  HiChevronLeft,
+
+  HiChevronRight,
+
+  HiUser,
+
+  HiBookOpen,
+
 } from "react-icons/hi";
 
-import {
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom";
+import API from "../../services/api";
 
 import { getTimezone } from "../../utils/timezone";
 
 /* =========================================================
-   DEFAULT BRANDING
-========================================================= */
 
-const DEFAULT_BRANDING = {
-  pageBackgroundColor: "#020914",
-  navbarColor: "#031120",
-  cardBackgroundColor: "#031120",
+   TIME HELPERS
 
-  headingColor: "#FFFFFF",
-  subheadingColor: "#7DB7FF",
-  textColor: "#FFFFFF",
+\========================================================= */
 
-  iconColor: "#1687FF",
-  buttonColor: "#087CFF",
-  buttonTextColor: "#FFFFFF",
+const formatTime = (time) => {
 
-  fontHeading: "Inter",
-  fontSubheading: "Inter",
-  fontBody: "Inter",
+  if (!time) return "-";
 
-  headingWeight: 700,
-  headingLineHeight: 1.15,
-  headingLetterSpacing: 0,
+  const value = String(time).slice(0, 8);
 
-  subheadingWeight: 500,
-  subheadingLineHeight: 1.4,
+  const [h, m] = value.split(":");
 
-  bodyWeight: 400,
-  bodyLineHeight: 1.5,
-  bodyLetterSpacing: 0,
+  let hour = Number(h);
 
-  roundedButtons: true,
+  if (Number.isNaN(hour)) return value;
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12 || 12;
+
+  return `${hour}:${m} ${ampm}`;
+
 };
 
-/* =========================================================
-   GENERIC HELPERS
-========================================================= */
+const normalizeDays = (days) => {
 
-const getValue = (...values) => {
-  for (const value of values) {
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== ""
-    ) {
-      return value;
-    }
+  if (!days) return [];
+
+  if (Array.isArray(days)) {
+
+    return days
+
+      .map((d) =>
+
+        typeof d === "string"
+
+          ? d
+
+          : d?.day_name || d?.name
+
+      )
+
+      .filter(Boolean);
+
   }
 
-  return null;
+  if (typeof days === "string") {
+
+    try {
+
+      const parsed = JSON.parse(days);
+
+      if (Array.isArray(parsed)) {
+
+        return normalizeDays(parsed);
+
+      }
+
+    } catch {}
+
+    return days
+
+      .split(",")
+
+      .map((d) => d.trim())
+
+      .filter(Boolean);
+
+  }
+
+  return [];
+
 };
 
-const getBrandingValue = (
-  branding,
-  camelKey,
-  snakeKey,
-  fallback
+const makeDaysLabel = (days) => {
+
+  const list = normalizeDays(days);
+
+  if (!list.length) {
+
+    return "Schedule not configured";
+
+  }
+
+  if (list.length === 1) {
+
+    return `Every ${list[0]}`;
+
+  }
+
+  if (list.length === 2) {
+
+    return `Every ${list[0]} & ${list[1]}`;
+
+  }
+
+  return `Every ${list
+
+    .slice(0, -1)
+
+    .join(", ")} & ${
+
+    list[list.length - 1]
+
+  }`;
+
+};
+
+const getNow = (
+
+  timezone = "Asia/Kolkata"
+
 ) => {
-  const value =
-    branding?.[camelKey] ??
-    branding?.[snakeKey];
-
-  return value !== undefined &&
-    value !== null &&
-    value !== ""
-    ? value
-    : fallback;
-};
-
-const normalizeBranding = (
-  branding = {}
-) => ({
-  pageBackgroundColor:
-    getBrandingValue(
-      branding,
-      "pageBackgroundColor",
-      "page_background_color",
-      DEFAULT_BRANDING.pageBackgroundColor
-    ),
-
-  navbarColor:
-    getBrandingValue(
-      branding,
-      "navbarColor",
-      "navbar_color",
-      DEFAULT_BRANDING.navbarColor
-    ),
-
-  cardBackgroundColor:
-    getBrandingValue(
-      branding,
-      "cardBackgroundColor",
-      "card_background_color",
-      DEFAULT_BRANDING.cardBackgroundColor
-    ),
-
-  headingColor:
-    getBrandingValue(
-      branding,
-      "headingColor",
-      "heading_color",
-      DEFAULT_BRANDING.headingColor
-    ),
-
-  subheadingColor:
-    getBrandingValue(
-      branding,
-      "subheadingColor",
-      "subheading_color",
-      DEFAULT_BRANDING.subheadingColor
-    ),
-
-  textColor:
-    getBrandingValue(
-      branding,
-      "textColor",
-      "text_color",
-      DEFAULT_BRANDING.textColor
-    ),
-
-  iconColor:
-    getBrandingValue(
-      branding,
-      "iconColor",
-      "icon_color",
-      DEFAULT_BRANDING.iconColor
-    ),
-
-  buttonColor:
-    getBrandingValue(
-      branding,
-      "buttonColor",
-      "button_color",
-      DEFAULT_BRANDING.buttonColor
-    ),
-
-  buttonTextColor:
-    getBrandingValue(
-      branding,
-      "buttonTextColor",
-      "button_text_color",
-      DEFAULT_BRANDING.buttonTextColor
-    ),
-
-  fontHeading:
-    getBrandingValue(
-      branding,
-      "fontHeading",
-      "font_heading",
-      DEFAULT_BRANDING.fontHeading
-    ),
-
-  fontSubheading:
-    getBrandingValue(
-      branding,
-      "fontSubheading",
-      "font_subheading",
-      DEFAULT_BRANDING.fontSubheading
-    ),
-
-  fontBody:
-    getBrandingValue(
-      branding,
-      "fontBody",
-      "font_body",
-      DEFAULT_BRANDING.fontBody
-    ),
-
-  headingWeight:
-    getBrandingValue(
-      branding,
-      "headingWeight",
-      "heading_weight",
-      DEFAULT_BRANDING.headingWeight
-    ),
-
-  headingLineHeight:
-    getBrandingValue(
-      branding,
-      "headingLineHeight",
-      "heading_line_height",
-      DEFAULT_BRANDING.headingLineHeight
-    ),
-
-  headingLetterSpacing:
-    getBrandingValue(
-      branding,
-      "headingLetterSpacing",
-      "heading_letter_spacing",
-      DEFAULT_BRANDING.headingLetterSpacing
-    ),
-
-  bodyWeight:
-    getBrandingValue(
-      branding,
-      "bodyWeight",
-      "body_weight",
-      DEFAULT_BRANDING.bodyWeight
-    ),
-
-  bodyLineHeight:
-    getBrandingValue(
-      branding,
-      "bodyLineHeight",
-      "body_line_height",
-      DEFAULT_BRANDING.bodyLineHeight
-    ),
-});
-
-/* =========================================================
-   DATE / TIME HELPERS
-========================================================= */
-
-const getSessionDate = (session) => {
-  return getValue(
-    session?.date,
-    session?.session_date,
-    session?.start_date,
-    session?.sessionDate,
-    session?.scheduled_date
-  );
-};
-
-const getStartTime = (session) => {
-  return getValue(
-    session?.start_time,
-    session?.startTime,
-    session?.local_start_time,
-    "10:00:00"
-  );
-};
-
-const getEndTime = (session) => {
-  return getValue(
-    session?.end_time,
-    session?.endTime,
-    "11:00:00"
-  );
-};
-
-const parseTimeToMinutes = (time) => {
-  if (!time) return 0;
-
-  const value = String(time)
-    .trim()
-    .toUpperCase();
-
-  const ampmMatch =
-    value.match(
-      /^(\d{1,2}):?(\d{2})?\s*(AM|PM)$/
-    );
-
-  if (ampmMatch) {
-    let hour =
-      Number(ampmMatch[1]);
-
-    const minute =
-      Number(
-        ampmMatch[2] || 0
-      );
-
-    const period =
-      ampmMatch[3];
-
-    if (
-      period === "PM" &&
-      hour !== 12
-    ) {
-      hour += 12;
-    }
-
-    if (
-      period === "AM" &&
-      hour === 12
-    ) {
-      hour = 0;
-    }
-
-    return (
-      hour * 60 +
-      minute
-    );
-  }
 
   const parts =
-    value.split(":");
 
-  const hour =
-    Number(parts[0]) || 0;
+    new Intl.DateTimeFormat(
 
-  const minute =
-    Number(parts[1]) || 0;
+      "en-US",
 
-  return (
-    hour * 60 +
-    minute
-  );
-};
+      {
 
-const formatTime = (
-  time
-) => {
-  if (!time) return "--";
+        timeZone: timezone,
 
-  const minutes =
-    parseTimeToMinutes(
-      time
-    );
+        hour: "2-digit",
 
-  const hour24 =
-    Math.floor(
-      minutes / 60
-    );
+        minute: "2-digit",
 
-  const minute =
-    minutes % 60;
+        second: "2-digit",
 
-  const period =
-    hour24 >= 12
-      ? "PM"
-      : "AM";
+        hour12: false,
 
-  const hour12 =
-    hour24 % 12 || 12;
+      }
 
-  return `${String(
-    hour12
-  ).padStart(
-    2,
-    "0"
-  )}:${String(
-    minute
-  ).padStart(
-    2,
-    "0"
-  )} ${period}`;
-};
+    ).formatToParts(new Date());
 
-const formatTimeRange = (
-  session
-) => {
-  return `${formatTime(
-    getStartTime(session)
-  )} – ${formatTime(
-    getEndTime(session)
+  const get = (type) =>
+
+    parts.find(
+
+      (p) => p.type === type
+
+    )?.value || "00";
+
+  return `${
+
+    get("hour") === "24"
+
+      ? "00"
+
+      : get("hour")
+
+  }:${get("minute")}:${get(
+
+    "second"
+
   )}`;
+
 };
 
-const getDateObject = (
-  session
-) => {
-  const raw =
-    getSessionDate(
-      session
-    );
+const getToday = (
 
-  if (!raw) {
-    return new Date();
-  }
+  timezone = "Asia/Kolkata"
 
-  const date =
-    new Date(raw);
+) =>
 
-  return Number.isNaN(
-    date.getTime()
-  )
-    ? new Date()
-    : date;
-};
+  new Intl.DateTimeFormat(
 
-const formatSessionDate = (
-  session
-) => {
-  const date =
-    getDateObject(
-      session
-    );
+    "en-US",
 
-  return date.toLocaleDateString(
-    "en-IN",
     {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
-};
 
-const getDayNumber = (
-  session
-) => {
-  return getDateObject(
-    session
-  ).getDate();
-};
+      timeZone: timezone,
+
+      weekday: "long",
+
+    }
+
+  ).format(new Date());
 
 /* =========================================================
+
    SESSION STATUS
-========================================================= */
+
+\========================================================= */
 
 const getStatus = (
-  session
-) => {
-  const backendStatus =
-    String(
-      getValue(
-        session?.live_status,
-        session?.status,
-        ""
-      )
-    ).toUpperCase();
 
-  if (
-    [
-      "LIVE",
-      "UPCOMING",
-      "SCHEDULED",
-      "COMPLETED",
-    ].includes(
-      backendStatus
-    )
-  ) {
-    return backendStatus;
+  session,
+
+  viewerTimezone
+
+) => {
+
+  const days = normalizeDays(
+
+    session.days ||
+
+      session.available_days ||
+
+      session.class_days
+
+  );
+
+  const start =
+
+    session.start_time ||
+
+    session.local_start_time;
+
+  let end =
+
+    session.end_time ||
+
+    session.local_end_time;
+
+  if (!days.length || !start) {
+
+    return "SCHEDULED";
+
+  }
+
+  const today =
+
+    getToday(viewerTimezone);
+
+  const isToday = days.some(
+
+    (d) =>
+
+      String(d).toLowerCase() ===
+
+      today.toLowerCase()
+
+  );
+
+  if (!isToday) {
+
+    return "UPCOMING";
+
+  }
+
+  if (!end && session.duration) {
+
+    const [h, m] = String(start)
+
+      .slice(0, 8)
+
+      .split(":")
+
+      .map(Number);
+
+    if (
+
+      Number.isFinite(h) &&
+
+      Number.isFinite(m)
+
+    ) {
+
+      const total =
+
+        h * 60 +
+
+        m +
+
+        Number(session.duration);
+
+      end = `${String(
+
+        Math.floor(total / 60) % 24
+
+      ).padStart(2, "0")}:${String(
+
+        total % 60
+
+      ).padStart(2, "0")}:00`;
+
+    }
+
+  }
+
+  if (!end) {
+
+    return "UPCOMING";
+
   }
 
   const now =
-    new Date();
 
-  const date =
-    getDateObject(
-      session
+    getNow(viewerTimezone).slice(
+
+      0,
+
+      8
+
     );
 
-  const startMinutes =
-    parseTimeToMinutes(
-      getStartTime(session)
-    );
+  const startValue =
 
-  const endMinutes =
-    parseTimeToMinutes(
-      getEndTime(session)
-    );
+    String(start).slice(0, 8);
 
-  const start =
-    new Date(date);
+  const endValue =
 
-  start.setHours(
-    Math.floor(
-      startMinutes / 60
-    ),
-    startMinutes % 60,
-    0,
-    0
-  );
-
-  const end =
-    new Date(date);
-
-  end.setHours(
-    Math.floor(
-      endMinutes / 60
-    ),
-    endMinutes % 60,
-    0,
-    0
-  );
+    String(end).slice(0, 8);
 
   if (
-    now >= start &&
-    now <= end
+
+    now >= startValue &&
+
+    now <= endValue
+
   ) {
+
     return "LIVE";
+
+  }
+
+  if (now > endValue) {
+
+    return "COMPLETED";
+
+  }
+
+  return "UPCOMING";
+
+};
+
+/* =========================================================
+
+   NORMALIZE SESSION
+
+\========================================================= */
+
+const normalizeSession = (
+
+  session,
+
+  booking
+
+) => {
+
+  const cls =
+
+    session?.class ||
+
+    booking?.class ||
+
+    {};
+
+  const trainer =
+
+    session?.trainer ||
+
+    booking?.trainer ||
+
+    {};
+
+  const days = normalizeDays(
+
+    session?.days ||
+
+      session?.available_days ||
+
+      session?.class_days
+
+  );
+
+  return {
+
+    ...session,
+
+    id:
+
+      session?.id ||
+
+      session?.session_id ||
+
+      booking?.session_id,
+
+    session_id:
+
+      session?.session_id ||
+
+      session?.id ||
+
+      booking?.session_id,
+
+    booking_id:
+
+      booking?.id ||
+
+      booking?.booking_id ||
+
+      session?.booking_id,
+
+    class_id:
+
+      session?.class_id ||
+
+      booking?.class_id ||
+
+      cls?.id,
+
+    class_title:
+
+      session?.class_title ||
+
+      session?.class_name ||
+
+      booking?.class_title ||
+
+      booking?.class_name ||
+
+      cls?.title ||
+
+      cls?.name ||
+
+      null,
+
+    class_image:
+
+      session?.class_image ||
+
+      session?.class_image_url ||
+
+      cls?.image_url ||
+
+      cls?.image ||
+
+      booking?.class_image ||
+
+      booking?.class_image_url ||
+
+      null,
+
+    session_title:
+
+      session?.session_title ||
+
+      session?.title ||
+
+      session?.name ||
+
+      "Class Session",
+
+    trainer_name:
+
+      session?.trainer_name ||
+
+      trainer?.name ||
+
+      trainer?.full_name ||
+
+      booking?.trainer_name ||
+
+      null,
+
+    trainer_image:
+
+      session?.trainer_image ||
+
+      session?.trainer_profile_image ||
+
+      trainer?.image ||
+
+      trainer?.profile_image ||
+
+      booking?.trainer_image ||
+
+      null,
+
+    days,
+
+    available_days: days,
+
+    days_label:
+
+      session?.days_label ||
+
+      makeDaysLabel(days),
+
+    start_time:
+
+      session?.start_time ||
+
+      null,
+
+    end_time:
+
+      session?.end_time ||
+
+      null,
+
+    local_start_time:
+
+      session?.local_start_time ||
+
+      session?.display_time ||
+
+      formatTime(
+
+        session?.start_time
+
+      ),
+
+    duration:
+
+      session?.duration ||
+
+      booking?.duration ||
+
+      null,
+
+    zoom_link:
+
+      session?.zoom_link ||
+
+      session?.zoom?.join_url ||
+
+      null,
+
+    zoom:
+
+      session?.zoom || {
+
+        enabled:
+
+          session?.mode ===
+
+            "ONLINE" ||
+
+          session?.mode ===
+
+            "HYBRID",
+
+        join_url:
+
+          session?.zoom_link ||
+
+          null,
+
+      },
+
+    can_join:
+
+      session?.can_join === true,
+
+    is_today:
+
+      Boolean(
+
+        session?.is_today
+
+      ),
+
+    students_count:
+
+      session?.students_count ??
+
+      session?.enrolled_students ??
+
+      session?.student_count ??
+
+      null,
+
+  };
+
+};
+
+/* =========================================================
+
+   MAIN COMPONENT
+
+\========================================================= */
+
+export default function WebsiteLiveSessions() {
+
+  const navigate =
+
+    useNavigate();
+
+  const tz = { timezone: getTimezone() || "Asia/Kolkata" };
+
+  const token =
+
+    localStorage.getItem(
+
+      "token"
+
+    );
+
+  const [
+
+    loading,
+
+    setLoading,
+
+  ] = useState(true);
+
+  const [
+
+    sessions,
+
+    setSessions,
+
+  ] = useState([]);
+
+  const [
+
+    hasBooking,
+
+    setHasBooking,
+
+  ] = useState(false);
+
+  const [
+
+    errorMessage,
+
+    setErrorMessage,
+
+  ] = useState("");
+
+  const [
+
+    clock,
+
+    setClock,
+
+  ] = useState("");
+
+  const [
+
+    tab,
+
+    setTab,
+
+  ] = useState("ALL");
+
+  const [
+
+    search,
+
+    setSearch,
+
+  ] = useState("");
+
+  const [
+
+    classFilter,
+
+    setClassFilter,
+
+  ] = useState("ALL");
+
+  const [
+
+    trainerFilter,
+
+    setTrainerFilter,
+
+  ] = useState("ALL");
+
+  const [
+
+    calendarMonth,
+
+    setCalendarMonth,
+
+  ] = useState(
+
+    new Date()
+
+  );
+
+  const [
+
+    selectedDate,
+
+    setSelectedDate,
+
+  ] = useState(
+
+    new Date()
+
+  );
+
+  /* =======================================================
+
+     CLOCK
+
+  ======================================================= */
+
+  useEffect(() => {
+
+    const tick = () => {
+
+      setClock(
+
+        getNow(
+
+          tz.timezone
+
+        )
+
+      );
+
+    };
+
+    tick();
+
+    const id =
+
+      setInterval(
+
+        tick,
+
+        1000
+
+      );
+
+    return () =>
+
+      clearInterval(id);
+
+  }, [tz.timezone]);
+
+  /* =======================================================
+
+     FETCH BOOKINGS
+
+  ======================================================= */
+
+  const fetchBookings =
+
+    async () => {
+
+      const response =
+
+        await API.get(
+
+          "/bookings/my-bookings",
+
+          {
+
+            headers: {
+
+              "X-Timezone":
+
+                tz.timezone,
+
+            },
+
+          }
+
+        );
+
+      const raw =
+
+        response?.data;
+
+      if (
+
+        Array.isArray(raw)
+
+      ) {
+
+        return raw;
+
+      }
+
+      if (
+
+        Array.isArray(
+
+          raw?.bookings
+
+        )
+
+      ) {
+
+        return raw.bookings;
+
+      }
+
+      if (
+
+        Array.isArray(
+
+          raw?.data?.bookings
+
+        )
+
+      ) {
+
+        return raw.data.bookings;
+
+      }
+
+      if (
+
+        Array.isArray(
+
+          raw?.data
+
+        )
+
+      ) {
+
+        return raw.data;
+
+      }
+
+      return [];
+
+    };
+
+  /* =======================================================
+
+     FETCH SESSIONS
+
+  ======================================================= */
+
+  const fetchSessions =
+
+    async () => {
+
+      try {
+
+        setLoading(true);
+
+        setErrorMessage("");
+
+        if (!token) {
+
+          setSessions([]);
+
+          setHasBooking(false);
+
+          return;
+
+        }
+
+        const bookings =
+
+          await fetchBookings();
+
+        setHasBooking(
+
+          bookings.length > 0
+
+        );
+
+        if (!bookings.length) {
+
+          setSessions([]);
+
+          return;
+
+        }
+
+        const classIds = [
+
+          ...new Set(
+
+            bookings
+
+              .map(
+
+                (b) =>
+
+                  Number(
+
+                    b?.class_id ||
+
+                      b?.classId ||
+
+                      b?.class?.id
+
+                  )
+
+              )
+
+              .filter(
+
+                (id) =>
+
+                  Number.isInteger(
+
+                    id
+
+                  ) && id > 0
+
+              )
+
+          ),
+
+        ];
+
+        const results =
+
+          await Promise.all(
+
+            classIds.map(
+
+              async (
+
+                classId
+
+              ) => {
+
+                try {
+
+                  const response =
+
+                    await API.get(
+
+                      `/sessions/class/${classId}`,
+
+                      {
+
+                        headers: {
+
+                          "X-Timezone":
+
+                            tz.timezone,
+
+                        },
+
+                      }
+
+                    );
+
+                  const raw =
+
+                    response?.data;
+
+                  const list =
+
+                    raw?.data
+
+                      ?.sessions ||
+
+                    raw?.sessions ||
+
+                    raw?.data ||
+
+                    [];
+
+                  return {
+
+                    classId,
+
+                    sessions:
+
+                      Array.isArray(
+
+                        list
+
+                      )
+
+                        ? list
+
+                        : [],
+
+                  };
+
+                } catch (e) {
+
+                  console.error(
+
+                    `Failed to load sessions for class ${classId}`,
+
+                    e
+
+                  );
+
+                  return {
+
+                    classId,
+
+                    sessions: [],
+
+                  };
+
+                }
+
+              }
+
+            )
+
+          );
+
+        const output = [];
+
+        bookings.forEach(
+
+          (booking) => {
+
+            const classId =
+
+              Number(
+
+                booking?.class_id ||
+
+                  booking?.classId ||
+
+                  booking?.class?.id
+
+              );
+
+            const sessionId =
+
+              Number(
+
+                booking?.session_id ||
+
+                  booking?.sessionId ||
+
+                  booking?.session?.id
+
+              );
+
+            const result =
+
+              results.find(
+
+                (r) =>
+
+                  Number(
+
+                    r.classId
+
+                  ) === classId
+
+              );
+
+            const list =
+
+              result?.sessions ||
+
+              [];
+
+            let match = null;
+
+            if (
+
+              Number.isInteger(
+
+                sessionId
+
+              ) &&
+
+              sessionId > 0
+
+            ) {
+
+              match =
+
+                list.find(
+
+                  (s) =>
+
+                    Number(
+
+                      s?.session_id ||
+
+                        s?.id
+
+                    ) ===
+
+                    sessionId
+
+                );
+
+            }
+
+            if (
+
+              !match &&
+
+              !sessionId
+
+            ) {
+
+              match =
+
+                list[0];
+
+            }
+
+            if (match) {
+
+              output.push(
+
+                normalizeSession(
+
+                  match,
+
+                  booking
+
+                )
+
+              );
+
+            }
+
+          }
+
+        );
+
+        const unique = [];
+
+        const seen =
+
+          new Set();
+
+        output.forEach(
+
+          (s) => {
+
+            const key = `${s.booking_id || "b"}-${
+
+              s.session_id ||
+
+              s.id ||
+
+              "s"
+
+            }`;
+
+            if (
+
+              !seen.has(key)
+
+            ) {
+
+              seen.add(key);
+
+              unique.push(s);
+
+            }
+
+          }
+
+        );
+
+        setSessions(
+
+          unique
+
+        );
+
+      } catch (error) {
+
+        console.error(
+
+          "SESSIONS LOAD ERROR:",
+
+          error
+
+        );
+
+        setErrorMessage(
+
+          error?.response
+
+            ?.data?.message ||
+
+            error?.message ||
+
+            "Failed to fetch sessions"
+
+        );
+
+        setSessions([]);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+  useEffect(() => {
+
+    fetchSessions();
+
+  }, [
+
+    token,
+
+    tz.timezone,
+
+  ]);
+
+  /* =======================================================
+
+     SESSION GROUPS
+
+  ======================================================= */
+
+  const live =
+
+    useMemo(
+
+      () =>
+
+        sessions.filter(
+
+          (s) =>
+
+            getStatus(
+
+              s,
+
+              tz.timezone
+
+            ) === "LIVE"
+
+        ),
+
+      [
+
+        sessions,
+
+        tz.timezone,
+
+        clock,
+
+      ]
+
+    );
+
+  const upcoming =
+
+    useMemo(
+
+      () =>
+
+        sessions.filter(
+
+          (s) => {
+
+            const status =
+
+              getStatus(
+
+                s,
+
+                tz.timezone
+
+              );
+
+            return (
+
+              status ===
+
+                "UPCOMING" ||
+
+              status ===
+
+                "SCHEDULED"
+
+            );
+
+          }
+
+        ),
+
+      [
+
+        sessions,
+
+        tz.timezone,
+
+        clock,
+
+      ]
+
+    );
+
+  const completed =
+
+    useMemo(
+
+      () =>
+
+        sessions.filter(
+
+          (s) =>
+
+            getStatus(
+
+              s,
+
+              tz.timezone
+
+            ) ===
+
+            "COMPLETED"
+
+        ),
+
+      [
+
+        sessions,
+
+        tz.timezone,
+
+        clock,
+
+      ]
+
+    );
+
+  /* =======================================================
+
+     FILTER
+
+  ======================================================= */
+
+  const filtered =
+
+    useMemo(() => {
+
+      const q =
+
+        search
+
+          .trim()
+
+          .toLowerCase();
+
+      return sessions.filter(
+
+        (s) => {
+
+          const status =
+
+            getStatus(
+
+              s,
+
+              tz.timezone
+
+            );
+
+          if (
+
+            tab === "LIVE" &&
+
+            status !== "LIVE"
+
+          ) {
+
+            return false;
+
+          }
+
+          if (
+
+            tab === "UPCOMING" &&
+
+            !(
+
+              status ===
+
+                "UPCOMING" ||
+
+              status ===
+
+                "SCHEDULED"
+
+            )
+
+          ) {
+
+            return false;
+
+          }
+
+          if (
+
+            tab ===
+
+              "COMPLETED" &&
+
+            status !==
+
+              "COMPLETED"
+
+          ) {
+
+            return false;
+
+          }
+
+          if (
+
+            classFilter !==
+
+              "ALL" &&
+
+            s.class_title !==
+
+              classFilter
+
+          ) {
+
+            return false;
+
+          }
+
+          if (
+
+            trainerFilter !==
+
+              "ALL" &&
+
+            s.trainer_name !==
+
+              trainerFilter
+
+          ) {
+
+            return false;
+
+          }
+
+          if (!q) {
+
+            return true;
+
+          }
+
+          return [
+
+            s.class_title,
+
+            s.session_title,
+
+            s.trainer_name,
+
+          ].some(
+
+            (v) =>
+
+              String(
+
+                v || ""
+
+              )
+
+                .toLowerCase()
+
+                .includes(q)
+
+          );
+
+        }
+
+      );
+
+    }, [
+
+      sessions,
+
+      tab,
+
+      classFilter,
+
+      trainerFilter,
+
+      search,
+
+      tz.timezone,
+
+      clock,
+
+    ]);
+
+  const classOptions = [
+
+    ...new Set(
+
+      sessions
+
+        .map(
+
+          (s) =>
+
+            s.class_title
+
+        )
+
+        .filter(Boolean)
+
+    ),
+
+  ];
+
+  const trainerOptions = [
+
+    ...new Set(
+
+      sessions
+
+        .map(
+
+          (s) =>
+
+            s.trainer_name
+
+        )
+
+        .filter(Boolean)
+
+    ),
+
+  ];
+
+  const nextSession =
+
+    live[0] ||
+
+    upcoming[0] ||
+
+    null;
+
+  /* =======================================================
+
+     CALENDAR
+
+  ======================================================= */
+
+  const calendarCells =
+
+    useMemo(() => {
+
+      const year =
+
+        calendarMonth.getFullYear();
+
+      const month =
+
+        calendarMonth.getMonth();
+
+      const firstDay =
+
+        new Date(
+
+          year,
+
+          month,
+
+          1
+
+        ).getDay();
+
+      return Array.from(
+
+        {
+
+          length: 42,
+
+        },
+
+        (_, i) =>
+
+          new Date(
+
+            year,
+
+            month,
+
+            i -
+
+              firstDay +
+
+              1
+
+          )
+
+      );
+
+    }, [
+
+      calendarMonth,
+
+    ]);
+
+  const sessionDates =
+
+    useMemo(() => {
+
+      const dates =
+
+        new Set();
+
+      sessions.forEach(
+
+        (s) => {
+
+          const value =
+
+            s.date ||
+
+            s.session_date ||
+
+            s.start_date;
+
+          if (value) {
+
+            const d =
+
+              new Date(value);
+
+            if (
+
+              !Number.isNaN(
+
+                d.getTime()
+
+              )
+
+            ) {
+
+              dates.add(
+
+                d.toDateString()
+
+              );
+
+            }
+
+          }
+
+        }
+
+      );
+
+      return dates;
+
+    }, [sessions]);
+
+  /* =======================================================
+
+     STATES
+
+  ======================================================= */
+
+  if (loading) {
+
+    return (
+
+      <State
+
+        title="Loading Sessions..."
+
+        icon={
+
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/10 border-t-blue-500" />
+
+        }
+
+      />
+
+    );
+
+  }
+
+  if (!token) {
+
+    return (
+
+      <State
+
+        title="Login Required"
+
+        message="Please login to access your sessions."
+
+        icon={
+
+          <HiLockClosed
+
+            size={38}
+
+          />
+
+        }
+
+        button="Login"
+
+        onClick={() => navigate("/institute/website/preview")}
+
+      />
+
+    );
+
   }
 
   if (
-    now < start
+
+    !hasBooking &&
+
+    !errorMessage
+
   ) {
-    return "UPCOMING";
+
+    return (
+
+      <State
+
+        title="No Sessions"
+
+        message="Book a class to start learning."
+
+        icon={
+
+          <HiCalendar
+
+            size={38}
+
+          />
+
+        }
+
+        button="Browse Classes"
+
+        onClick={() =>
+
+          navigate(
+
+            "/classes"
+
+          )
+
+        }
+
+      />
+
+    );
+
   }
 
-  return "COMPLETED";
-};
+  if (
 
-/* =========================================================
-   SESSION DATA HELPERS
-========================================================= */
+    errorMessage &&
 
-const getSessionTitle = (
-  session
-) => {
-  return getValue(
-    session?.title,
-    session?.session_title,
-    session?.class_title,
-    session?.class_name,
-    "Live Session"
-  );
-};
+    !sessions.length
 
-const getCourseName = (
-  session
-) => {
-  return getValue(
-    session?.class_title,
-    session?.class_name,
-    session?.course_title,
-    "Course"
-  );
-};
+  ) {
 
-const getTrainerName = (
-  session
-) => {
-  return getValue(
-    session?.trainer_name,
-    session?.trainer_full_name,
-    session?.instructor_name,
-    session?.teacher_name,
-    "Trainer"
-  );
-};
+    return (
 
-const getTrainerImage = (
-  session
-) => {
-  return getValue(
-    session?.trainer_image,
-    session?.trainer_profile_image,
-    session?.trainer_photo,
-    session?.profile_image,
-    ""
-  );
-};
+      <State
 
-const getSessionImage = (
-  session
-) => {
-  return getValue(
-    session?.image,
-    session?.image_url,
-    session?.session_image,
-    session?.class_image,
-    session?.course_image,
-    session?.thumbnail,
-    session?.thumbnail_url,
-    ""
-  );
-};
+        title="Unable to Load Sessions"
 
-const getJoinUrl = (
-  session
-) => {
-  return getValue(
-    session?.join_url,
-    session?.meeting_url,
-    session?.meeting_link,
-    session?.zoom_link,
-    session?.google_meet_link,
-    session?.live_url,
-    ""
-  );
-};
+        message={errorMessage}
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
+        icon={
 
-function Sidebar({
-  activePage,
-  navigate,
-  mobileOpen,
-  setMobileOpen,
-}) {
-  const items = [
-    {
-      label: "Dashboard",
-      icon: (
-        <HiOutlineHome />
-      ),
-      path: "/institute/website/preview",
-    },
-    {
-      label: "My Learning",
-      icon: (
-        <HiOutlineBookOpen />
-      ),
-      path: "/institute/website/preview/lms/my-learning",
-    },
-    {
-      label: "Live Sessions",
-      icon: (
-        <HiOutlineVideoCamera />
-      ),
-      path: "/institute/website/preview/lms/live-sessions",
-    },
-    {
-      label: "Recordings",
-      icon: (
-        <HiOutlinePlay />
-      ),
-      path: "/institute/website/preview/lms/recordings",
-    },
-    {
-      label: "My Bookings",
-      icon: (
-        <HiOutlineCalendar />
-      ),
-      path: "/institute/website/preview/lms/my-bookings",
-    },
-    {
-      label: "Assignments",
-      icon: (
-        <HiOutlineDocumentText />
-      ),
-      path: "/institute/website/preview/lms/assignments",
-    },
-    {
-      label: "Attendance",
-      icon: (
-        <HiOutlineCalendar />
-      ),
-      path: "/institute/website/preview/lms/attendance",
-    },
-    {
-      label: "Payment Details",
-      icon: (
-        <HiOutlineCreditCard />
-      ),
-      path: "/institute/website/preview/lms/payment-details",
-    },
-    {
-      label: "Profile",
-      icon: (
-        <HiOutlineUser />
-      ),
-      path: "/institute/website/preview/lms/profile",
-    },
-  ];
+          <HiExclamationCircle
+
+            size={38}
+
+          />
+
+        }
+
+        button="Retry"
+
+        onClick={
+
+          fetchSessions
+
+        }
+
+      />
+
+    );
+
+  }
+
+  /* =======================================================
+
+     PAGE
+
+  ======================================================= */
 
   return (
-    <>
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
-          onClick={() =>
-            setMobileOpen(
-              false
-            )
-          }
-        />
-      )}
 
-      <aside
-        className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-[270px]
-          flex-col
-          border-r border-white/[0.07]
-          bg-[#020B18]
-          transition-transform
-          duration-300
-          ${
-            mobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
-          }
-        `}
-      >
-        {/* LOGO */}
+    <div className="min-h-screen bg-[#000000] text-white">
 
-        <div className="flex h-[90px] items-center border-b border-white/[0.06] px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-12 w-12 items-center justify-center text-3xl text-blue-400">
-              ♫
-            </div>
+      <div className="mx-auto max-w-[1600px] px-5 pb-7 pt-2 xl:px-8">
 
-            <div>
-              <h1 className="text-[25px] font-bold leading-none">
-                Fine
-                <span className="text-blue-400">
-                  Arts
-                </span>
-              </h1>
+        {/* HEADER */}
 
-              <p className="mt-1 text-xs text-white/50">
-                Student LMS
-              </p>
-            </div>
+        <header className="mb-6 flex items-start justify-between gap-6">
+
+          <div>
+
+            <h1 className="text-4xl font-bold leading-none">
+
+              Live{" "}
+
+              <span className="bg-gradient-to-r from-[#1687FF] to-[#087CFF] bg-clip-text text-transparent">
+
+                Sessions
+
+              </span>
+
+            </h1>
+
+            <p className="mt-2 text-base text-white">
+
+              Join your scheduled classes, interact with trainers, and learn live.
+
+            </p>
+
           </div>
 
-          <button
-            className="ml-auto text-white/60 lg:hidden"
-            onClick={() =>
-              setMobileOpen(
-                false
-              )
-            }
-          >
-            <HiOutlineX size={22} />
-          </button>
-        </div>
+        </header>
 
-        {/* NAV */}
+        {/* TABS */}
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="space-y-2">
-            {items.map(
-              item => {
-                const active =
-                  item.label ===
-                  activePage;
+        <div className="mb-5 overflow-hidden rounded-xl border border-white/10 bg-[#050505]">
 
-                return (
-                  <button
-                    key={
-                      item.label
-                    }
-                    onClick={() => {
-                      setMobileOpen(
-                        false
-                      );
-                      navigate(
-                        item.path
-                      );
-                    }}
-                    className={`
-                      flex w-full
-                      items-center
-                      gap-4
-                      rounded-xl
-                      px-4 py-3.5
-                      text-left
-                      transition-all
-                      ${
-                        active
-                          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_0_25px_rgba(0,110,255,.35)]"
-                          : "text-white/75 hover:bg-white/[0.04] hover:text-white"
-                      }
-                    `}
-                  >
-                    <span className="flex w-6 justify-center text-[21px]">
-                      {item.icon}
-                    </span>
+          <div className="grid grid-cols-4">
 
-                    <span className="text-sm font-medium">
-                      {
-                        item.label
-                      }
-                    </span>
-                  </button>
-                );
+            <Tab
+
+              active={
+
+                tab === "ALL"
+
               }
-            )}
-          </div>
-        </nav>
 
-        {/* BRANDING */}
+              icon={
 
-        <div className="border-t border-white/[0.05] px-8 py-7">
-          <div className="font-serif text-xl italic leading-8 text-blue-300">
-            <div>Art</div>
-            <div>Builds</div>
-            <div>A Better</div>
-            <div>You”</div>
-          </div>
+                <HiCalendar />
 
-          <div className="mt-4 h-1 w-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-        </div>
-      </aside>
-    </>
-  );
-}
+              }
 
-/* =========================================================
-   TOP HEADER
-========================================================= */
+              label="All Sessions"
 
-function TopHeader({
-  navigate,
-  student,
-  setMobileOpen,
-}) {
-  const studentName =
-    getValue(
-      student?.name,
-      student?.full_name,
-      student?.displayName,
-      "Priya Sharma"
-    );
+              onClick={() =>
 
-  const studentImage =
-    getValue(
-      student?.profile_image,
-      student?.photoURL,
-      student?.avatar,
-      ""
-    );
+                setTab("ALL")
 
-  return (
-    <header className="sticky top-0 z-30 h-[82px] border-b border-white/[0.07] bg-[#020914]/90 backdrop-blur-xl">
-      <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <button
-          onClick={() =>
-            setMobileOpen(
-              true
-            )
-          }
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] lg:hidden"
-        >
-          <HiOutlineMenu size={22} />
-        </button>
+              }
 
-        {/* SEARCH */}
-
-        <div className="relative w-full max-w-[515px]">
-          <HiOutlineSearch
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"
-            size={21}
-          />
-
-          <input
-            type="text"
-            placeholder="Search classes, sessions, recordings or topics..."
-            className="h-12 w-full rounded-xl border border-blue-500/20 bg-[#061426] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-blue-500/50"
-          />
-        </div>
-
-        <div className="ml-auto flex items-center">
-          {/* NOTIFICATION */}
-
-          <button className="relative flex h-[58px] w-[58px] items-center justify-center border-l border-white/[0.06] text-white/90">
-            <HiOutlineBell
-              size={25}
             />
 
-            <span className="absolute right-1 top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold">
-              3
-            </span>
-          </button>
+            <Tab
 
-          {/* PROFILE */}
+              active={
 
-          <button
-            onClick={() =>
-              navigate(
-                "/institute/website/preview/lms/profile"
-              )
-            }
-            className="flex items-center gap-3 border-l border-white/[0.06] px-4"
-          >
-            <div className="h-11 w-11 overflow-hidden rounded-full border border-white/10 bg-blue-500/10">
-              {studentImage ? (
-                <img
-                  src={
-                    studentImage
-                  }
-                  alt={
-                    studentName
-                  }
-                  className="h-full w-full object-cover"
+                tab ===
+
+                "UPCOMING"
+
+              }
+
+              icon={
+
+                <HiCalendar />
+
+              }
+
+              label="Upcoming"
+
+              onClick={() =>
+
+                setTab(
+
+                  "UPCOMING"
+
+                )
+
+              }
+
+            />
+
+            <Tab
+
+              active={
+
+                tab === "LIVE"
+
+              }
+
+              icon={
+
+                <span>◉</span>
+
+              }
+
+              label="Live Now"
+
+              onClick={() =>
+
+                setTab("LIVE")
+
+              }
+
+            />
+
+            <Tab
+
+              active={
+
+                tab ===
+
+                "COMPLETED"
+
+              }
+
+              icon={
+
+                <HiCheckCircle />
+
+              }
+
+              label="Completed"
+
+              onClick={() =>
+
+                setTab(
+
+                  "COMPLETED"
+
+                )
+
+              }
+
+            />
+
+          </div>
+
+        </div>
+
+        {/* CONTENT */}
+
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:gap-7">
+
+          <main>
+
+            {/* FILTERS */}
+
+            <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_175px_175px]">
+
+              <div className="relative">
+
+                <HiSearch
+
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white"
+
+                  size={21}
+
                 />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <HiOutlineUser
-                    size={21}
-                    className="text-blue-400"
-                  />
-                </div>
-              )}
-            </div>
 
-            <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold">
-                {
-                  studentName
+                <input
+
+                  value={search}
+
+                  onChange={(e) =>
+
+                    setSearch(
+
+                      e.target.value
+
+                    )
+
+                  }
+
+                  placeholder="Search sessions, classes or trainers..."
+
+                  className="h-12 w-full rounded-xl border border-white/10 bg-[#050505] pl-12 pr-4 text-sm text-white outline-none placeholder:text-white focus:border-blue-500/60"
+
+                />
+
+              </div>
+
+              <Select
+
+                value={
+
+                  classFilter
+
                 }
-              </p>
 
-              <p className="text-xs text-white/45">
-                Student
-              </p>
+                onChange={
+
+                  setClassFilter
+
+                }
+
+                options={
+
+                  classOptions
+
+                }
+
+                label="All Classes"
+
+              />
+
+              <Select
+
+                value={
+
+                  trainerFilter
+
+                }
+
+                onChange={
+
+                  setTrainerFilter
+
+                }
+
+                options={
+
+                  trainerOptions
+
+                }
+
+                label="All Trainers"
+
+              />
+
             </div>
 
-            <HiOutlineChevronRight
-              size={17}
-              className="hidden rotate-90 text-white/60 sm:block"
+            {/* SESSION CARDS */}
+
+            {filtered.length ? (
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                {filtered.map(
+
+                  (session) => (
+
+                    <SessionCard
+
+                      key={`${session.booking_id}-${session.session_id}`}
+
+                      session={
+
+                        session
+
+                      }
+
+                      timezone={
+
+                        tz.timezone
+
+                      }
+
+                    />
+
+                  )
+
+                )}
+
+              </div>
+
+            ) : (
+
+              <div className="rounded-2xl border border-white/10 bg-[#080808] py-16 text-center text-white">
+
+                No sessions found.
+
+              </div>
+
+            )}
+
+          </main>
+
+          {/* SIDEBAR */}
+
+          <aside className="space-y-5 lg:sticky lg:top-[90px]">
+
+            <NextSession
+
+              session={
+
+                nextSession
+
+              }
+
+              timezone={
+
+                tz.timezone
+
+              }
+
             />
-          </button>
+
+            {/* CALENDAR */}
+
+            <div className="rounded-2xl border border-white/10 bg-[#080808] p-4">
+
+              <div className="mb-5 flex items-center justify-between">
+
+                <h3 className="text-base font-bold">
+
+                  Session Calendar
+
+                </h3>
+
+                <div className="flex gap-1 text-blue-400">
+
+                  <button
+
+                    type="button"
+
+                    onClick={() =>
+
+                      setCalendarMonth(
+
+                        new Date(
+
+                          calendarMonth.getFullYear(),
+
+                          calendarMonth.getMonth() -
+
+                            1,
+
+                          1
+
+                        )
+
+                      )
+
+                    }
+
+                  >
+
+                    <HiChevronLeft />
+
+                  </button>
+
+                  <button
+
+                    type="button"
+
+                    onClick={() =>
+
+                      setCalendarMonth(
+
+                        new Date(
+
+                          calendarMonth.getFullYear(),
+
+                          calendarMonth.getMonth() +
+
+                            1,
+
+                          1
+
+                        )
+
+                      )
+
+                    }
+
+                  >
+
+                    <HiChevronRight />
+
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div className="mb-5 flex items-center justify-between">
+
+                <button
+
+                  type="button"
+
+                  className="text-white"
+
+                  onClick={() =>
+
+                    setCalendarMonth(
+
+                      new Date(
+
+                        calendarMonth.getFullYear(),
+
+                        calendarMonth.getMonth() -
+
+                          1,
+
+                        1
+
+                      )
+
+                    )
+
+                  }
+
+                >
+
+                  <HiChevronLeft />
+
+                </button>
+
+                <span className="font-semibold">
+
+                  {calendarMonth.toLocaleDateString(
+
+                    "en-US",
+
+                    {
+
+                      month:
+
+                        "long",
+
+                      year:
+
+                        "numeric",
+
+                    }
+
+                  )}
+
+                </span>
+
+                <button
+
+                  type="button"
+
+                  className="text-white/55"
+
+                  onClick={() =>
+
+                    setCalendarMonth(
+
+                      new Date(
+
+                        calendarMonth.getFullYear(),
+
+                        calendarMonth.getMonth() +
+
+                          1,
+
+                        1
+
+                      )
+
+                    )
+
+                  }
+
+                >
+
+                  <HiChevronRight />
+
+                </button>
+
+              </div>
+
+              <div className="grid grid-cols-7 gap-y-2 text-center">
+
+                {[
+
+                  "Sun",
+
+                  "Mon",
+
+                  "Tue",
+
+                  "Wed",
+
+                  "Thu",
+
+                  "Fri",
+
+                  "Sat",
+
+                ].map(
+
+                  (d) => (
+
+                    <span
+
+                      key={d}
+
+                      className="text-[10px] text-white"
+
+                    >
+
+                      {d}
+
+                    </span>
+
+                  )
+
+                )}
+
+                {calendarCells.map(
+
+                  (
+
+                    date,
+
+                    i
+
+                  ) => {
+
+                    const selected =
+
+                      date.toDateString() ===
+
+                      selectedDate.toDateString();
+
+                    const sameMonth =
+
+                      date.getMonth() ===
+
+                      calendarMonth.getMonth();
+
+                    const hasSessionDate =
+
+                      sessionDates.has(
+
+                        date.toDateString()
+
+                      );
+
+                    return (
+
+                      <button
+
+                        type="button"
+
+                        key={`${date.toISOString()}-${i}`}
+
+                        onClick={() =>
+
+                          setSelectedDate(
+
+                            date
+
+                          )
+
+                        }
+
+                        className={`relative mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs ${
+
+                          selected
+
+                            ? "bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-white"
+
+                            : sameMonth
+
+                            ? "text-white hover:bg-white/5"
+
+                            : "text-white"
+
+                        }`}
+
+                      >
+
+                        {
+
+                          date.getDate()
+
+                        }
+
+                        {hasSessionDate && (
+
+                          <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-blue-400" />
+
+                        )}
+
+                      </button>
+
+                    );
+
+                  }
+
+                )}
+
+              </div>
+
+            </div>
+
+            {/* RECENT */}
+
+            <div className="rounded-2xl border border-white/10 bg-[#080808] p-4">
+
+              <div className="mb-4 flex items-center justify-between">
+
+                <h3 className="font-bold">
+
+                  Recent Sessions
+
+                </h3>
+
+                <button
+
+                  type="button"
+
+                  className="text-xs text-blue-400"
+
+                >
+
+                  View All →
+
+                </button>
+
+              </div>
+
+              {completed.slice(
+
+                0,
+
+                3
+
+              ).length ? (
+
+                completed
+
+                  .slice(0, 3)
+
+                  .map((s) => (
+
+                    <div
+
+                      key={`${s.booking_id}-${s.session_id}`}
+
+                      className="mb-4 flex gap-3 last:mb-0"
+
+                    >
+
+                      {s.class_image ? (
+
+                        <img
+
+                          src={
+
+                            s.class_image
+
+                          }
+
+                          className="h-12 w-14 rounded-lg object-cover"
+
+                          alt={
+
+                            s.class_title ||
+
+                            "Session"
+
+                          }
+
+                        />
+
+                      ) : (
+
+                        <div className="flex h-12 w-14 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#050505] to-[#050505] text-[8px] text-white/25">
+
+                          No image
+
+                        </div>
+
+                      )}
+
+                      <div className="min-w-0 flex-1">
+
+                        <div className="flex items-start justify-between gap-2">
+
+                          <h4 className="truncate text-sm font-medium">
+
+                            {
+
+                              s.session_title ||
+
+                              s.class_title
+
+                            }
+
+                          </h4>
+
+                          <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] text-emerald-300">
+
+                            Completed
+
+                          </span>
+
+                        </div>
+
+                        <p className="mt-1 text-[10px] text-white/45">
+
+                          {s.local_start_time ||
+
+                            formatTime(
+
+                              s.start_time
+
+                            )}
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  ))
+
+              ) : (
+
+                <p className="py-6 text-center text-sm text-white">
+
+                  No completed sessions.
+
+                </p>
+
+              )}
+
+            </div>
+
+          </aside>
+
         </div>
-      </div>
-    </header>
-  );
-}
 
-/* =========================================================
-   HERO
-========================================================= */
-
-function LiveSessionsHero({
-  branding,
-}) {
-  return (
-    <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
-      <div>
-        <h1
-          className="text-4xl font-bold tracking-tight sm:text-5xl"
-          style={{
-            color:
-              branding.headingColor,
-          }}
-        >
-          Live{" "}
-          <span className="text-blue-500">
-            Sessions
-          </span>
-        </h1>
-
-        <p className="mt-2 text-base text-white/75">
-          Join your scheduled live classes,
-          interact with your trainer in real-time
-          and enhance your skills.
-        </p>
       </div>
 
-      {/* HERO BANNER */}
-
-      <div className="relative flex min-h-[90px] min-w-[310px] items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 px-6">
-        <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-purple-300/10 blur-2xl" />
-
-        <HiOutlineCalendar
-          size={38}
-          className="mr-5 text-white"
-        />
-
-        <div>
-          <h3 className="text-lg font-bold">
-            Be Present, Be Better
-          </h3>
-
-          <p className="text-sm text-white/75">
-            Live. Learn. Practice. Grow!
-          </p>
-        </div>
-      </div>
     </div>
+
   );
+
 }
 
 /* =========================================================
-   TABS
-========================================================= */
 
-function SessionTabs({
-  activeTab,
-  setActiveTab,
-  counts,
+   TAB
+
+\========================================================= */
+
+function Tab({
+
+  active,
+
+  icon,
+
+  label,
+
+  onClick,
+
 }) {
-  const tabs = [
-    {
-      key: "UPCOMING",
-      label: "Upcoming",
-      count:
-        counts.upcoming,
-    },
-    {
-      key: "LIVE",
-      label: "Live Now",
-      count:
-        counts.live,
-    },
-    {
-      key: "COMPLETED",
-      label: "Completed",
-      count:
-        counts.completed,
-    },
-  ];
 
   return (
-    <div className="mt-7 flex gap-2 overflow-x-auto">
-      {tabs.map(
-        tab => (
-          <button
-            key={
-              tab.key
-            }
-            onClick={() =>
-              setActiveTab(
-                tab.key
-              )
-            }
-            className={`
-              flex min-w-[155px]
-              items-center
-              justify-center
-              gap-2
-              rounded-full
-              border
-              px-5 py-3
-              text-sm
-              font-semibold
-              transition
-              ${
-                activeTab ===
-                tab.key
-                  ? "border-blue-500 bg-blue-600 text-white shadow-[0_0_25px_rgba(0,110,255,.25)]"
-                  : "border-blue-500/20 bg-[#031120] text-white/70 hover:text-white"
-              }
-            `}
-          >
-            {tab.label}
 
-            <span
-              className={
-                activeTab ===
-                tab.key
-                  ? "text-white/80"
-                  : "text-blue-400"
-              }
-            >
-              (
-              {
-                tab.count
-              }
-              )
-            </span>
-          </button>
+    <button
+
+      type="button"
+
+      onClick={onClick}
+
+      className={`flex h-14 items-center justify-center gap-3 border-r border-white/10 text-sm font-medium transition ${
+
+        active
+
+          ? "bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-white"
+
+          : "text-white hover:bg-white/[0.03]"
+
+      }`}
+
+    >
+
+      <span className="text-lg">
+
+        {icon}
+
+      </span>
+
+      {label}
+
+    </button>
+
+  );
+
+}
+
+/* =========================================================
+
+   SELECT
+
+\========================================================= */
+
+function Select({
+
+  value,
+
+  onChange,
+
+  options,
+
+  label,
+
+}) {
+
+  return (
+
+    <select
+
+      value={value}
+
+      onChange={(e) =>
+
+        onChange(
+
+          e.target.value
+
         )
-      )}
-    </div>
+
+      }
+
+      className="h-12 rounded-xl border border-white/10 bg-[#050505] px-4 text-sm text-white outline-none"
+
+    >
+
+      <option value="ALL">
+
+        {label}
+
+      </option>
+
+      {options.map((o) => (
+
+        <option
+
+          key={o}
+
+          value={o}
+
+        >
+
+          {o}
+
+        </option>
+
+      ))}
+
+    </select>
+
   );
+
 }
 
 /* =========================================================
+
+   INFO
+
+\========================================================= */
+
+function Info({
+
+  icon,
+
+  children,
+
+}) {
+
+  return (
+
+    <div className="mt-2 flex items-center gap-3 text-sm text-white">
+
+      <span className="text-blue-300">
+
+        {icon}
+
+      </span>
+
+      <span>
+
+        {children}
+
+      </span>
+
+    </div>
+
+  );
+
+}
+
+/* =========================================================
+
    SESSION CARD
-========================================================= */
+
+\========================================================= */
 
 function SessionCard({
+
   session,
-  navigate,
-  onReminder,
-  onCalendar,
+
+  timezone,
+
 }) {
+
+  const navigate =
+
+    useNavigate();
+
   const status =
+
     getStatus(
-      session
+
+      session,
+
+      timezone
+
     );
 
   const image =
-    getSessionImage(
-      session
-    );
 
-  const trainerImage =
-    getTrainerImage(
-      session
-    );
+    session.class_image;
 
-  const title =
-    getSessionTitle(
-      session
-    );
+  const zoom =
 
-  const trainer =
-    getTrainerName(
-      session
-    );
+    session.zoom
 
-  const joinUrl =
-    getJoinUrl(
-      session
-    );
+      ?.join_url ||
 
-  const isLive =
-    status === "LIVE";
+    session.zoom_link;
 
-  const isUpcoming =
-    status === "UPCOMING" ||
-    status === "SCHEDULED";
+  const classId =
+
+    session.class_id ||
+
+    session.classId ||
+
+    session.class?.id;
+
+  /* =======================================================
+
+     GO TO LEARNING COURSE
+
+  ======================================================= */
+
+  const goToLearningCourse =
+
+    () => {
+
+      if (!classId) {
+
+        console.error(
+
+          "Class ID not available for session:",
+
+          session
+
+        );
+
+        return;
+
+      }
+
+      navigate(
+
+        `/my-learning/${classId}`
+
+      );
+
+    };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-blue-500/20 bg-[#031120] shadow-[0_8px_30px_rgba(0,0,0,.15)]">
+
+    <article
+
+      className={`overflow-hidden rounded-2xl border bg-[#080808] ${
+
+        status === "LIVE"
+
+          ? "border-blue-500/40"
+
+          : "border-white/10"
+
+      }`}
+
+    >
+
       {/* IMAGE */}
 
-      <div className="relative h-[145px] overflow-hidden bg-[#061426]">
+      <div className="relative h-[126px] overflow-hidden">
+
         {image ? (
+
           <img
-            src={
-              image
-            }
+
+            src={image}
+
             alt={
-              title
+
+              session.class_title ||
+
+              "Session"
+
             }
+
             className="h-full w-full object-cover"
+
           />
+
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-950 to-purple-950">
-            <HiOutlineVideoCamera
-              size={55}
-              className="text-blue-400/60"
-            />
+
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#050505] via-[#080808] to-[#050505] text-xs font-semibold text-white">
+
+            No image
+
           </div>
+
         )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] to-transparent" />
 
         {/* STATUS */}
 
-        {isLive && (
-          <span className="absolute left-3 top-3 rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-            ● LIVE NOW
-          </span>
-        )}
+        <div
 
-        {status ===
-          "UPCOMING" && (
-          <span className="absolute left-3 top-3 rounded-full bg-slate-600/95 px-3 py-1 text-xs font-bold">
-            Starts Soon
-          </span>
-        )}
+          className={`absolute left-4 top-4 rounded-lg px-3 py-1.5 text-xs font-semibold ${
 
-        {status ===
-          "SCHEDULED" && (
-          <span className="absolute left-3 top-3 rounded-full bg-blue-700/95 px-3 py-1 text-xs font-bold">
-            Scheduled
-          </span>
-        )}
+            status === "LIVE"
 
-        {status ===
-          "COMPLETED" && (
-          <span className="absolute left-3 top-3 rounded-full bg-purple-700/90 px-3 py-1 text-xs font-bold">
-            Completed
-          </span>
-        )}
+              ? "bg-[#FF164F]"
 
-        <span className="absolute right-3 top-3 rounded-full bg-blue-700 px-3 py-1 text-xs font-bold">
-          {formatSessionDate(
-            session
-          ).split(" ")[0]}
-        </span>
+              : "bg-gradient-to-r from-[#1687FF] to-[#1687FF]"
+
+          }`}
+
+        >
+
+          {status ===
+
+            "LIVE" && (
+
+            <span className="mr-1">
+
+              ●
+
+            </span>
+
+          )}
+
+          {status ===
+
+          "LIVE"
+
+            ? "LIVE NOW"
+
+            : "Upcoming"}
+
+        </div>
+
       </div>
 
       {/* CONTENT */}
 
       <div className="p-4">
-        <h3 className="truncate text-lg font-bold">
-          {
-            title
-          }
-        </h3>
 
-        <div className="mt-3 space-y-2 text-sm text-white/70">
-          <div className="flex items-center gap-2">
-            <HiOutlineCalendar
-              size={18}
-              className="text-white"
-            />
+        {/* CLASS */}
 
-            <span>
-              {
-                formatSessionDate(
-                  session
-                )
-              }
-            </span>
-          </div>
+        <div className="flex items-start justify-between gap-3">
 
-          <div className="flex items-center gap-2">
-            <HiOutlineClock
-              size={18}
-              className="text-white"
-            />
+          <h3 className="text-[18px] font-bold leading-6">
 
-            <span>
-              {
-                formatTimeRange(
-                  session
-                )
-              }
-            </span>
-          </div>
+            {session.class_title ||
 
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 overflow-hidden rounded-full bg-blue-500/10">
-              {trainerImage ? (
-                <img
-                  src={
-                    trainerImage
+              "—"}
+
+            {session.session_title &&
+
+              session.session_title !==
+
+                session.class_title && (
+
+                <span className="block">
+
+                  {
+
+                    session.session_title
+
                   }
-                  alt={
-                    trainer
-                  }
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <HiOutlineUser
-                    size={15}
-                    className="text-blue-400"
-                  />
-                </div>
+
+                </span>
+
               )}
-            </div>
 
-            <span>
-              {
-                trainer
-              }
+          </h3>
+
+          {status ===
+
+            "LIVE" && (
+
+            <span className="shrink-0 rounded-full bg-red-500/15 px-2 py-1 text-[10px] text-red-300">
+
+              ● Live
+
             </span>
-          </div>
+
+          )}
+
         </div>
 
-        {/* ACTION */}
+        {/* TRAINER */}
 
-        <div className="mt-4">
-          {isLive && (
-            <button
-              onClick={() => {
-                if (
-                  joinUrl
-                ) {
-                  window.open(
-                    joinUrl,
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                } else {
-                  navigate(
-                    `/institute/website/preview/lms/live-sessions/${session.id}`
-                  );
-                }
-              }}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 py-3 text-sm font-bold shadow-lg shadow-blue-500/20"
-            >
-              <HiOutlineVideoCamera
-                size={19}
-              />
+        <div className="mt-3 flex items-center gap-2">
 
-              Join Live Session
-            </button>
-          )}
+          {session.trainer_image ? (
 
-          {isUpcoming && (
-            <button
-              onClick={() =>
-                onReminder(
-                  session
-                )
+            <img
+
+              src={
+
+                session.trainer_image
+
               }
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-500 px-4 py-3 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/10"
-            >
-              <HiOutlineBell
-                size={18}
+
+              alt=""
+
+              className="h-7 w-7 rounded-full object-cover"
+
+            />
+
+          ) : (
+
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/15 text-blue-300">
+
+              <HiUser
+
+                size={15}
+
               />
 
-              Set Reminder
-            </button>
+            </span>
+
           )}
 
-          {status ===
-            "COMPLETED" && (
-            <button
-              onClick={() =>
-                navigate(
-                  "/institute/website/preview/lms/recordings"
-                )
-              }
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-purple-500/50 px-4 py-3 text-sm font-semibold text-purple-300"
-            >
-              <HiOutlinePlay
-                size={18}
-              />
+          <span className="text-sm text-white">
 
-              View Recording
-            </button>
-          )}
+            Trainer:{" "}
 
-          {status ===
-            "SCHEDULED" && (
-            <button
-              onClick={() =>
-                onCalendar(
-                  session
-                )
-              }
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-500 px-4 py-3 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/10"
-            >
-              <HiOutlineCalendar
-                size={18}
-              />
+            <span className="text-white">
 
-              Add to Calendar
-            </button>
-          )}
+              {session.trainer_name ||
+
+                "—"}
+
+            </span>
+
+          </span>
+
         </div>
-      </div>
-    </div>
-  );
-}
 
-/* =========================================================
-   MY SESSIONS TABLE
-========================================================= */
+        {/* DAY */}
 
-function SessionsTable({
-  sessions,
-  navigate,
-  onReminder,
-  onCalendar,
-}) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-blue-500/20 bg-[#031120]">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[850px]">
-          <thead>
-            <tr className="bg-[#061A30] text-left text-xs uppercase tracking-wide text-white/60">
-              <th className="px-5 py-4">
-                Date & Time
-              </th>
+        <Info
 
-              <th className="px-5 py-4">
-                Course
-              </th>
+          icon={
 
-              <th className="px-5 py-4">
-                Trainer
-              </th>
+            <HiCalendar />
 
-              <th className="px-5 py-4">
-                Status
-              </th>
+          }
 
-              <th className="px-5 py-4 text-right">
-                Action
-              </th>
-            </tr>
-          </thead>
+        >
 
-          <tbody>
-            {sessions.map(
-              session => {
-                const status =
-                  getStatus(
-                    session
-                  );
+          {session.is_today
 
-                const trainer =
-                  getTrainerName(
-                    session
-                  );
+            ? "Today"
 
-                const trainerImage =
-                  getTrainerImage(
-                    session
-                  );
+            : session.days_label}
 
-                return (
-                  <tr
-                    key={
-                      session.id ||
-                      `${getSessionTitle(
-                        session
-                      )}-${getStartTime(
-                        session
-                      )}`
-                    }
-                    className="border-t border-white/[0.06] text-sm"
-                  >
-                    {/* DATE */}
+        </Info>
 
-                    <td className="px-5 py-4">
-                      <div className="font-medium text-white">
-                        {
-                          formatSessionDate(
-                            session
-                          )
-                        }
-                      </div>
+        {/* TIME */}
 
-                      <div className="mt-1 text-xs text-white/45">
-                        {
-                          formatTimeRange(
-                            session
-                          )
-                        }
-                      </div>
-                    </td>
+        <Info
 
-                    {/* COURSE */}
+          icon={
 
-                    <td className="px-5 py-4">
-                      <div className="font-medium">
-                        {
-                          getCourseName(
-                            session
-                          )
-                        }
-                      </div>
+            <HiClock />
 
-                      <div className="mt-1 text-xs text-white/45">
-                        {
-                          getSessionTitle(
-                            session
-                          )
-                        }
-                      </div>
-                    </td>
+          }
 
-                    {/* TRAINER */}
+        >
 
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 overflow-hidden rounded-full bg-blue-500/10">
-                          {trainerImage ? (
-                            <img
-                              src={
-                                trainerImage
-                              }
-                              alt={
-                                trainer
-                              }
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                              <HiOutlineUser
-                                size={
-                                  16
-                                }
-                                className="text-blue-400"
-                              />
-                            </div>
-                          )}
-                        </div>
+          {session.local_start_time ||
 
-                        <span>
-                          {
-                            trainer
-                          }
-                        </span>
-                      </div>
-                    </td>
+            formatTime(
 
-                    {/* STATUS */}
+              session.start_time
 
-                    <td className="px-5 py-4">
-                      <StatusBadge
-                        status={
-                          status
-                        }
-                      />
-                    </td>
-
-                    {/* ACTION */}
-
-                    <td className="px-5 py-4 text-right">
-                      {status ===
-                        "LIVE" && (
-                        <button
-                          onClick={() => {
-                            const url =
-                              getJoinUrl(
-                                session
-                              );
-
-                            if (
-                              url
-                            ) {
-                              window.open(
-                                url,
-                                "_blank",
-                                "noopener,noreferrer"
-                              );
-                            }
-                          }}
-                          className="rounded-lg bg-blue-600 px-5 py-2.5 text-xs font-bold"
-                        >
-                          Join
-                        </button>
-                      )}
-
-                      {status ===
-                        "UPCOMING" && (
-                        <button
-                          onClick={() =>
-                            onReminder(
-                              session
-                            )
-                          }
-                          className="rounded-lg border border-blue-500 px-4 py-2 text-xs font-semibold text-blue-300"
-                        >
-                          Set Reminder
-                        </button>
-                      )}
-
-                      {status ===
-                        "SCHEDULED" && (
-                        <button
-                          onClick={() =>
-                            onCalendar(
-                              session
-                            )
-                          }
-                          className="rounded-lg border border-blue-500 px-4 py-2 text-xs font-semibold text-blue-300"
-                        >
-                          Add to Calendar
-                        </button>
-                      )}
-
-                      {status ===
-                        "COMPLETED" && (
-                        <button
-                          onClick={() =>
-                            navigate(
-                              "/institute/website/preview/lms/recordings"
-                            )
-                          }
-                          className="rounded-lg border border-purple-500/50 px-4 py-2 text-xs font-semibold text-purple-300"
-                        >
-                          Recording
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              }
             )}
 
-            {sessions.length ===
-              0 && (
-              <tr>
-                <td
-                  colSpan={
-                    5
-                  }
-                  className="px-5 py-12 text-center text-sm text-white/40"
-                >
-                  No live sessions
-                  found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+          {session.end_time
 
-/* =========================================================
-   STATUS BADGE
-========================================================= */
+            ? ` - ${formatTime(
 
-function StatusBadge({
-  status,
-}) {
-  const config = {
-    LIVE: {
-      label:
-        "Live Now",
-      className:
-        "bg-rose-500/20 text-rose-300",
-      dot:
-        "bg-rose-500",
-    },
+                session.end_time
 
-    UPCOMING: {
-      label:
-        "Upcoming",
-      className:
-        "bg-blue-500/20 text-blue-300",
-      dot:
-        "bg-blue-500",
-    },
+              )}`
 
-    SCHEDULED: {
-      label:
-        "Upcoming",
-      className:
-        "bg-blue-500/20 text-blue-300",
-      dot:
-        "bg-blue-500",
-    },
+            : ""}
 
-    COMPLETED: {
-      label:
-        "Completed",
-      className:
-        "bg-purple-500/20 text-purple-300",
-      dot:
-        "bg-purple-500",
-    },
-  };
+        </Info>
 
-  const item =
-    config[
-      status
-    ] ||
-    config.SCHEDULED;
+        {/* =================================================
 
-  return (
-    <span
-      className={`
-        inline-flex
-        items-center
-        gap-2
-        rounded-full
-        px-3 py-1.5
-        text-xs
-        font-semibold
-        ${item.className}
-      `}
-    >
-      <span
-        className={`h-2 w-2 rounded-full ${item.dot}`}
-      />
+            ZOOM + LEARNING COURSE BUTTONS
 
-      {
-        item.label
-      }
-    </span>
-  );
-}
+        ================================================= */}
 
-/* =========================================================
-   CALENDAR
-========================================================= */
+        <div className="mt-4 grid grid-cols-1 gap-2">
 
-function SessionCalendar({
-  sessions,
-  month,
-  setMonth,
-}) {
-  const year =
-    month.getFullYear();
+          {/* ZOOM */}
 
-  const monthIndex =
-    month.getMonth();
+          {session.can_join &&
 
-  const firstDay =
-    new Date(
-      year,
-      monthIndex,
-      1
-    ).getDay();
+          zoom ? (
 
-  const daysInMonth =
-    new Date(
-      year,
-      monthIndex + 1,
-      0
-    ).getDate();
+            <a
 
-  const cells = [];
+              href={zoom}
 
-  for (
-    let i = 0;
-    i < firstDay;
-    i++
-  ) {
-    cells.push(
-      null
-    );
-  }
+              target="_blank"
 
-  for (
-    let day = 1;
-    day <=
-    daysInMonth;
-    day++
-  ) {
-    cells.push(
-      day
-    );
-  }
+              rel="noreferrer"
 
-  const sessionDays =
-    sessions.map(
-      session =>
-        getDayNumber(
-          session
-        )
-    );
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-sm font-semibold transition hover:brightness-110"
 
-  const today =
-    new Date();
-
-  const isToday = day =>
-    today.getFullYear() ===
-      year &&
-    today.getMonth() ===
-      monthIndex &&
-    today.getDate() ===
-      day;
-
-  return (
-    <div className="rounded-xl border border-blue-500/20 bg-[#031120] p-5">
-      <div className="mb-5 flex items-center justify-between">
-        <button
-          onClick={() =>
-            setMonth(
-              new Date(
-                year,
-                monthIndex -
-                  1,
-                1
-              )
-            )
-          }
-          className="text-white/60 hover:text-white"
-        >
-          <HiOutlineChevronLeft
-            size={20}
-          />
-        </button>
-
-        <h3 className="font-semibold">
-          {month.toLocaleDateString(
-            "en-US",
-            {
-              month:
-                "long",
-              year:
-                "numeric",
-            }
-          )}
-        </h3>
-
-        <button
-          onClick={() =>
-            setMonth(
-              new Date(
-                year,
-                monthIndex +
-                  1,
-                1
-              )
-            )
-          }
-          className="text-white/60 hover:text-white"
-        >
-          <HiOutlineChevronRight
-            size={20}
-          />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-y-3 text-center text-xs">
-        {[
-          "Sun",
-          "Mon",
-          "Tue",
-          "Wed",
-          "Thu",
-          "Fri",
-          "Sat",
-        ].map(
-          day => (
-            <div
-              key={
-                day
-              }
-              className="text-white/45"
             >
-              {day}
-            </div>
-          )
-        )}
 
-        {cells.map(
-          (
-            day,
-            index
-          ) => {
-            const hasSession =
-              day &&
-              sessionDays.includes(
-                day
-              );
+              <HiVideoCamera
 
-            return (
-              <div
-                key={
-                  index
-                }
-                className="relative flex h-8 items-center justify-center"
-              >
-                {day && (
-                  <span
-                    className={`
-                      flex h-7 w-7
-                      items-center
-                      justify-center
-                      rounded-full
-                      ${
-                        isToday(
-                          day
-                        )
-                          ? "bg-blue-600 text-white"
-                          : "text-white/75"
-                      }
-                    `}
-                  >
-                    {
-                      day
-                    }
-                  </span>
-                )}
+                size={18}
 
-                {hasSession &&
-                  !isToday(
-                    day
-                  ) && (
-                    <span className="absolute bottom-0 h-1 w-1 rounded-full bg-blue-500" />
-                  )}
+              />
 
-                {hasSession &&
-                  isToday(
-                    day
-                  ) && (
-                    <span className="absolute bottom-0 h-1 w-1 rounded-full bg-red-400" />
-                  )}
-              </div>
-            );
-          }
-        )}
+              Join Zoom Session
+
+            </a>
+
+          ) : status ===
+
+              "UPCOMING" ||
+
+            status ===
+
+              "SCHEDULED" ? (
+
+            <button
+
+              type="button"
+
+              disabled
+
+              className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-white/10 text-sm text-white"
+
+            >
+
+              <HiClock
+
+                size={18}
+
+              />
+
+              Session Not Started
+
+            </button>
+
+          ) : (
+
+            <button
+
+              type="button"
+
+              disabled
+
+              className="h-11 w-full rounded-lg border border-white/10 text-sm text-white"
+
+            >
+
+              Session Completed
+
+            </button>
+
+          )}
+
+          {/* GO TO LEARNING COURSE */}
+
+          {classId && (
+
+            <button
+
+              type="button"
+
+              onClick={
+
+                goToLearningCourse
+
+              }
+
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-blue-500/40 bg-blue-500/10 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/20"
+
+            >
+
+              <HiBookOpen
+
+                size={18}
+
+              />
+
+              Go to Learning Course
+
+            </button>
+
+          )}
+
+        </div>
+
       </div>
 
-      <div className="mt-5 space-y-2 border-t border-white/[0.06] pt-4 text-xs text-white/60">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-          Upcoming
-        </div>
+    </article>
 
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-          Live Now
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-          Completed
-        </div>
-      </div>
-    </div>
   );
+
 }
 
 /* =========================================================
-   MAIN COMPONENT
-========================================================= */
 
-export default function WebsiteSessions() {
+   NEXT SESSION
+
+\========================================================= */
+
+function NextSession({
+
+  session,
+
+  timezone,
+
+}) {
+
   const navigate =
+
     useNavigate();
 
-  const outletContext =
-    useOutletContext() ||
-    {};
+  if (!session) {
 
-  const {
-    sessions:
-      outletSessions = [],
+    return (
 
-    website = {},
+      <div className="rounded-2xl border border-white/10 bg-[#080808] p-5">
 
-    branding:
-      outletBranding = {},
+        <h3 className="font-bold">
 
-    sections:
-      outletSections = {},
-  } = outletContext;
+          Next Live Session
 
-  const branding =
-    useMemo(
-      () =>
-        normalizeBranding(
-          outletBranding
-        ),
-      [
-        outletBranding,
-      ]
+        </h3>
+
+        <p className="py-8 text-center text-sm text-white">
+
+          No upcoming session.
+
+        </p>
+
+      </div>
+
     );
 
-  /* =======================================================
-     SESSION VISIBILITY
-  ======================================================= */
-
-  const sessionsVisible =
-    outletSections
-      ?.sessions
-      ?.visible !==
-      false;
-
-  /* =======================================================
-     SESSIONS
-  ======================================================= */
-
-  const sessions =
-    useMemo(() => {
-      if (
-        Array.isArray(
-          outletSessions
-        )
-      ) {
-        return outletSessions;
-      }
-
-      if (
-        Array.isArray(
-          website?.sessions
-        )
-      ) {
-        return website.sessions;
-      }
-
-      return [];
-    }, [
-      outletSessions,
-      website,
-    ]);
-
-  /* =======================================================
-     STUDENT
-  ======================================================= */
-
-  const [student, setStudent] =
-    useState(null);
-
-  useEffect(() => {
-    try {
-      const saved =
-        localStorage.getItem(
-          "studentUser"
-        );
-
-      if (saved) {
-        setStudent(
-          JSON.parse(
-            saved
-          )
-        );
-      }
-    } catch {
-      setStudent(null);
-    }
-  }, []);
-
-  /* =======================================================
-     MOBILE
-  ======================================================= */
-
-  const [
-    mobileOpen,
-    setMobileOpen,
-  ] = useState(false);
-
-  /* =======================================================
-     LIVE CLOCK
-  ======================================================= */
-
-  const [
-    currentTime,
-    setCurrentTime,
-  ] = useState(
-    new Date()
-  );
-
-  useEffect(() => {
-    const timer =
-      setInterval(
-        () =>
-          setCurrentTime(
-            new Date()
-          ),
-        1000
-      );
-
-    return () =>
-      clearInterval(
-        timer
-      );
-  }, []);
-
-  /* =======================================================
-     TIMEZONE
-  ======================================================= */
-
-  const [
-    timezone,
-    setTimezone,
-  ] = useState(
-    "Asia/Kolkata"
-  );
-
-  useEffect(() => {
-    try {
-      const tz =
-        getTimezone();
-
-      if (!tz) {
-        return;
-      }
-
-      if (
-        typeof tz ===
-        "string"
-      ) {
-        setTimezone(
-          tz
-        );
-      } else if (
-        tz.timezone
-      ) {
-        setTimezone(
-          tz.timezone
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Timezone error:",
-        error
-      );
-    }
-  }, []);
-
-  /* =======================================================
-     STATUS
-  ======================================================= */
-
-  const liveSessions =
-    useMemo(
-      () =>
-        sessions.filter(
-          session =>
-            getStatus(
-              session
-            ) ===
-            "LIVE"
-        ),
-      [
-        sessions,
-        currentTime,
-        timezone,
-      ]
-    );
-
-  const upcomingSessions =
-    useMemo(
-      () =>
-        sessions.filter(
-          session => {
-            const status =
-              getStatus(
-                session
-              );
-
-            return (
-              status ===
-                "UPCOMING" ||
-              status ===
-                "SCHEDULED"
-            );
-          }
-        ),
-      [
-        sessions,
-        currentTime,
-        timezone,
-      ]
-    );
-
-  const completedSessions =
-    useMemo(
-      () =>
-        sessions.filter(
-          session =>
-            getStatus(
-              session
-            ) ===
-            "COMPLETED"
-        ),
-      [
-        sessions,
-        currentTime,
-        timezone,
-      ]
-    );
-
-  /* =======================================================
-     TAB
-  ======================================================= */
-
-  const [
-    activeTab,
-    setActiveTab,
-  ] = useState(
-    "UPCOMING"
-  );
-
-  const visibleSessions =
-    useMemo(() => {
-      if (
-        activeTab ===
-        "LIVE"
-      ) {
-        return liveSessions;
-      }
-
-      if (
-        activeTab ===
-        "COMPLETED"
-      ) {
-        return completedSessions;
-      }
-
-      return upcomingSessions;
-    }, [
-      activeTab,
-      liveSessions,
-      upcomingSessions,
-      completedSessions,
-    ]);
-
-  /* =======================================================
-     SEARCH
-  ======================================================= */
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-  const [
-    courseFilter,
-    setCourseFilter,
-  ] = useState(
-    "ALL"
-  );
-
-  const courseOptions =
-    useMemo(() => {
-      const names =
-        sessions.map(
-          session =>
-            getCourseName(
-              session
-            )
-        );
-
-      return [
-        "ALL",
-        ...Array.from(
-          new Set(
-            names
-          )
-        ),
-      ];
-    }, [
-      sessions,
-    ]);
-
-  const filteredSessions =
-    useMemo(() => {
-      let result = [
-        ...visibleSessions,
-      ];
-
-      if (
-        search.trim()
-      ) {
-        const keyword =
-          search
-            .trim()
-            .toLowerCase();
-
-        result =
-          result.filter(
-            session =>
-              getSessionTitle(
-                session
-              )
-                .toLowerCase()
-                .includes(
-                  keyword
-                ) ||
-              getCourseName(
-                session
-              )
-                .toLowerCase()
-                .includes(
-                  keyword
-                ) ||
-              getTrainerName(
-                session
-              )
-                .toLowerCase()
-                .includes(
-                  keyword
-                )
-            );
-      }
-
-      if (
-        courseFilter !==
-        "ALL"
-      ) {
-        result =
-          result.filter(
-            session =>
-              getCourseName(
-                session
-              ) ===
-              courseFilter
-          );
-      }
-
-      return result;
-    }, [
-      visibleSessions,
-      search,
-      courseFilter,
-    ]);
-
-  /* =======================================================
-     CALENDAR
-  ======================================================= */
-
-  const [
-    calendarMonth,
-    setCalendarMonth,
-  ] = useState(
-    new Date()
-  );
-
-  /* =======================================================
-     REMINDER
-  ======================================================= */
-
-  const setReminder =
-    session => {
-      const title =
-        getSessionTitle(
-          session
-        );
-
-      try {
-        const date =
-          getDateObject(
-            session
-          );
-
-        const start =
-          parseTimeToMinutes(
-            getStartTime(
-              session
-            )
-          );
-
-        date.setHours(
-          Math.floor(
-            start / 60
-          ),
-          start % 60,
-          0,
-          0
-        );
-
-        const reminder =
-          {
-            id:
-              session.id ||
-              Date.now(),
-            title,
-            date:
-              date.toISOString(),
-          };
-
-        const existing =
-          JSON.parse(
-            localStorage.getItem(
-              "finearts_session_reminders"
-            ) ||
-              "[]"
-          );
-
-        localStorage.setItem(
-          "finearts_session_reminders",
-          JSON.stringify([
-            ...existing,
-            reminder,
-          ])
-        );
-
-        window.alert(
-          `Reminder set for ${title}`
-        );
-      } catch {
-        window.alert(
-          `Reminder set for ${title}`
-        );
-      }
-    };
-
-  /* =======================================================
-     CALENDAR EVENT
-  ======================================================= */
-
-  const addToCalendar =
-    session => {
-      const title =
-        getSessionTitle(
-          session
-        );
-
-      const date =
-        getDateObject(
-          session
-        );
-
-      const start =
-        parseTimeToMinutes(
-          getStartTime(
-            session
-          )
-        );
-
-      const end =
-        parseTimeToMinutes(
-          getEndTime(
-            session
-          )
-        );
-
-      date.setHours(
-        Math.floor(
-          start / 60
-        ),
-        start % 60,
-        0,
-        0
-      );
-
-      const endDate =
-        new Date(
-          date
-        );
-
-      endDate.setHours(
-        Math.floor(
-          end / 60
-        ),
-        end % 60,
-        0,
-        0
-      );
-
-      const pad =
-        number =>
-          String(
-            number
-          ).padStart(
-            2,
-            "0"
-          );
-
-      const formatICSDate =
-        value => {
-          return (
-            value
-              .toISOString()
-              .replace(
-                /[-:]/g,
-                ""
-              )
-              .replace(
-                /\.\d{3}Z$/,
-                "Z"
-              )
-          );
-        };
-
-      const ics = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//FineArts//Student LMS//EN",
-        "BEGIN:VEVENT",
-        `DTSTART:${formatICSDate(
-          date
-        )}`,
-        `DTEND:${formatICSDate(
-          endDate
-        )}`,
-        `SUMMARY:${title}`,
-        `DESCRIPTION:FineArts live session`,
-        "END:VEVENT",
-        "END:VCALENDAR",
-      ].join(
-        "\r\n"
-      );
-
-      const blob =
-        new Blob(
-          [ics],
-          {
-            type: "text/calendar",
-          }
-        );
-
-      const url =
-        URL.createObjectURL(
-          blob
-        );
-
-      const link =
-        document.createElement(
-          "a"
-        );
-
-      link.href =
-        url;
-
-      link.download =
-        `${title.replace(
-          /\s+/g,
-          "-"
-        )}.ics`;
-
-      document.body.appendChild(
-        link
-      );
-
-      link.click();
-
-      link.remove();
-
-      URL.revokeObjectURL(
-        url
-      );
-    };
-
-  /* =======================================================
-     EMPTY / HIDDEN
-  ======================================================= */
-
-  if (
-    !sessionsVisible
-  ) {
-    return null;
   }
 
-  /* =======================================================
-     STATS
-  ======================================================= */
+  const status =
 
-  const counts = {
-    upcoming:
-      upcomingSessions.length,
-    live:
-      liveSessions.length,
-    completed:
-      completedSessions.length,
-  };
+    getStatus(
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
+      session,
+
+      timezone
+
+    );
+
+  const zoom =
+
+    session.zoom
+
+      ?.join_url ||
+
+    session.zoom_link;
+
+  const classId =
+
+    session.class_id ||
+
+    session.classId ||
+
+    session.class?.id;
+
+  const goToLearningCourse =
+
+    () => {
+
+      if (!classId) {
+
+        return;
+
+      }
+
+      navigate(
+
+        `/my-learning/${classId}`
+
+      );
+
+    };
 
   return (
-    <div
-      className="min-h-screen bg-[#020914] text-white"
-      style={{
-        fontFamily: `'${branding.fontBody}', sans-serif`,
-      }}
-    >
-      {/* SIDEBAR */}
 
-      <Sidebar
-        activePage="Live Sessions"
-        navigate={
-          navigate
-        }
-        mobileOpen={
-          mobileOpen
-        }
-        setMobileOpen={
-          setMobileOpen
-        }
-      />
+    <div className="rounded-2xl border border-white/10 bg-[#080808] p-4">
 
-      {/* MAIN */}
+      <div className="mb-4 flex items-center justify-between">
 
-      <div className="lg:pl-[270px]">
-        <TopHeader
-          navigate={
-            navigate
-          }
-          student={
-            student
-          }
-          setMobileOpen={
-            setMobileOpen
-          }
-        />
+        <h3 className="font-bold">
 
-        <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-7">
-          {/* HERO */}
+          Next Live Session
 
-          <LiveSessionsHero
-            branding={
-              branding
-            }
-          />
+        </h3>
 
-          {/* TABS */}
+        <button
 
-          <SessionTabs
-            activeTab={
-              activeTab
-            }
-            setActiveTab={
-              setActiveTab
-            }
-            counts={
-              counts
-            }
-          />
+          type="button"
 
-          {/* UPCOMING / LIVE / COMPLETED */}
+          className="text-xs text-blue-400"
 
-          <section className="mt-4 rounded-xl border border-blue-500/20 bg-[#020D1B] p-3 sm:p-4">
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {activeTab ===
-                  "LIVE"
-                    ? "Live Now"
-                    : activeTab ===
-                      "COMPLETED"
-                    ? "Completed Live Sessions"
-                    : "Upcoming Live Sessions"}
-                </h2>
+        >
 
-                <p className="mt-1 text-sm text-white/60">
-                  {activeTab ===
-                  "LIVE"
-                    ? "Sessions currently in progress."
-                    : activeTab ===
-                      "COMPLETED"
-                    ? "Sessions that have already finished."
-                    : "Join your upcoming classes. Click the action when the session is ready."}
-                </p>
-              </div>
+          View All →
 
-              <button
-                onClick={() =>
-                  setCalendarMonth(
-                    new Date()
-                  )
-                }
-                className="flex items-center gap-2 self-start text-sm font-semibold text-blue-400"
-              >
-                <HiOutlineCalendar
-                  size={20}
-                />
+        </button>
 
-                View Calendar
-              </button>
-            </div>
-
-            {/* CARDS */}
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {visibleSessions
-                .slice(
-                  0,
-                  3
-                )
-                .map(
-                  session => (
-                    <SessionCard
-                      key={
-                        session.id
-                      }
-                      session={
-                        session
-                      }
-                      navigate={
-                        navigate
-                      }
-                      onReminder={
-                        setReminder
-                      }
-                      onCalendar={
-                        addToCalendar
-                      }
-                    />
-                  )
-                )}
-            </div>
-
-            {visibleSessions.length ===
-              0 && (
-              <div className="rounded-xl border border-dashed border-white/10 py-14 text-center">
-                <HiOutlineVideoCamera
-                  size={42}
-                  className="mx-auto text-blue-400/50"
-                />
-
-                <p className="mt-4 text-sm text-white/45">
-                  No sessions available
-                  in this category.
-                </p>
-              </div>
-            )}
-          </section>
-
-          {/* =================================================
-              LOWER AREA
-          ================================================= */}
-
-          <section className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_315px]">
-            {/* TABLE */}
-
-            <div>
-              <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">
-                    My Live Sessions
-                  </h2>
-
-                  <p className="mt-1 text-sm text-blue-400">
-                    View your upcoming and past
-                    live sessions.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  {/* SEARCH */}
-
-                  <div className="relative">
-                    <HiOutlineSearch
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-white/45"
-                      size={18}
-                    />
-
-                    <input
-                      value={
-                        search
-                      }
-                      onChange={event =>
-                        setSearch(
-                          event
-                            .target
-                            .value
-                        )
-                      }
-                      placeholder="Search live sessions..."
-                      className="h-11 w-full rounded-xl border border-blue-500/25 bg-[#061426] pl-10 pr-4 text-sm outline-none placeholder:text-white/35 focus:border-blue-500/50 sm:w-[235px]"
-                    />
-                  </div>
-
-                  {/* COURSE FILTER */}
-
-                  <select
-                    value={
-                      courseFilter
-                    }
-                    onChange={event =>
-                      setCourseFilter(
-                        event
-                          .target
-                          .value
-                      )
-                    }
-                    className="h-11 rounded-xl border border-blue-500/25 bg-[#061426] px-4 text-sm text-white outline-none"
-                  >
-                    {courseOptions.map(
-                      option => (
-                        <option
-                          key={
-                            option
-                          }
-                          value={
-                            option
-                          }
-                          className="bg-[#061426]"
-                        >
-                          {option ===
-                          "ALL"
-                            ? "All Courses"
-                            : option}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </div>
-              </div>
-
-              <SessionsTable
-                sessions={
-                  filteredSessions
-                }
-                navigate={
-                  navigate
-                }
-                onReminder={
-                  setReminder
-                }
-                onCalendar={
-                  addToCalendar
-                }
-              />
-            </div>
-
-            {/* CALENDAR */}
-
-            <SessionCalendar
-              sessions={
-                sessions
-              }
-              month={
-                calendarMonth
-              }
-              setMonth={
-                setCalendarMonth
-              }
-            />
-          </section>
-        </main>
       </div>
+
+      <div className="flex gap-3">
+
+        {session.class_image ? (
+
+          <img
+
+            src={
+
+              session.class_image
+
+            }
+
+            alt={
+
+              session.class_title ||
+
+              "Session"
+
+            }
+
+            className="h-28 w-24 rounded-xl object-cover"
+
+          />
+
+        ) : (
+
+          <div className="flex h-28 w-24 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#050505] via-[#080808] to-[#050505] text-[10px] text-white">
+
+            No image
+
+          </div>
+
+        )}
+
+        <div className="min-w-0">
+
+          <h4 className="text-sm font-semibold leading-5">
+
+            {session.session_title ||
+
+              session.class_title ||
+
+              "—"}
+
+          </h4>
+
+          <Info
+
+            icon={
+
+              <HiCalendar />
+
+            }
+
+          >
+
+            {session.is_today
+
+              ? "Today"
+
+              : session.days_label}
+
+          </Info>
+
+          <Info
+
+            icon={
+
+              <HiClock />
+
+            }
+
+          >
+
+            {session.local_start_time ||
+
+              formatTime(
+
+                session.start_time
+
+              )}
+
+            {session.end_time
+
+              ? ` - ${formatTime(
+
+                  session.end_time
+
+                )}`
+
+              : ""}
+
+          </Info>
+
+          <Info
+
+            icon={
+
+              <HiUser />
+
+            }
+
+          >
+
+            Trainer:{" "}
+
+            {session.trainer_name ||
+
+              "—"}
+
+          </Info>
+
+        </div>
+
+      </div>
+
+      {/* ZOOM */}
+
+      {session.can_join &&
+
+      zoom ? (
+
+        <a
+
+          href={zoom}
+
+          target="_blank"
+
+          rel="noreferrer"
+
+          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-sm font-semibold transition hover:brightness-110"
+
+        >
+
+          <HiVideoCamera />
+
+          Join Zoom Session
+
+        </a>
+
+      ) : (
+
+        <button
+
+          type="button"
+
+          disabled
+
+          className="mt-4 flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-white/10 text-sm text-white"
+
+        >
+
+          <HiClock />
+
+          {status ===
+
+            "UPCOMING" ||
+
+          status ===
+
+            "SCHEDULED"
+
+            ? "Session Not Started"
+
+            : "Join Unavailable"}
+
+        </button>
+
+      )}
+
+      {/* LEARNING COURSE */}
+
+      {classId && (
+
+        <button
+
+          type="button"
+
+          onClick={
+
+            goToLearningCourse
+
+          }
+
+          className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-blue-500/40 bg-blue-500/10 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/20"
+
+        >
+
+          <HiBookOpen
+
+            size={18}
+
+          />
+
+          Go to Learning Course
+
+        </button>
+
+      )}
+
     </div>
+
   );
+
+}
+
+/* =========================================================
+
+   STATE
+
+\========================================================= */
+
+function State({
+
+  icon,
+
+  title,
+
+  message,
+
+  button,
+
+  onClick,
+
+}) {
+
+  return (
+
+    <div className="flex min-h-[70vh] items-center justify-center bg-[#000000] px-5 text-white">
+
+      <div className="max-w-md text-center">
+
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
+
+          {icon}
+
+        </div>
+
+        <h1 className="mt-6 text-3xl font-bold">
+
+          {title}
+
+        </h1>
+
+        {message && (
+
+          <p className="mt-4 text-white">
+
+            {message}
+
+          </p>
+
+        )}
+
+        {button && (
+
+          <button
+
+            type="button"
+
+            onClick={onClick}
+
+            className="mt-8 w-full rounded-xl bg-gradient-to-r from-[#1687FF] to-[#087CFF] py-3 font-semibold"
+
+          >
+
+            {button}
+
+          </button>
+
+        )}
+
+      </div>
+
+    </div>
+
+  );
+
 }

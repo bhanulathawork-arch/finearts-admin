@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import toast from "react-hot-toast";
 
 import {
-  HiUsers,
   HiUserGroup,
   HiCalendar,
   HiAcademicCap,
@@ -14,13 +12,16 @@ import {
 } from "react-icons/hi";
 
 import StatCard from "../components/ui/StatCard";
-
-const API_URL = "https://finearts-backend.onrender.com/api/dashboard";
+import API from "../services/api";
 
 export default function InstituteDashboard() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+
+  /* =========================================================
+     DASHBOARD STATS
+  ========================================================= */
 
   const [stats, setStats] = useState({
     total_trainers: 0,
@@ -28,61 +29,157 @@ export default function InstituteDashboard() {
     total_students: 0,
     total_bookings: 0,
     total_sessions: 0,
+    total_revenue: 0,
   });
 
-  const [bookingSummary, setBookingSummary] = useState([]);
-  const [usersSummary, setUsersSummary] = useState([]);
+  const [institute, setInstitute] = useState({
+    name: "Institute",
+    approval_status: "",
+  });
 
-  /* ===========================
-      AUTH CONFIG (Institute)
-  =========================== */
-  const getConfig = () => {
-  const token =
-    localStorage.getItem("instituteToken") ||
-    localStorage.getItem("token");
+  /* =========================================================
+     FETCH DASHBOARD
 
-  if (!token) {
-    throw new Error("Authentication token missing");
-  }
+     IMPORTANT:
+     Do NOT manually read instituteToken/token here.
 
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-};
-
-  /* ===========================
-      FETCH DASHBOARD
-  =========================== */
+     The central API interceptor in ../services/api attaches
+     the Firebase ID token to protected Institute requests.
+  ========================================================= */
 
   const fetchDashboard = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const config = getConfig();
-const dashboardRes = await axios.get(
-  `${API_URL}/institute`,
-  config
-);
+      const dashboardRes = await API.get(
+        "/dashboard/institute"
+      );
 
-    setStats(dashboardRes.data.data);
+      console.log(
+        "INSTITUTE DASHBOARD RESPONSE:",
+        dashboardRes.data
+      );
 
-  } catch (err) {
-    console.error(err);
-    toast.error(err.message || "Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
+      /* =====================================================
+         BACKEND RESPONSE:
+
+         {
+           success: true,
+           data: {
+             institute: {...},
+             stats: {...},
+             recent_bookings: [...]
+           }
+         }
+      ===================================================== */
+
+      const dashboardData =
+        dashboardRes?.data?.data || {};
+
+      /* =====================================================
+         STATS
+      ===================================================== */
+
+      const dashboardStats =
+        dashboardData?.stats || {};
+
+      setStats({
+        total_trainers:
+          Number(
+            dashboardStats.total_trainers || 0
+          ),
+
+        total_classes:
+          Number(
+            dashboardStats.total_classes || 0
+          ),
+
+        total_students:
+          Number(
+            dashboardStats.total_students || 0
+          ),
+
+        total_bookings:
+          Number(
+            dashboardStats.total_bookings || 0
+          ),
+
+        total_sessions:
+          Number(
+            dashboardStats.total_sessions || 0
+          ),
+
+        total_revenue:
+          Number(
+            dashboardStats.total_revenue || 0
+          ),
+      });
+
+      /* =====================================================
+         INSTITUTE INFORMATION
+      ===================================================== */
+
+      setInstitute({
+        name:
+          dashboardData?.institute?.name ||
+          "Institute",
+
+        approval_status:
+          dashboardData?.institute?.approval_status ||
+          "",
+      });
+
+    } catch (err) {
+      console.error(
+        "INSTITUTE DASHBOARD ERROR:",
+        err
+      );
+
+      console.error(
+        "BACKEND RESPONSE:",
+        err?.response?.data
+      );
+
+      /*
+       * Do not show "Authentication token missing"
+       * from this component.
+       *
+       * Authentication is handled centrally by api.js.
+       */
+
+      toast.error(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =========================================================
+     LOAD DASHBOARD
+  ========================================================= */
 
   useEffect(() => {
-    fetchDashboard();
+    let mounted = true;
+
+    const loadDashboard = async () => {
+      if (!mounted) return;
+
+      await fetchDashboard();
+    };
+
+    loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  /* ===========================
-      STAT CARDS (Institute Specific)
-  =========================== */
+  /* =========================================================
+     STAT CARDS
+  ========================================================= */
 
   const statCards = [
     {
@@ -92,6 +189,7 @@ const dashboardRes = await axios.get(
       color: "blue",
       path: "/institute/trainers",
     },
+
     {
       title: "Total Classes",
       value: stats.total_classes,
@@ -107,6 +205,7 @@ const dashboardRes = await axios.get(
       color: "green",
       path: "/institute/bookings",
     },
+
     {
       title: "Total Sessions",
       value: stats.total_sessions,
@@ -116,29 +215,49 @@ const dashboardRes = await axios.get(
     },
   ];
 
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
   if (loading) {
     return (
-      <div className="p-6 text-white">
-        Loading Dashboard...
+      <div className="min-h-full p-6 text-white">
+        <div className="animate-pulse">
+          Loading Dashboard...
+        </div>
       </div>
     );
   }
 
+  /* =========================================================
+     RENDER
+  ========================================================= */
+
   return (
     <div className="space-y-6 animate-slide-up">
 
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <div>
         <h1 className="text-3xl font-bold gradient-text">
           Dashboard
         </h1>
 
         <p className="text-white mt-1">
-          Welcome back Institute
+          Welcome back{" "}
+          {institute.name &&
+          institute.name !== "Institute"
+            ? institute.name
+            : "Institute"}
         </p>
       </div>
 
-      {/* Statistics */}
+      {/* =====================================================
+          STATISTICS
+      ===================================================== */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {statCards.map((card) => (
@@ -148,7 +267,9 @@ const dashboardRes = await axios.get(
             value={card.value}
             icon={card.icon}
             color={card.color}
-            onClick={() => navigate(card.path)}
+            onClick={() =>
+              navigate(card.path)
+            }
           />
         ))}
 

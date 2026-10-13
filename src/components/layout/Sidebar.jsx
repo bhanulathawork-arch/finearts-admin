@@ -1,6 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import {
+  getAuth,
+  onAuthStateChanged,
+} from "firebase/auth";
 
 import {
   HiOutlineHome,
@@ -112,30 +116,31 @@ const adminMenuItems = [
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
-   {
-    path: "/admin/lms",
+  // {
+  //   path: "/admin/lms",
+  //   icon: HiOutlineAcademicCap,
+  //   label: "LMS",
+  // },
+  {
+    path: "/admin/live",
     icon: HiOutlineAcademicCap,
-    label: "LMS",
+    label: "Live Classes",
   },
-
+  {
+    path: "/admin/recordings",
+    icon: HiOutlineAcademicCap,
+    label: "Recordings",
+  },
   {
     path: "/admin/attendance",
     icon: HiOutlineClipboardList,
     label: "Attendance",
   },
-
   {
     path: "/admin/assignments",
     icon: HiOutlineDocumentText,
     label: "Assignments",
   },
-
-  // {
-  //   path: "/admin/recordings",
-  //   icon: HiOutlineVideoCamera,
-  //   label: "Recordings",
-  // },
- 
   {
     path: "/students",
     icon: HiOutlineUsers,
@@ -148,6 +153,9 @@ const adminMenuItems = [
   },
 ];
 
+/* =========================================================
+   INSTITUTE MENU
+========================================================= */
 
 const instituteMenuItems = [
   {
@@ -155,114 +163,106 @@ const instituteMenuItems = [
     icon: HiOutlineHome,
     label: "Dashboard",
   },
-
   {
     path: "/institute/trainers",
     icon: HiOutlineUserGroup,
     label: "Trainers",
   },
-
   {
     path: "/institute/classes",
     icon: HiOutlineAcademicCap,
     label: "Classes",
   },
-
   {
     path: "/institute/sessions",
     icon: HiOutlineAcademicCap,
     label: "Sessions",
   },
 
-  // =====================================================
-  // LMS
-  // =====================================================
+  /* =====================================================
+     LMS
+  ===================================================== */
 
-  {
-    path: "/institute/lms",
-    icon: HiOutlineAcademicCap,
-    label: "LMS",
-  },
-
+  // {
+  //   path: "/institute/lms",
+  //   icon: HiOutlineAcademicCap,
+  //   label: "LMS",
+  // },
   {
     path: "/institute/attendance",
     icon: HiOutlineCalendar,
     label: "Attendance",
   },
-
   {
     path: "/institute/assignments",
     icon: HiOutlineDocumentText,
     label: "Assignments",
   },
-
+    {
+    path: "/institute/Live",
+    icon: HiOutlineVideoCamera,
+    label: "Live",
+  },
   {
     path: "/institute/recordings",
     icon: HiOutlineVideoCamera,
     label: "Recordings",
   },
+  
 
-  // =====================================================
-  // INSTITUTE MANAGEMENT
-  // =====================================================
+  /* =====================================================
+     INSTITUTE MANAGEMENT
+  ===================================================== */
 
   {
     path: "/institute/banners",
     icon: HiOutlinePhotograph,
     label: "Banners",
   },
-
   {
     path: "/institute/bookings",
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
-
   {
     path: "/institute/testimonials",
     icon: HiOutlineChatAlt,
     label: "Testimonials",
   },
-
   {
     path: "/institute/profile",
     icon: HiOutlineOfficeBuilding,
     label: "Institute Profile",
   },
-
   {
     path: "/institute/batches",
     icon: HiOutlineCollection,
     label: "Batches",
   },
-
   {
     path: "/institute/payments",
     icon: HiOutlineCurrencyRupee,
     label: "Payments",
   },
-
   {
     path: "/institute/students",
     icon: HiOutlineUsers,
     label: "Students",
   },
-
   {
     path: "/institute/about",
     icon: HiOutlineInformationCircle,
     label: "About",
   },
-
   {
     path: "/institute/footer",
     icon: HiOutlineDocumentText,
     label: "Footer",
   },
 
-  // =====================================================
-  // WEBSITE
-  // =====================================================
+  /* =====================================================
+     WEBSITE
+  ===================================================== */
 
   {
     path: "/institute/website",
@@ -271,6 +271,9 @@ const instituteMenuItems = [
   },
 ];
 
+/* =========================================================
+   TRAINER MENU
+========================================================= */
 
 const trainerMenuItems = [
   {
@@ -278,49 +281,41 @@ const trainerMenuItems = [
     icon: HiOutlineHome,
     label: "Dashboard",
   },
-
   {
     path: "/trainer/classes",
     icon: HiOutlineAcademicCap,
     label: "My Classes",
   },
-
-  {
-    path: "/trainer/lms",
-    icon: HiOutlineAcademicCap,
-    label: "LMS",
-  },
-
   {
     path: "/trainer/sessions",
     icon: HiOutlineAcademicCap,
     label: "Sessions",
   },
-
   {
     path: "/trainer/attendance",
     icon: HiOutlineCalendar,
     label: "Attendance",
   },
-
   {
     path: "/trainer/assignments",
     icon: HiOutlineAcademicCap,
     label: "Assignments",
   },
-
+  {
+    path: "/trainer/live",
+    icon: HiOutlineAcademicCap,
+    label: "Live Classes",
+  },
   {
     path: "/trainer/recordings",
     icon: HiOutlineAcademicCap,
     label: "Recordings",
   },
-
   {
     path: "/trainer/bookings",
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
-
   {
     path: "/trainer/profile",
     icon: HiOutlineUserGroup,
@@ -328,14 +323,14 @@ const trainerMenuItems = [
   },
 ];
 
-
 /* =========================================================
    GET STORED INSTITUTE DATA
 ========================================================= */
 
 const getStoredInstituteData = () => {
   try {
-    const storedInstitute = localStorage.getItem("institute");
+    const storedInstitute =
+      localStorage.getItem("institute");
 
     if (!storedInstitute) {
       return null;
@@ -372,7 +367,10 @@ const getStoredInstituteName = () => {
    GET INITIALS
 ========================================================= */
 
-const getInitials = (name, fallback = "IN") => {
+const getInitials = (
+  name,
+  fallback = "IN"
+) => {
   if (!name) {
     return fallback;
   }
@@ -399,6 +397,55 @@ const getInitials = (name, fallback = "IN") => {
 };
 
 /* =========================================================
+   GET FIREBASE / STORED TOKEN
+========================================================= */
+
+const getFirebaseToken = async () => {
+  try {
+    const auth = getAuth();
+
+    const user = auth.currentUser;
+
+    if (user) {
+      const token =
+        await user.getIdToken(true);
+
+      if (token) {
+        console.log(
+          "SIDEBAR: Firebase token FOUND"
+        );
+
+        return token;
+      }
+    }
+  } catch (error) {
+    console.error(
+      "SIDEBAR FIREBASE TOKEN ERROR:",
+      error
+    );
+  }
+
+  /* =======================================================
+     FALLBACK TOKENS
+  ======================================================= */
+
+  const storedToken =
+    localStorage.getItem("instituteToken") ||
+    localStorage.getItem("trainerToken") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("firebaseToken");
+
+  console.log(
+    "SIDEBAR STORED TOKEN:",
+    storedToken
+      ? "FOUND"
+      : "NOT FOUND"
+  );
+
+  return storedToken || null;
+};
+
+/* =========================================================
    SIDEBAR
 ========================================================= */
 
@@ -413,13 +460,14 @@ export default function Sidebar({
     toggleMobileSidebar,
   } = useSidebar();
 
-  const [openMenus, setOpenMenus] = useState({
-    institutes: true,
-    trainers: true,
-  });
+  const [openMenus, setOpenMenus] =
+    useState({
+      institutes: true,
+      trainers: true,
+    });
 
   /* =======================================================
-     INSTITUTE NAME STATE
+     INSTITUTE NAME
   ======================================================= */
 
   const [
@@ -434,7 +482,7 @@ export default function Sidebar({
   });
 
   /* =======================================================
-     TRAINER NAME STATE
+     TRAINER NAME
   ======================================================= */
 
   const [
@@ -442,14 +490,18 @@ export default function Sidebar({
     setTrainerName,
   ] = useState(() => {
     if (role === "TRAINER") {
-      return localStorage.getItem("trainerName") || "";
+      return (
+        localStorage.getItem(
+          "trainerName"
+        ) || ""
+      );
     }
 
     return "";
   });
 
   /* =======================================================
-     LOAD REAL INSTITUTE PROFILE
+     LOAD INSTITUTE PROFILE
   ======================================================= */
 
   useEffect(() => {
@@ -459,7 +511,11 @@ export default function Sidebar({
 
     let mounted = true;
 
-    const loadInstituteProfile = async () => {
+    const auth = getAuth();
+
+    const loadInstituteProfile = async (
+      user
+    ) => {
       try {
         console.log(
           "================================="
@@ -473,85 +529,151 @@ export default function Sidebar({
           "================================="
         );
 
-        const token =
-          localStorage.getItem("token");
+        let token = null;
 
-        console.log(
-          "SIDEBAR TOKEN:",
-          token ? "FOUND" : "NOT FOUND"
-        );
+        /* =================================================
+           FIREBASE TOKEN
+        ================================================= */
 
-        if (token) {
-          const response =
-            await getInstituteProfile(token);
+        if (user) {
+          try {
+            token =
+              await user.getIdToken(true);
 
-          console.log(
-            "SIDEBAR PROFILE RESPONSE:",
-            response
-          );
-
-          const profile =
-            response?.data ||
-            response;
-
-          console.log(
-            "SIDEBAR PROFILE:",
-            profile
-          );
-
-          const name =
-            profile?.name ||
-            profile?.institute_name ||
-            profile?.institution_name ||
-            profile?.institute?.name ||
-            "";
-
-          console.log(
-            "SIDEBAR ACTUAL INSTITUTE NAME:",
-            name
-          );
-
-          if (name && mounted) {
-            setInstituteName(name);
-
-            try {
-              const existing =
-                getStoredInstituteData() ||
-                {};
-
-              const updated = {
-                ...existing,
-                institute: {
-                  ...(existing?.institute || {}),
-                  name,
-                },
-              };
-
-              localStorage.setItem(
-                "institute",
-                JSON.stringify(updated)
-              );
-            } catch (storageError) {
-              console.error(
-                "SIDEBAR STORAGE UPDATE ERROR:",
-                storageError
-              );
-            }
-
-            return;
+            console.log(
+              "SIDEBAR TOKEN: Firebase token FOUND"
+            );
+          } catch (firebaseError) {
+            console.error(
+              "SIDEBAR FIREBASE TOKEN ERROR:",
+              firebaseError
+            );
           }
         }
 
-        const storedName =
-          getStoredInstituteName();
+        /* =================================================
+           LOCAL STORAGE FALLBACK
+        ================================================= */
 
-        if (storedName && mounted) {
+        if (!token) {
+          token =
+            localStorage.getItem(
+              "instituteToken"
+            ) ||
+            localStorage.getItem(
+              "token"
+            ) ||
+            localStorage.getItem(
+              "firebaseToken"
+            );
+
           console.log(
-            "SIDEBAR USING STORED NAME:",
-            storedName
+            "SIDEBAR TOKEN:",
+            token
+              ? "FOUND"
+              : "NOT FOUND"
+          );
+        }
+
+        /* =================================================
+           NO TOKEN
+        ================================================= */
+
+        if (!token) {
+          console.warn(
+            "SIDEBAR: Authentication token not found"
           );
 
-          setInstituteName(storedName);
+          const storedName =
+            getStoredInstituteName();
+
+          if (
+            storedName &&
+            mounted
+          ) {
+            setInstituteName(
+              storedName
+            );
+          }
+
+          return;
+        }
+
+        /* =================================================
+           LOAD PROFILE
+        ================================================= */
+
+        const response =
+          await getInstituteProfile(
+            token
+          );
+
+        console.log(
+          "SIDEBAR PROFILE RESPONSE:",
+          response
+        );
+
+        const profile =
+          response?.data?.data ||
+          response?.data ||
+          response;
+
+        console.log(
+          "SIDEBAR PROFILE:",
+          profile
+        );
+
+        const name =
+          profile?.name ||
+          profile?.institute_name ||
+          profile?.institution_name ||
+          profile?.institute?.name ||
+          "";
+
+        console.log(
+          "SIDEBAR ACTUAL INSTITUTE NAME:",
+          name
+        );
+
+        if (
+          name &&
+          mounted
+        ) {
+          setInstituteName(name);
+
+          /* ===============================================
+             SAVE NAME LOCALLY
+          =============================================== */
+
+          try {
+            const existing =
+              getStoredInstituteData() ||
+              {};
+
+            const updated = {
+              ...existing,
+
+              institute: {
+                ...(existing?.institute ||
+                  {}),
+                name,
+              },
+            };
+
+            localStorage.setItem(
+              "institute",
+              JSON.stringify(
+                updated
+              )
+            );
+          } catch (
+            storageError
+          ) {
+            console.error(
+              "SIDEBAR STORAGE UPDATE ERROR:",
+              storageError
+            );
+          }
         }
       } catch (error) {
         console.error(
@@ -572,21 +694,39 @@ export default function Sidebar({
         const storedName =
           getStoredInstituteName();
 
-        if (storedName && mounted) {
-          setInstituteName(storedName);
+        if (
+          storedName &&
+          mounted
+        ) {
+          setInstituteName(
+            storedName
+          );
         }
       }
     };
 
-    loadInstituteProfile();
+    /* =====================================================
+       WAIT FOR FIREBASE AUTH
+    ===================================================== */
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        (user) => {
+          loadInstituteProfile(
+            user
+          );
+        }
+      );
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, [role]);
 
   /* =======================================================
-     LOAD REAL TRAINER PROFILE
+     LOAD TRAINER PROFILE
   ======================================================= */
 
   useEffect(() => {
@@ -596,7 +736,11 @@ export default function Sidebar({
 
     let mounted = true;
 
-    const loadTrainerProfile = async () => {
+    const auth = getAuth();
+
+    const loadTrainerProfile = async (
+      user
+    ) => {
       try {
         console.log(
           "================================="
@@ -610,36 +754,79 @@ export default function Sidebar({
           "================================="
         );
 
-        const token =
-          localStorage.getItem("token");
+        let token = null;
 
-        console.log(
-          "SIDEBAR TRAINER TOKEN:",
-          token ? "FOUND" : "NOT FOUND"
-        );
+        /* =================================================
+           FIREBASE TOKEN
+        ================================================= */
+
+        if (user) {
+          try {
+            token =
+              await user.getIdToken(true);
+
+            console.log(
+              "SIDEBAR TRAINER TOKEN: Firebase token FOUND"
+            );
+          } catch (
+            firebaseError
+          ) {
+            console.error(
+              "SIDEBAR TRAINER FIREBASE TOKEN ERROR:",
+              firebaseError
+            );
+          }
+        }
+
+        /* =================================================
+           LOCAL STORAGE FALLBACK
+        ================================================= */
+
+        if (!token) {
+          token =
+            localStorage.getItem(
+              "trainerToken"
+            ) ||
+            localStorage.getItem(
+              "token"
+            ) ||
+            localStorage.getItem(
+              "firebaseToken"
+            );
+
+          console.log(
+            "SIDEBAR TRAINER TOKEN:",
+            token
+              ? "FOUND"
+              : "NOT FOUND"
+          );
+        }
+
+        /* =================================================
+           NO TOKEN
+        ================================================= */
 
         if (!token) {
           console.warn(
-            "SIDEBAR: Trainer token not found"
+            "SIDEBAR: Trainer authentication token not found"
           );
 
           return;
         }
 
+        /* =================================================
+           LOAD TRAINER PROFILE
+        ================================================= */
+
         const response =
-          await getTrainerProfile(token);
+          await getTrainerProfile(
+            token
+          );
 
         console.log(
           "SIDEBAR TRAINER PROFILE RESPONSE:",
           response
         );
-
-        /*
-         * Support both possible axios structures:
-         *
-         * response.data.data
-         * response.data
-         */
 
         const profile =
           response?.data?.data ||
@@ -651,15 +838,16 @@ export default function Sidebar({
           profile
         );
 
-        /* =========================================
-           GET ACTUAL TRAINER NAME
-        ========================================= */
+        /* =================================================
+           TRAINER NAME
+        ================================================= */
 
         const name =
           profile?.full_name ||
           profile?.name ||
           profile?.trainer?.full_name ||
           profile?.trainer?.name ||
+          profile?.trainer_name ||
           "";
 
         console.log(
@@ -667,19 +855,20 @@ export default function Sidebar({
           name
         );
 
-        if (name && mounted) {
+        if (
+          name &&
+          mounted
+        ) {
           setTrainerName(name);
-
-          /* =====================================
-             SAVE TRAINER NAME
-          ===================================== */
 
           try {
             localStorage.setItem(
               "trainerName",
               name
             );
-          } catch (storageError) {
+          } catch (
+            storageError
+          ) {
             console.error(
               "SIDEBAR TRAINER STORAGE ERROR:",
               storageError
@@ -702,23 +891,39 @@ export default function Sidebar({
           error?.response?.data
         );
 
-        /* =========================================
-           FALLBACK TO LOCAL STORAGE
-        ========================================= */
-
         const storedName =
-          localStorage.getItem("trainerName");
+          localStorage.getItem(
+            "trainerName"
+          );
 
-        if (storedName && mounted) {
-          setTrainerName(storedName);
+        if (
+          storedName &&
+          mounted
+        ) {
+          setTrainerName(
+            storedName
+          );
         }
       }
     };
 
-    loadTrainerProfile();
+    /* =====================================================
+       WAIT FOR FIREBASE AUTH
+    ===================================================== */
+
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        (user) => {
+          loadTrainerProfile(
+            user
+          );
+        }
+      );
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, [role]);
 
@@ -727,10 +932,12 @@ export default function Sidebar({
   ======================================================= */
 
   const finalInstituteName =
-    instituteName || "Institute";
+    instituteName ||
+    "Institute";
 
   const finalTrainerName =
-    trainerName || "Trainer";
+    trainerName ||
+    "Trainer";
 
   /* =======================================================
      INITIALS
@@ -763,7 +970,18 @@ export default function Sidebar({
      LOGOUT
   ======================================================= */
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+
+      await auth.signOut();
+    } catch (error) {
+      console.error(
+        "SIDEBAR LOGOUT ERROR:",
+        error
+      );
+    }
+
     localStorage.clear();
 
     window.location.href = "/";
@@ -785,38 +1003,28 @@ export default function Sidebar({
         msOverflowStyle: "none",
       }}
     >
-
-      {/* =====================================================
+      {/* ===================================================
           HEADER / LOGO
-      ===================================================== */}
+      =================================================== */}
 
       <div className="flex items-center justify-between mb-8 px-2">
 
         {isSidebarOpen ? (
-
           <div className="flex items-center gap-3 min-w-0">
 
-            {/* =================================================
-                PROFILE INITIALS
-            ================================================= */}
+            {/* PROFILE INITIALS */}
 
             <div className="w-10 h-10 flex-shrink-0 rounded-xl gradient-bg flex items-center justify-center">
-
               <span className="text-white font-bold text-sm">
-
                 {role === "INSTITUTE"
                   ? instituteInitials
                   : role === "TRAINER"
                   ? trainerInitials
                   : "DP"}
-
               </span>
-
             </div>
 
-            {/* =================================================
-                PROFILE NAME
-            ================================================= */}
+            {/* PROFILE NAME */}
 
             <span
               className="text-lg font-bold gradient-text truncate"
@@ -828,37 +1036,27 @@ export default function Sidebar({
                   : "Admin"
               }
             >
-
               {role === "INSTITUTE"
                 ? finalInstituteName
                 : role === "TRAINER"
                 ? finalTrainerName
                 : "Admin"}
-
             </span>
-
           </div>
-
         ) : (
-
           /* =================================================
              COLLAPSED SIDEBAR
           ================================================= */
 
           <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center mx-auto">
-
             <span className="text-white font-bold text-sm">
-
               {role === "INSTITUTE"
                 ? instituteInitials
                 : role === "TRAINER"
                 ? trainerInitials
                 : "DP"}
-
             </span>
-
           </div>
-
         )}
 
         {/* =================================================
@@ -882,17 +1080,15 @@ export default function Sidebar({
         >
           <HiOutlineMenuAlt2 className="w-5 h-5" />
         </button>
-
       </div>
 
-      {/* =====================================================
+      {/* ===================================================
           MENU
-      ===================================================== */}
+      =================================================== */}
 
       <nav className="flex-1 min-h-0 overflow-y-auto space-y-1 sidebar-menu-scroll">
 
         {menuItems.map((item) => {
-
           const Icon = item.icon;
 
           /* =================================================
@@ -900,7 +1096,6 @@ export default function Sidebar({
           ================================================= */
 
           if (item.children) {
-
             const menuKey =
               item.label.toLowerCase();
 
@@ -911,7 +1106,6 @@ export default function Sidebar({
               <div
                 key={item.label}
               >
-
                 <button
                   onClick={() =>
                     setOpenMenus(
@@ -926,9 +1120,7 @@ export default function Sidebar({
                   }
                   className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-white hover:text-white hover:bg-white/5"
                 >
-
                   <div className="flex items-center gap-3">
-
                     <Icon className="w-5 h-5" />
 
                     {isSidebarOpen && (
@@ -936,7 +1128,6 @@ export default function Sidebar({
                         {item.label}
                       </span>
                     )}
-
                   </div>
 
                   {isSidebarOpen &&
@@ -945,17 +1136,13 @@ export default function Sidebar({
                     ) : (
                       <HiChevronRight />
                     ))}
-
                 </button>
 
                 {isOpen &&
                   isSidebarOpen && (
-
                     <div className="ml-8 mt-1 space-y-1">
-
                       {item.children.map(
                         (child) => {
-
                           const isChildActive =
                             location.pathname ===
                             child.path;
@@ -974,16 +1161,15 @@ export default function Sidebar({
                                   : "text-white hover:bg-white/5 hover:text-white"
                               }`}
                             >
-                              {child.label}
+                              {
+                                child.label
+                              }
                             </NavLink>
                           );
                         }
                       )}
-
                     </div>
-
                   )}
-
               </div>
             );
           }
@@ -1006,7 +1192,6 @@ export default function Sidebar({
                   : "text-white hover:text-white hover:bg-white/5"
               }`}
             >
-
               <Icon
                 className={`w-5 h-5 ${
                   isActive
@@ -1020,58 +1205,56 @@ export default function Sidebar({
                   {item.label}
                 </span>
               )}
-
             </NavLink>
           );
         })}
-
       </nav>
 
-      {/* =====================================================
+      {/* ===================================================
           LOGOUT
-      ===================================================== */}
+      =================================================== */}
 
       <button
         onClick={handleLogout}
         className="w-full mt-4 px-3 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all text-sm font-semibold flex items-center justify-center gap-2"
       >
-
         <HiX className="w-4 h-4" />
 
         {isSidebarOpen &&
           "Logout"}
-
       </button>
 
-<style>{`
-  .sidebar-menu-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: #a52cff transparent;
-  }
+      {/* ===================================================
+          SIDEBAR SCROLLBAR
+      =================================================== */}
 
-  .sidebar-menu-scroll::-webkit-scrollbar {
-    width: 5px;
-  }
+      <style>{`
+        .sidebar-menu-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #a52cff transparent;
+        }
 
-  .sidebar-menu-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
+        .sidebar-menu-scroll::-webkit-scrollbar {
+          width: 5px;
+        }
 
-  .sidebar-menu-scroll::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      #a52cff,
-      #ff2aad
-    );
-    border-radius: 10px;
-  }
+        .sidebar-menu-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
 
-  .sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
-    background: #ff2aad;
-  }
-`}</style>
+        .sidebar-menu-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(
+            180deg,
+            #a52cff,
+            #ff2aad
+          );
+          border-radius: 10px;
+        }
 
-
+        .sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
+          background: #ff2aad;
+        }
+      `}</style>
     </div>
   );
 }

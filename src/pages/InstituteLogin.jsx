@@ -71,11 +71,13 @@ export default function InstituteLogin() {
         "institute-recaptcha-container",
         {
           size: "invisible",
+
           callback: () => {
             console.log(
               "Institute reCAPTCHA verified"
             );
           },
+
           "expired-callback": () => {
             console.log(
               "Institute reCAPTCHA expired"
@@ -101,8 +103,8 @@ export default function InstituteLogin() {
 
   /* =========================================================
      PROCESS INSTITUTE LOGIN
-     
-     This is shared by:
+
+     Shared by:
      - Phone OTP
      - Google
   ========================================================= */
@@ -160,10 +162,6 @@ export default function InstituteLogin() {
 
       /* =====================================================
          SEND TOKEN TO BACKEND
-         
-         IMPORTANT:
-         Both Google and Phone OTP use the
-         SAME institute login endpoint.
       ===================================================== */
 
       console.log(
@@ -208,7 +206,27 @@ export default function InstituteLogin() {
         institute,
       } = data;
 
+      /*
+       * IMPORTANT:
+       *
+       * Support both possible API response structures:
+       *
+       * {
+       *   data: {
+       *     next_step: "DASHBOARD"
+       *   }
+       * }
+       *
+       * OR
+       *
+       * {
+       *   data: {...},
+       *   next_step: "DASHBOARD"
+       * }
+       */
+
       const nextStep =
+        data?.next_step ??
         responseData?.next_step;
 
       /* =====================================================
@@ -228,9 +246,9 @@ export default function InstituteLogin() {
         })
       );
 
-      /*
-       * Store Firebase user as well.
-       */
+      /* =====================================================
+         STORE FIREBASE USER
+      ===================================================== */
 
       localStorage.setItem(
         "firebaseUser",
@@ -247,9 +265,7 @@ export default function InstituteLogin() {
       );
 
       /*
-       * Do NOT use the generic "token"
-       * if your institute API uses the
-       * institute session/backend mechanism.
+       * Do NOT use generic token.
        */
 
       localStorage.removeItem(
@@ -282,6 +298,10 @@ export default function InstituteLogin() {
       ===================================================== */
 
       switch (nextStep) {
+        /* ===================================================
+           NO PROFILE / REJECTED
+        =================================================== */
+
         case "COMPLETE_PROFILE":
 
           navigate(
@@ -292,6 +312,10 @@ export default function InstituteLogin() {
           );
 
           break;
+
+        /* ===================================================
+           PROFILE WAITING FOR ADMIN APPROVAL
+        =================================================== */
 
         case "WAITING_APPROVAL":
 
@@ -304,6 +328,10 @@ export default function InstituteLogin() {
 
           break;
 
+        /* ===================================================
+           APPROVED INSTITUTE
+        =================================================== */
+
         case "DASHBOARD":
 
           navigate(
@@ -315,21 +343,30 @@ export default function InstituteLogin() {
 
           break;
 
+        /* ===================================================
+           UNKNOWN RESPONSE
+
+           IMPORTANT:
+           Do NOT send the user to create-profile here.
+        =================================================== */
+
         default:
 
-          /*
-           * If backend doesn't send next_step,
-           * safely send institute to profile.
-           */
-
-          navigate(
-            "/institute/create-profile",
-            {
-              replace: true,
-            }
+          console.error(
+            "Unknown institute login next_step:",
+            nextStep,
+            responseData
           );
+
+          toast.error(
+            "Unable to determine institute approval status."
+          );
+
+          break;
       }
+
     } catch (error) {
+
       console.error(
         "================================="
       );
@@ -428,7 +465,9 @@ export default function InstituteLogin() {
       console.log(
         "================================="
       );
+
     } catch (error) {
+
       console.error(
         "INSTITUTE PHONE OTP ERROR:",
         error
@@ -444,9 +483,9 @@ export default function InstituteLogin() {
         error?.message
       );
 
-      /*
-       * Clean recaptcha after failure.
-       */
+      /* =====================================================
+         CLEAN RECAPTCHA AFTER FAILURE
+      ===================================================== */
 
       try {
         if (window.recaptchaVerifier) {
@@ -464,6 +503,7 @@ export default function InstituteLogin() {
         error?.message ||
           "Failed to send OTP"
       );
+
     } finally {
       setLoading(false);
     }
@@ -532,7 +572,9 @@ export default function InstituteLogin() {
       console.log(
         "================================="
       );
+
     } catch (error) {
+
       console.error(
         "INSTITUTE VERIFY OTP ERROR:",
         error
@@ -548,6 +590,7 @@ export default function InstituteLogin() {
           error?.message ||
           "OTP verification failed"
       );
+
     } finally {
       setLoading(false);
     }
@@ -612,7 +655,9 @@ export default function InstituteLogin() {
       console.log(
         "================================="
       );
+
     } catch (error) {
+
       console.error(
         "INSTITUTE GOOGLE LOGIN ERROR:",
         error
@@ -628,6 +673,7 @@ export default function InstituteLogin() {
           error?.message ||
           "Google Login Failed"
       );
+
     } finally {
       setLoading(false);
     }
@@ -653,10 +699,6 @@ export default function InstituteLogin() {
     );
 
     setOtp("");
-
-    /*
-     * Clean recaptcha when switching.
-     */
 
     try {
       if (window.recaptchaVerifier) {
@@ -958,6 +1000,7 @@ export default function InstituteLogin() {
                 ) : (
 
                   <>
+
                     <img
                       src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                       alt="Google"
@@ -967,6 +1010,7 @@ export default function InstituteLogin() {
                     <span>
                       Continue with Google
                     </span>
+
                   </>
 
                 )}

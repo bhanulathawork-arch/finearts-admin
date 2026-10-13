@@ -1,6 +1,11 @@
 
 import axios from "axios";
-import { getAuth, signOut } from "firebase/auth";
+
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 
 /* =========================================================
    API BASE URL
@@ -8,7 +13,7 @@ import { getAuth, signOut } from "firebase/auth";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://finearts-backend.onrender.com/api";
+  "http://localhost:5000/api";
 
 /* =========================================================
    AXIOS INSTANCE
@@ -28,13 +33,67 @@ const API = axios.create({
 
 let firebaseTokenPromise = null;
 
+let firebaseAuthReadyPromise = null;
+
 /*
-  Prevent repeated Firebase refresh attempts when Firebase
-  itself is temporarily returning quota errors.
-*/
+ * Prevent repeated Firebase refresh attempts when Firebase
+ * itself is temporarily returning quota/network errors.
+ */
+
 let lastFirebaseTokenFailureAt = 0;
 
 const FIREBASE_TOKEN_FAILURE_COOLDOWN = 30000;
+
+/* =========================================================
+   FIREBASE AUTH READY
+========================================================= */
+
+/*
+ * Firebase can temporarily have:
+ *
+ *     auth.currentUser === null
+ *
+ * while Firebase Auth is still restoring the previous
+ * login session.
+ *
+ * We wait for onAuthStateChanged() before deciding that
+ * there is no authenticated Firebase user.
+ */
+
+const waitForFirebaseAuth = () => {
+  const auth = getAuth();
+
+  /*
+   * If Firebase already knows the user, continue immediately.
+   */
+
+  if (auth.currentUser) {
+    return Promise.resolve(auth.currentUser);
+  }
+
+  /*
+   * Only create one listener promise.
+   */
+
+  if (!firebaseAuthReadyPromise) {
+    firebaseAuthReadyPromise = new Promise((resolve) => {
+      let unsubscribe = null;
+
+      unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          if (unsubscribe) {
+            unsubscribe();
+          }
+
+          resolve(user);
+        }
+      );
+    });
+  }
+
+  return firebaseAuthReadyPromise;
+};
 
 /* =========================================================
    PATH HELPERS
@@ -295,7 +354,9 @@ const isAdminApiRoute = (config = {}) => {
      USER STATUS
   ------------------------------------------------------- */
 
-  if (/^\/users\/\d+\/status$/.test(url)) {
+  if (
+    /^\/users\/\d+\/status$/.test(url)
+  ) {
     return true;
   }
 
@@ -350,6 +411,9 @@ const isAdminApiRoute = (config = {}) => {
 
   /* -------------------------------------------------------
      SAFETY
+
+     Institute and Trainer application routes should never
+     accidentally use Admin authentication.
   ------------------------------------------------------- */
 
   if (
@@ -424,9 +488,9 @@ const saveFirebaseToken = (token) => {
   );
 
   /*
-    Keep studentToken synchronized when the student
-    or preview flow is active.
-  */
+   * Keep studentToken synchronized when the student
+   * or preview flow is active.
+   */
 
   if (
     isWebsitePreviewRoute() ||
@@ -444,21 +508,20 @@ const saveFirebaseToken = (token) => {
 ========================================================= */
 
 /*
-  IMPORTANT:
-
-  Normal API requests:
-
-      Stored token
-          ↓
-      API request
-
-  They DO NOT unnecessarily call Firebase.
-
-  Firebase is called only when:
-
-      1. No stored token exists
-      2. OR a real 401 requires forceRefresh
-*/
+ * IMPORTANT:
+ *
+ * Normal API requests:
+ *
+ *     Firebase Auth ready
+ *             ↓
+ *     Firebase ID token
+ *             ↓
+ *     API request
+ *
+ * We first wait for Firebase initialization.
+ *
+ * Stored token is still used as a fallback.
+ */
 
 const getFirebaseToken = async ({
   forceRefresh = false,
@@ -466,132 +529,88 @@ const getFirebaseToken = async ({
   const auth = getAuth();
 
   /* -------------------------------------------------------
-     1. USE STORED TOKEN FIRST
+     1. WAIT FOR FIREBASE AUTH INITIALIZATION
   ------------------------------------------------------- */
 
-  if (!forceRefresh) {
-    const storedToken =
-      getStoredFirebaseToken();
+  let user = auth.currentUser;
 
-    if (storedToken) {
+  if (!user) {
+    user = await waitForFirebaseAuth();
+  }
+
+  /* -------------------------------------------------------
+     2. USE CURRENT FIREBASE USER
+  ------------------------------------------------------- */
+
+  if (user) {
+    try {
+      /*
+       * Share one Firebase token request between multiple
+       * simultaneous API calls.
+       */
+
+      if (
+        !forceRefresh &&
+        firebaseTokenPromise
+      ) {
+        return await firebaseTokenPromise;
+      }
+
+      firebaseTokenPromise =
+        user.getIdToken(forceRefresh);
+
+      const token =
+        await firebaseTokenPromise;
+
+      firebaseTokenPromise = null;
+
+      lastFirebaseTokenFailureAt = 0;
+
+      if (!token) {
+        return null;
+      }
+
+      saveFirebaseToken(token);
+
       console.log(
-        "Firebase Token: USING STORED TOKEN"
+        "Firebase Token: FIREBASE TOKEN GENERATED"
       );
 
-      return storedToken;
+      return token;
+
+    } catch (error) {
+      firebaseTokenPromise = null;
+
+      lastFirebaseTokenFailureAt =
+        Date.now();
+
+      console.error(
+        "Firebase token retrieval failed:",
+        error
+      );
     }
   }
 
   /* -------------------------------------------------------
-     2. CHECK FIREBASE USER
+     3. FALLBACK TO EXISTING STORED TOKEN
   ------------------------------------------------------- */
 
-  if (!auth.currentUser) {
+  const fallbackToken =
+    getStoredFirebaseToken();
+
+  if (fallbackToken) {
     console.warn(
-      "Firebase Token: NO CURRENT USER"
+      "Firebase: Using stored token as fallback"
     );
 
-    return getStoredFirebaseToken();
+    return fallbackToken;
   }
 
-  /* -------------------------------------------------------
-     3. PREVENT RAPID FAILED REFRESHES
-  ------------------------------------------------------- */
+  console.warn(
+    "Firebase: NO AUTHENTICATED USER/TOKEN"
+  );
 
-  const now = Date.now();
-
-  if (
-    !forceRefresh &&
-    lastFirebaseTokenFailureAt > 0 &&
-    now - lastFirebaseTokenFailureAt <
-      FIREBASE_TOKEN_FAILURE_COOLDOWN
-  ) {
-    const storedToken =
-      getStoredFirebaseToken();
-
-    if (storedToken) {
-      console.warn(
-        "Firebase refresh recently failed. Using stored token."
-      );
-
-      return storedToken;
-    }
-
-    return null;
-  }
-
-  /* -------------------------------------------------------
-     4. SHARE ONE FIREBASE REQUEST
-  ------------------------------------------------------- */
-
-  try {
-    if (
-      !forceRefresh &&
-      firebaseTokenPromise
-    ) {
-      return await firebaseTokenPromise;
-    }
-
-    firebaseTokenPromise =
-      auth.currentUser.getIdToken(
-        forceRefresh
-      );
-
-    const token =
-      await firebaseTokenPromise;
-
-    firebaseTokenPromise = null;
-
-    lastFirebaseTokenFailureAt = 0;
-
-    /* -----------------------------------------------------
-       5. VALIDATE TOKEN
-    ----------------------------------------------------- */
-
-    if (!token) {
-      return null;
-    }
-
-    /* -----------------------------------------------------
-       6. SAVE TOKEN
-    ----------------------------------------------------- */
-
-    saveFirebaseToken(token);
-
-    console.log(
-      "Firebase Token: FIREBASE TOKEN GENERATED"
-    );
-
-    return token;
-
-  } catch (error) {
-    firebaseTokenPromise = null;
-
-    lastFirebaseTokenFailureAt =
-      Date.now();
-
-    console.error(
-      "Firebase token retrieval failed:",
-      error
-    );
-
-    /* -----------------------------------------------------
-       7. FALLBACK TO EXISTING TOKEN
-    ----------------------------------------------------- */
-
-    const fallbackToken =
-      getStoredFirebaseToken();
-
-    if (fallbackToken) {
-      console.warn(
-        "Firebase failed. Using stored token."
-      );
-
-      return fallbackToken;
-    }
-
-    return null;
-  }
+  return null;
 };
 
 /* =========================================================
@@ -1140,8 +1159,8 @@ API.interceptors.response.use(
       }
 
       /*
-        DO NOT REMOVE FIREBASE TOKEN
-      */
+       * DO NOT REMOVE FIREBASE TOKEN
+       */
 
       if (isAdminPage()) {
         window.location.replace(
@@ -1165,7 +1184,20 @@ API.interceptors.response.use(
         const auth =
           getAuth();
 
-        if (!auth.currentUser) {
+        /*
+         * Wait for Firebase Auth to finish initializing
+         * before deciding that the user has disappeared.
+         */
+
+        let user =
+          auth.currentUser;
+
+        if (!user) {
+          user =
+            await waitForFirebaseAuth();
+        }
+
+        if (!user) {
           console.error(
             "Firebase user no longer exists"
           );
@@ -1174,11 +1206,11 @@ API.interceptors.response.use(
         }
 
         /*
-          A REAL 401 occurred.
-
-          This is the only normal situation where
-          Firebase is force-refreshed.
-        */
+         * A REAL 401 occurred.
+         *
+         * This is the normal situation where Firebase
+         * is force-refreshed.
+         */
 
         const freshToken =
           await getFirebaseToken({
@@ -1263,9 +1295,9 @@ API.interceptors.response.use(
           "studentRole"
         );
 
-        /* -------------------------------------------------
-           DO NOT CLEAR ADMIN TOKEN
-        ------------------------------------------------- */
+        /*
+         * DO NOT CLEAR ADMIN TOKEN
+         */
 
         /* -------------------------------------------------
            REDIRECT

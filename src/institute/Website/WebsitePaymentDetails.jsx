@@ -1,2240 +1,7689 @@
+
 import React, {
+
+
+
   useEffect,
+
+
+
   useMemo,
+
+
+
   useState,
+
+
+
 } from "react";
 
-import {
-  HiOutlineBell,
-  HiOutlineBookOpen,
-  HiOutlineCalendar,
-  HiOutlineVideoCamera,
-  HiOutlinePlay,
-  HiOutlineUser,
-  HiOutlineDocumentText,
-  HiOutlineCreditCard,
-  HiOutlineSearch,
-  HiOutlineMenu,
-  HiOutlineX,
-  HiOutlineHome,
-  HiOutlineDownload,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineExclamationCircle,
-  HiOutlineChevronRight,
-  HiOutlineFilter,
-  HiOutlineRefresh,
-} from "react-icons/hi";
 
-import {
-  FaRupeeSign,
-} from "react-icons/fa";
+
+
 
 import { useNavigate } from "react-router-dom";
 
+
+
+
+
+import {
+
+
+
+  getAuth,
+
+
+
+} from "firebase/auth";
+
+
+
+
+
+import {
+
+
+
+  FaHome,
+
+
+
+  FaBuilding,
+
+
+
+  FaGraduationCap,
+
+
+
+  FaUser,
+
+
+
+  FaVideo,
+
+
+
+  FaPlayCircle,
+
+
+
+  FaCheckCircle,
+
+
+
+  FaCreditCard,
+
+
+
+  FaSearch,
+
+
+
+  FaList,
+
+
+
+  FaClock,
+
+
+
+  FaTimesCircle,
+
+
+
+  FaEye,
+
+
+
+  FaWallet,
+
+
+
+  FaReceipt,
+
+
+
+  FaSpinner,
+
+
+
+  FaBell,
+
+
+
+  FaChevronDown,
+
+
+
+  FaTimes,
+
+
+
+} from "react-icons/fa";
+
+
+
+
+
 import API from "../../services/api";
 
+
+
+
+
 /* =========================================================
-   BRANDING
+
+
+
+   COLORS
+
+
+
+\========================================================= */
+
+
+
+
+
+const COLORS = {
+
+
+
+  background: "#000000",
+
+
+
+
+
+  card: "#000000",
+
+
+
+  border: "rgba(255,255,255,.09)",
+
+
+
+
+
+  purple: "#1687FF",
+
+
+
+  pink: "#087CFF",
+
+
+
+
+
+  green: "#35D6A0",
+
+
+
+  yellow: "#F4B35E",
+
+
+
+  red: "#EF5B6A",
+
+
+
+
+
+  text: "#FFFFFF",
+
+
+
+  muted: "#B7B3C3",
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   NORMALIZE BOOKINGS
+
+
+
+\=========================================================
+
+
+
+
+
+   Handles all of these possible backend responses:
+
+
+
+
+
+   1.
+
+
+
+   [
+
+
+
+     {...}
+
+
+
+   ]
+
+
+
+
+
+   2.
+
+
+
+   {
+
+
+
+     bookings: [...]
+
+
+
+   }
+
+
+
+
+
+   3.
+
+
+
+   {
+
+
+
+     data: {
+
+
+
+       bookings: [...]
+
+
+
+     }
+
+
+
+   }
+
+
+
+
+
+   4.
+
+
+
+   {
+
+
+
+     success: true,
+
+
+
+     data: {
+
+
+
+       bookings: [...]
+
+
+
+     }
+
+
+
+   }
+
+
+
+
+
+   5.
+
+
+
+   {
+
+
+
+     data: [...]
+
+
+
+   }
+
+
+
+\========================================================= */
+
+
+
+
+
+const getBookingsArray = (response) => {
+
+
+
+  console.log("RAW BOOKINGS RESPONSE:", response);
+
+
+
+
+
+  // Axios response
+
+
+
+  const payload = response?.data ?? response;
+
+
+
+
+
+  console.log("BOOKINGS PAYLOAD:", payload);
+
+
+
+
+
+  // Direct array
+
+
+
+  if (Array.isArray(payload)) {
+
+
+
+    return payload;
+
+
+
+  }
+
+
+
+
+
+  // { bookings: [] }
+
+
+
+  if (Array.isArray(payload?.bookings)) {
+
+
+
+    return payload.bookings;
+
+
+
+  }
+
+
+
+
+
+  // { data: { bookings: [] } }
+
+
+
+  if (Array.isArray(payload?.data?.bookings)) {
+
+
+
+    return payload.data.bookings;
+
+
+
+  }
+
+
+
+
+
+  // { data: [] }
+
+
+
+  if (Array.isArray(payload?.data)) {
+
+
+
+    return payload.data;
+
+
+
+  }
+
+
+
+
+
+  // { rows: [] }
+
+
+
+  if (Array.isArray(payload?.rows)) {
+
+
+
+    return payload.rows;
+
+
+
+  }
+
+
+
+
+
+  // { result: { bookings: [] } }
+
+
+
+  if (Array.isArray(payload?.result?.bookings)) {
+
+
+
+    return payload.result.bookings;
+
+
+
+  }
+
+
+
+
+
+  // { result: [] }
+
+
+
+  if (Array.isArray(payload?.result)) {
+
+
+
+    return payload.result;
+
+
+
+  }
+
+
+
+
+
+  // { payload: { bookings: [] } }
+
+
+
+  if (Array.isArray(payload?.payload?.bookings)) {
+
+
+
+    return payload.payload.bookings;
+
+
+
+  }
+
+
+
+
+
+  console.warn(
+
+
+
+    "No bookings array found in backend response."
+
+
+
+  );
+
+
+
+
+
+  return [];
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   BOOKING ID
+
+
+
+\========================================================= */
+
+
+
+
+
+const getBookingId = (item) =>
+
+
+
+  item?.id ??
+
+
+
+  item?.booking_id ??
+
+
+
+  item?.bookingId ??
+
+
+
+  item?.booking?.id ??
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   CLASS ID
+
+
+
+\========================================================= */
+
+
+
+
+
+const getClassId = (item) =>
+
+
+
+  item?.class_id ??
+
+
+
+  item?.classId ??
+
+
+
+  item?.class?.id ??
+
+
+
+  item?.class_details?.id ??
+
+
+
+  item?.course_id ??
+
+
+
+  item?.courseId ??
+
+
+
+  item?.course?.id ??
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   CLASS NAME
+
+
+
+\========================================================= */
+
+
+
+
+
+const getClassName = (item) =>
+
+
+
+  item?.class_name ||
+
+
+
+  item?.class_title ||
+
+
+
+  item?.className ||
+
+
+
+  item?.class?.name ||
+
+
+
+  item?.class?.title ||
+
+
+
+  item?.class_details?.name ||
+
+
+
+  item?.class_details?.title ||
+
+
+
+  item?.course?.title ||
+
+
+
+  item?.course?.name ||
+
+
+
+  item?.course_name ||
+
+
+
+  "Class";
+
+
+
+
+
+/* =========================================================
+
+
+
+   CLASS IMAGE
+
+
+
+\========================================================= */
+
+
+
+
+
+const getClassImage = (item) =>
+
+
+
+  item?.class_image ||
+
+
+
+  item?.class_image_url ||
+
+
+
+  item?.classImage ||
+
+
+
+  item?.classImageUrl ||
+
+
+
+  item?.image ||
+
+
+
+  item?.image_url ||
+
+
+
+  item?.imageUrl ||
+
+
+
+  item?.class?.image ||
+
+
+
+  item?.class?.image_url ||
+
+
+
+  item?.class?.imageUrl ||
+
+
+
+  item?.class_details?.image ||
+
+
+
+  item?.class_details?.image_url ||
+
+
+
+  item?.class_details?.imageUrl ||
+
+
+
+  item?.course?.image ||
+
+
+
+  item?.course?.image_url ||
+
+
+
+  item?.course?.imageUrl ||
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   TRAINER NAME
+
+
+
+\========================================================= */
+
+
+
+
+
+const getTrainerName = (item) =>
+
+
+
+  item?.trainer_name ||
+
+
+
+  item?.trainer_full_name ||
+
+
+
+  item?.trainerName ||
+
+
+
+  item?.trainer?.name ||
+
+
+
+  item?.trainer?.full_name ||
+
+
+
+  item?.trainer?.fullName ||
+
+
+
+  item?.trainer_details?.name ||
+
+
+
+  "Trainer";
+
+
+
+
+
+/* =========================================================
+
+
+
+   TRAINER IMAGE
+
+
+
+\========================================================= */
+
+
+
+
+
+const getTrainerImage = (item) =>
+
+
+
+  item?.trainer_image ||
+
+
+
+  item?.trainer_profile_image ||
+
+
+
+  item?.trainerImage ||
+
+
+
+  item?.trainerImageUrl ||
+
+
+
+  item?.trainer?.image ||
+
+
+
+  item?.trainer?.image_url ||
+
+
+
+  item?.trainer?.imageUrl ||
+
+
+
+  item?.trainer?.profile_image ||
+
+
+
+  item?.trainer?.profileImage ||
+
+
+
+  item?.trainer_details?.image ||
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   AMOUNT
+
+
+
+\========================================================= */
+
+
+
+
+
+const getAmount = (item) => {
+
+
+
+  const value =
+
+
+
+    item?.payment?.amount ??
+
+
+
+    item?.payment?.paid_amount ??
+
+
+
+    item?.payment?.total_amount ??
+
+
+
+    item?.amount ??
+
+
+
+    item?.price ??
+
+
+
+    item?.total_amount ??
+
+
+
+    item?.payment_amount ??
+
+
+
+    item?.booking_amount ??
+
+
+
+    item?.paid_amount ??
+
+
+
+    item?.course?.price ??
+
+
+
+    0;
+
+
+
+
+
+  const number = Number(value);
+
+
+
+
+
+  return Number.isFinite(number)
+
+
+
+    ? number
+
+
+
+    : 0;
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   PAYMENT STATUS
+
+
+
+\========================================================= */
+
+
+
+
+
+const getPaymentStatus = (item) => {
+
+
+
+  const value =
+
+
+
+    item?.payment?.status ??
+
+
+
+    item?.payment_status ??
+
+
+
+    item?.paymentStatus ??
+
+
+
+    item?.payment?.payment_status ??
+
+
+
+    item?.transaction_status ??
+
+
+
+    item?.transactionStatus ??
+
+
+
+    item?.status ??
+
+
+
+    item?.booking_status ??
+
+
+
+    item?.bookingStatus ??
+
+
+
+    "";
+
+
+
+
+
+  return String(value)
+
+
+
+    .trim()
+
+
+
+    .toUpperCase();
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   PAYMENT METHOD
+
+
+
+\========================================================= */
+
+
+
+
+
+const getPaymentMethod = (item) =>
+
+
+
+  item?.payment?.method ||
+
+
+
+  item?.payment?.payment_method ||
+
+
+
+  item?.payment?.paymentMethod ||
+
+
+
+  item?.payment?.gateway ||
+
+
+
+  item?.payment_method ||
+
+
+
+  item?.paymentMethod ||
+
+
+
+  item?.method ||
+
+
+
+  item?.gateway ||
+
+
+
+  "Not available";
+
+
+
+
+
+/* =========================================================
+
+
+
+   TRANSACTION ID
+
+
+
+\========================================================= */
+
+
+
+
+
+const getTransactionId = (item) =>
+
+
+
+  item?.payment?.transaction_id ||
+
+
+
+  item?.payment?.transactionId ||
+
+
+
+  item?.payment?.razorpay_payment_id ||
+
+
+
+  item?.payment?.razorpayPaymentId ||
+
+
+
+  item?.transaction_id ||
+
+
+
+  item?.transactionId ||
+
+
+
+  item?.razorpay_payment_id ||
+
+
+
+  item?.razorpayPaymentId ||
+
+
+
+  item?.payment_id ||
+
+
+
+  item?.paymentId ||
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   PAYMENT DATE
+
+
+
+\========================================================= */
+
+
+
+
+
+const getPaymentDate = (item) =>
+
+
+
+  item?.payment?.paid_at ||
+
+
+
+  item?.payment?.paidAt ||
+
+
+
+  item?.payment?.created_at ||
+
+
+
+  item?.payment?.createdAt ||
+
+
+
+  item?.paid_at ||
+
+
+
+  item?.paidAt ||
+
+
+
+  item?.payment_date ||
+
+
+
+  item?.paymentDate ||
+
+
+
+  item?.created_at ||
+
+
+
+  item?.createdAt ||
+
+
+
+  item?.booking_date ||
+
+
+
+  item?.bookingDate ||
+
+
+
+  item?.booked_on ||
+
+
+
+  item?.bookedOn ||
+
+
+
+  item?.course?.created_at ||
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   BOOKING DATE
+
+
+
+\========================================================= */
+
+
+
+
+
+const getBookingDate = (item) =>
+
+
+
+  item?.booked_on ||
+
+
+
+  item?.bookedOn ||
+
+
+
+  item?.booking_date ||
+
+
+
+  item?.bookingDate ||
+
+
+
+  item?.created_at ||
+
+
+
+  item?.createdAt ||
+
+
+
+  getPaymentDate(item);
+
+
+
+
+
+/* =========================================================
+
+
+
+   TIME
+
+
+
+\========================================================= */
+
+
+
+
+
+const getBookingTime = (item) =>
+
+
+
+  item?.start_time ||
+
+
+
+  item?.startTime ||
+
+
+
+  item?.session_start_time ||
+
+
+
+  item?.sessionStartTime ||
+
+
+
+  item?.time ||
+
+
+
+  item?.session?.start_time ||
+
+
+
+  item?.session?.startTime ||
+
+
+
+  null;
+
+
+
+
+
+/* =========================================================
+
+
+
+   FORMAT DATE
+
+
+
+\========================================================= */
+
+
+
+
+
+const formatDate = (value) => {
+
+
+
+  if (!value) {
+
+
+
+    return "Date not available";
+
+
+
+  }
+
+
+
+
+
+  const date = new Date(value);
+
+
+
+
+
+  if (Number.isNaN(date.getTime())) {
+
+
+
+    return String(value);
+
+
+
+  }
+
+
+
+
+
+  return date.toLocaleDateString(
+
+
+
+    "en-IN",
+
+
+
+    {
+
+
+
+      day: "2-digit",
+
+
+
+      month: "short",
+
+
+
+      year: "numeric",
+
+
+
+    }
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   FORMAT TIME
+
+
+
+\========================================================= */
+
+
+
+
+
+const formatTime = (value) => {
+
+
+
+  if (!value) {
+
+
+
+    return "";
+
+
+
+  }
+
+
+
+
+
+  // HH:mm:ss
+
+
+
+  if (
+
+
+
+    typeof value === "string" &&
+
+
+
+    /^\d{2}:\d{2}/.test(value)
+
+
+
+  ) {
+
+
+
+    const parts = value.split(":");
+
+
+
+
+
+    let hour = Number(parts[0]);
+
+
+
+    const minute = parts[1];
+
+
+
+
+
+    if (!Number.isFinite(hour)) {
+
+
+
+      return value;
+
+
+
+    }
+
+
+
+
+
+    const suffix =
+
+
+
+      hour >= 12 ? "PM" : "AM";
+
+
+
+
+
+    hour = hour % 12 || 12;
+
+
+
+
+
+    return `${hour}:${minute} ${suffix}`;
+
+
+
+  }
+
+
+
+
+
+  const date = new Date(value);
+
+
+
+
+
+  if (Number.isNaN(date.getTime())) {
+
+
+
+    return String(value);
+
+
+
+  }
+
+
+
+
+
+  return date.toLocaleTimeString(
+
+
+
+    "en-IN",
+
+
+
+    {
+
+
+
+      hour: "numeric",
+
+
+
+      minute: "2-digit",
+
+
+
+      hour12: true,
+
+
+
+    }
+
+
+
+  );
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   CURRENCY
+
+
+
+\========================================================= */
+
+
+
+
+
+const formatCurrency = (value) => {
+
+
+
+  const number = Number(value || 0);
+
+
+
+
+
+  return `₹${number.toLocaleString(
+
+
+
+    "en-IN",
+
+
+
+    {
+
+
+
+      maximumFractionDigits: 2,
+
+
+
+    }
+
+
+
+  )}`;
+
+
+
+};
+
+
+
+
+
+/* =========================================================
+
+
+
+   STATUS HELPERS
+
+
+
+\========================================================= */
+
+
+
+
+
+const isPaid = (item) => {
+
+
+
+  const status = getPaymentStatus(item);
+
+
+
+
+
+  return [
+
+
+
+    "PAID",
+
+
+
+    "SUCCESS",
+
+
+
+    "SUCCESSFUL",
+
+
+
+    "COMPLETED",
+
+
+
+    "CONFIRMED",
+
+
+
+  ].includes(status);
+
+
+
+};
+
+
+
+
+
+const isPending = (item) => {
+
+
+
+  const status = getPaymentStatus(item);
+
+
+
+
+
+  return [
+
+
+
+    "PENDING",
+
+
+
+    "PROCESSING",
+
+
+
+    "INITIATED",
+
+
+
+    "AWAITING",
+
+
+
+  ].includes(status);
+
+
+
+};
+
+
+
+
+
+const isFailed = (item) => {
+
+
+
+  const status = getPaymentStatus(item);
+
+
+
+
+
+  return [
+
+
+
+    "FAILED",
+
+
+
+    "FAIL",
+
+
+
+    "CANCELLED",
+
+
+
+    "CANCELED",
+
+
+
+    "REJECTED",
+
+
+
+    "DECLINED",
+
+
+
+  ].includes(status);
+
+
+
+};
+
+
+
+/* =========================================================
+
+   ONLINE SUBSCRIPTION / RENEWAL HELPERS
+
 ========================================================= */
 
-const DEFAULT_BRANDING = {
-  pageBackgroundColor: "#020914",
-  navbarColor: "#020B18",
-  cardBackgroundColor: "#031120",
-  headingColor: "#FFFFFF",
-  textColor: "#FFFFFF",
-  iconColor: "#1687FF",
-  buttonColor: "#087CFF",
-  buttonTextColor: "#FFFFFF",
-  fontHeading: "Inter",
-  fontBody: "Inter",
+
+
+/* =========================================================
+
+   ONLINE / LIVE SUBSCRIPTION HELPERS
+
+   These helpers intentionally accept multiple backend field names.
+
+========================================================= */
+
+
+
+const normalizeMode = (value) =>
+
+  String(value || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+
+
+
+const getBookingMode = (item) =>
+
+  normalizeMode(
+
+    item?.booking_mode ??
+
+      item?.bookingMode ??
+
+      item?.booking_type ??
+
+      item?.bookingType ??
+
+      item?.class_mode ??
+
+      item?.classMode ??
+
+      item?.mode ??
+
+      item?.class?.booking_mode ??
+
+      item?.class?.bookingMode ??
+
+      item?.class?.mode ??
+
+      item?.class_details?.booking_mode ??
+
+      item?.class_details?.bookingMode ??
+
+      item?.class_details?.mode
+
+  );
+
+
+
+const getBillingType = (item) =>
+
+  normalizeMode(
+
+    item?.billing_type ??
+
+      item?.billingType ??
+
+      item?.subscription_type ??
+
+      item?.subscriptionType ??
+
+      item?.payment?.billing_type ??
+
+      item?.payment?.billingType
+
+  );
+
+
+
+const getSubscriptionId = (item) =>
+
+  item?.subscription_id ??
+
+  item?.subscriptionId ??
+
+  item?.razorpay_subscription_id ??
+
+  item?.razorpaySubscriptionId ??
+
+  item?.payment?.subscription_id ??
+
+  item?.payment?.subscriptionId ??
+
+  item?.payment?.razorpay_subscription_id ??
+
+  item?.payment?.razorpaySubscriptionId ??
+
+  null;
+
+
+
+const getSubscriptionStatus = (item) =>
+
+  normalizeMode(
+
+    item?.subscription_status ??
+
+      item?.subscriptionStatus ??
+
+      item?.payment?.subscription_status ??
+
+      item?.payment?.subscriptionStatus ??
+
+      item?.subscription?.status
+
+  );
+
+
+
+const getSubscriptionEndDate = (item) =>
+
+  item?.subscription_end_date ??
+
+  item?.subscriptionEndDate ??
+
+  item?.subscription_end ??
+
+  item?.subscriptionEnd ??
+
+  item?.payment?.subscription_end_date ??
+
+  item?.payment?.subscriptionEndDate ??
+
+  item?.subscription?.end_date ??
+
+  item?.subscription?.endDate ??
+
+  null;
+
+
+
+const getSubscriptionStartDate = (item) =>
+
+  item?.subscription_start_date ??
+
+  item?.subscriptionStartDate ??
+
+  item?.subscription_start ??
+
+  item?.subscriptionStart ??
+
+  item?.payment?.subscription_start_date ??
+
+  item?.payment?.subscriptionStartDate ??
+
+  item?.subscription?.start_date ??
+
+  item?.subscription?.startDate ??
+
+  null;
+
+
+
+const hasSubscriptionData = (item) =>
+
+  Boolean(
+
+    getSubscriptionId(item) ||
+
+      getSubscriptionStatus(item) ||
+
+      getSubscriptionEndDate(item) ||
+
+      getSubscriptionStartDate(item)
+
+  );
+
+
+
+const isExplicitOfflineBooking = (item) =>
+
+  ["OFFLINE", "OFFLINE_CLASS", "IN_PERSON", "IN_PERSON_CLASS"].includes(
+
+    getBookingMode(item)
+
+  );
+
+
+
+const isOnlineBooking = (item) => {
+
+  if (isExplicitOfflineBooking(item)) return false;
+
+
+
+  const mode = getBookingMode(item);
+
+
+
+  if (
+
+    [
+
+      "ONLINE",
+
+      "ONLINE_CLASS",
+
+      "LIVE",
+
+      "LIVE_CLASS",
+
+      "VIRTUAL",
+
+      "VIRTUAL_CLASS",
+
+    ].includes(mode)
+
+  ) {
+
+    return true;
+
+  }
+
+
+
+  // A subscription is used by the live/online payment flow.
+
+  return hasSubscriptionData(item);
+
 };
 
-const getBrandingValue = (
-  branding,
-  camel,
-  snake,
-  fallback
-) => {
-  const value =
-    branding?.[camel] ??
-    branding?.[snake];
 
-  return value !== undefined &&
-    value !== null &&
-    value !== ""
-    ? value
-    : fallback;
+
+const isSubscriptionEnded = (item) => {
+
+  if (!isOnlineBooking(item)) return false;
+
+
+
+  const billingType = getBillingType(item);
+
+  if (
+
+    billingType &&
+
+    !["MONTHLY", "MONTH", "RECURRING", "SUBSCRIPTION"].includes(
+
+      billingType
+
+    )
+
+  ) {
+
+    return false;
+
+  }
+
+
+
+  const status = getSubscriptionStatus(item);
+
+
+
+  if (
+
+    [
+
+      "HALTED",
+
+      "CANCELLED",
+
+      "CANCELED",
+
+      "COMPLETED",
+
+      "EXPIRED",
+
+      "ENDED",
+
+      "PAUSED",
+
+    ].includes(status)
+
+  ) {
+
+    return true;
+
+  }
+
+
+
+  const endDate = getSubscriptionEndDate(item);
+
+  if (!endDate) return false;
+
+
+
+  const end = new Date(endDate);
+
+  if (Number.isNaN(end.getTime())) return false;
+
+
+
+  return end.getTime() <= Date.now();
+
 };
 
-const normalizeBranding = (
-  branding = {}
-) => ({
-  pageBackgroundColor:
-    getBrandingValue(
-      branding,
-      "pageBackgroundColor",
-      "page_background_color",
-      DEFAULT_BRANDING.pageBackgroundColor
-    ),
 
-  navbarColor:
-    getBrandingValue(
-      branding,
-      "navbarColor",
-      "navbar_color",
-      DEFAULT_BRANDING.navbarColor
-    ),
 
-  cardBackgroundColor:
-    getBrandingValue(
-      branding,
-      "cardBackgroundColor",
-      "card_background_color",
-      DEFAULT_BRANDING.cardBackgroundColor
-    ),
+const shouldShowRenewButton = (item) =>
 
-  headingColor:
-    getBrandingValue(
-      branding,
-      "headingColor",
-      "heading_color",
-      DEFAULT_BRANDING.headingColor
-    ),
+  isOnlineBooking(item) && isSubscriptionEnded(item);
 
-  textColor:
-    getBrandingValue(
-      branding,
-      "textColor",
-      "text_color",
-      DEFAULT_BRANDING.textColor
-    ),
 
-  iconColor:
-    getBrandingValue(
-      branding,
-      "iconColor",
-      "icon_color",
-      DEFAULT_BRANDING.iconColor
-    ),
 
-  buttonColor:
-    getBrandingValue(
-      branding,
-      "buttonColor",
-      "button_color",
-      DEFAULT_BRANDING.buttonColor
-    ),
+const loadRazorpayScript = () => new Promise((resolve) => {
 
-  buttonTextColor:
-    getBrandingValue(
-      branding,
-      "buttonTextColor",
-      "button_text_color",
-      DEFAULT_BRANDING.buttonTextColor
-    ),
+  if (typeof window === "undefined") return resolve(false);
 
-  fontHeading:
-    getBrandingValue(
-      branding,
-      "fontHeading",
-      "font_heading",
-      DEFAULT_BRANDING.fontHeading
-    ),
+  if (window.Razorpay) return resolve(true);
 
-  fontBody:
-    getBrandingValue(
-      branding,
-      "fontBody",
-      "font_body",
-      DEFAULT_BRANDING.fontBody
-    ),
+  const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+
+  if (existing) {
+
+    existing.addEventListener("load", () => resolve(true), { once: true });
+
+    existing.addEventListener("error", () => resolve(false), { once: true });
+
+    return;
+
+  }
+
+  const script = document.createElement("script");
+
+  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+
+  script.async = true;
+
+  script.onload = () => resolve(true);
+
+  script.onerror = () => resolve(false);
+
+  document.body.appendChild(script);
+
 });
 
-/* =========================================================
-   HELPERS
-========================================================= */
 
-const pick = (...values) => {
-  for (const value of values) {
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== ""
-    ) {
-      return value;
-    }
-  }
 
-  return null;
-};
 
-const getPaymentStatus = (
-  payment
-) => {
-  return String(
-    pick(
-      payment?.status,
-      payment?.payment_status,
-      payment?.status_name,
-      "PENDING"
-    )
-  ).toUpperCase();
-};
-
-const getPaymentAmount = (
-  payment
-) => {
-  return Number(
-    pick(
-      payment?.amount,
-      payment?.paid_amount,
-      payment?.total_amount,
-      0
-    )
-  );
-};
-
-const getTransactionId = (
-  payment
-) => {
-  return pick(
-    payment?.transaction_id,
-    payment?.transactionId,
-    payment?.payment_id,
-    payment?.paymentId,
-    payment?.razorpay_payment_id,
-    payment?.reference_number,
-    payment?.reference,
-    null
-  );
-};
-
-const getPaymentDate = (
-  payment
-) => {
-  return pick(
-    payment?.payment_date,
-    payment?.paid_at,
-    payment?.created_at,
-    payment?.createdAt,
-    null
-  );
-};
-
-const getClassName = (
-  booking
-) => {
-  return pick(
-    booking?.class?.title,
-    booking?.class_title,
-    booking?.class_name,
-    booking?.course_name,
-    "Class"
-  );
-};
-
-const getTrainerName = (
-  booking
-) => {
-  return pick(
-    booking?.trainer?.name,
-    booking?.trainer_name,
-    booking?.trainerName,
-    "Trainer"
-  );
-};
-
-const getBookingId = (
-  booking
-) => {
-  return pick(
-    booking?.id,
-    booking?.booking_id,
-    booking?.bookingId,
-    null
-  );
-};
-
-const getPaymentObject = (
-  booking
-) => {
-  return (
-    booking?.payment ||
-    booking
-  );
-};
-
-const formatCurrency = (
-  amount
-) => {
-  return `₹${Number(
-    amount || 0
-  ).toLocaleString(
-    "en-IN",
-    {
-      maximumFractionDigits: 2,
-    }
-  )}`;
-};
-
-const formatDate = (
-  value
-) => {
-  if (!value) {
-    return "--";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
-};
-
-const formatDateTime = (
-  value
-) => {
-  if (!value) {
-    return "--";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
-};
 
 /* =========================================================
-   SIDEBAR
-========================================================= */
 
-function Sidebar({
-  navigate,
-  mobileOpen,
-  setMobileOpen,
+
+
+   SAFE IMAGE
+
+
+
+\========================================================= */
+
+
+
+
+
+function SafeImage({
+
+
+
+  src,
+
+
+
+  alt = "",
+
+
+
+  className = "",
+
+
+
 }) {
-  const menu = [
-    {
-      label: "Dashboard",
-      icon: <HiOutlineHome />,
-      path:
-        "/institute/website/preview",
-    },
 
-    {
-      label: "My Learning",
-      icon:
-        <HiOutlineBookOpen />,
-      path:
-        "/institute/website/preview/lms/my-learning",
-    },
 
-    {
-      label: "Live Sessions",
-      icon:
-        <HiOutlineVideoCamera />,
-      path:
-        "/institute/website/preview/lms/live-sessions",
-    },
 
-    {
-      label: "Recordings",
-      icon:
-        <HiOutlinePlay />,
-      path:
-        "/institute/website/preview/lms/recordings",
-    },
+  const [failed, setFailed] =
 
-    {
-      label: "My Bookings",
-      icon:
-        <HiOutlineCalendar />,
-      path:
-        "/institute/website/preview/lms/my-bookings",
-    },
 
-    {
-      label: "Assignments",
-      icon:
-        <HiOutlineDocumentText />,
-      path:
-        "/institute/website/preview/lms/assignments",
-    },
 
-    {
-      label: "Attendance",
-      icon:
-        <HiOutlineCalendar />,
-      path:
-        "/institute/website/preview/lms/attendance",
-    },
+    useState(false);
 
-    {
-      label: "Payment Details",
-      icon:
-        <HiOutlineCreditCard />,
-      path:
-        "/institute/website/preview/lms/payment-details",
-    },
 
-    {
-      label: "Profile",
-      icon:
-        <HiOutlineUser />,
-      path:
-        "/institute/website/preview/lms/profile",
-    },
-  ];
 
-  return (
-    <>
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
-          onClick={() =>
-            setMobileOpen(false)
-          }
-        />
-      )}
 
-      <aside
-        className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-[270px]
-          flex-col
-          border-r border-white/[0.07]
-          bg-[#020B18]
-          transition-transform
-          duration-300
-          ${
-            mobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
-          }
-        `}
+
+  useEffect(() => {
+
+
+
+    setFailed(false);
+
+
+
+  }, [src]);
+
+
+
+
+
+  if (!src || failed) {
+
+
+
+    return (
+
+
+
+      <div
+
+
+
+        className={`flex items-center justify-center bg-[#000000] ${className}`}
+
+
+
       >
 
-        {/* LOGO */}
 
-        <div className="flex h-[90px] items-center border-b border-white/[0.06] px-6">
 
-          <div className="flex items-center gap-3">
+        <FaGraduationCap
 
-            <div className="flex h-12 w-12 items-center justify-center text-4xl text-blue-400">
-              ♫
-            </div>
 
-            <div>
 
-              <h1 className="text-[25px] font-bold leading-none">
-                Fine
-                <span className="text-blue-400">
-                  Arts
-                </span>
-              </h1>
+          size={25}
 
-              <p className="mt-1 text-xs text-white/50">
-                Student LMS
-              </p>
 
-            </div>
 
-          </div>
+          className="text-blue-500/50"
 
-          <button
-            onClick={() =>
-              setMobileOpen(
-                false
-              )
-            }
-            className="ml-auto text-white/60 lg:hidden"
-          >
-            <HiOutlineX
-              size={22}
-            />
-          </button>
 
-        </div>
 
-        {/* MENU */}
+        />
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
 
-          <div className="space-y-2">
-
-            {menu.map(
-              item => {
-
-                const active =
-                  item.label ===
-                  "Payment Details";
-
-                return (
-                  <button
-                    key={
-                      item.label
-                    }
-                    onClick={() => {
-
-                      setMobileOpen(
-                        false
-                      );
-
-                      navigate(
-                        item.path
-                      );
-                    }}
-                    className={`
-                      flex w-full
-                      items-center gap-4
-                      rounded-xl
-                      px-4 py-3.5
-                      text-left
-                      transition-all
-                      ${
-                        active
-                          ? "bg-gradient-to-r from-[#3825FF] via-[#155CFF] to-[#008CFF] text-white shadow-[0_0_28px_rgba(0,100,255,.45)]"
-                          : "text-white/75 hover:bg-white/[0.04] hover:text-white"
-                      }
-                    `}
-                  >
-
-                    <span className="flex w-6 justify-center text-[22px]">
-                      {
-                        item.icon
-                      }
-                    </span>
-
-                    <span className="text-[15px] font-medium">
-                      {
-                        item.label
-                      }
-                    </span>
-
-                  </button>
-                );
-              }
-            )}
-
-          </div>
-
-        </nav>
-
-        {/* QUOTE */}
-
-        <div className="relative overflow-hidden border-t border-white/[0.05] px-8 py-7">
-
-          <div className="pointer-events-none absolute -bottom-10 right-[-35px] text-[130px] text-blue-600/10">
-            ₹
-          </div>
-
-          <div className="relative font-serif text-xl italic leading-8 text-blue-300">
-            <div>
-              Invest
-            </div>
-            <div>
-              In Your
-            </div>
-            <div>
-              Learning
-            </div>
-          </div>
-
-          <div className="relative mt-4 h-1 w-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-
-        </div>
-
-      </aside>
-    </>
-  );
-}
-
-/* =========================================================
-   TOP HEADER
-========================================================= */
-
-function TopHeader({
-  navigate,
-  student,
-  setMobileOpen,
-}) {
-  const name =
-    pick(
-      student?.name,
-      student?.full_name,
-      student?.username,
-      student?.displayName,
-      "Priya Sharma"
-    );
-
-  const image =
-    pick(
-      student?.profile_image,
-      student?.profileImage,
-      student?.photoURL,
-      student?.avatar,
-      ""
-    );
-
-  return (
-    <header className="sticky top-0 z-30 h-[84px] border-b border-white/[0.07] bg-[#020914]/90 backdrop-blur-xl">
-
-      <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-7">
-
-        <button
-          onClick={() =>
-            setMobileOpen(
-              true
-            )
-          }
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] lg:hidden"
-        >
-          <HiOutlineMenu
-            size={22}
-          />
-        </button>
-
-        {/* SEARCH */}
-
-        <div className="relative w-full max-w-[515px]">
-
-          <HiOutlineSearch
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70"
-            size={23}
-          />
-
-          <input
-            placeholder="Search classes, trainers or topics..."
-            className="h-12 w-full rounded-xl border border-blue-500/20 bg-[#061426] pl-12 pr-4 text-sm text-white outline-none placeholder:text-white/50 focus:border-blue-500/50"
-          />
-
-        </div>
-
-        <div className="ml-auto flex h-full items-center">
-
-          {/* NOTIFICATIONS */}
-
-          <button className="relative flex h-full w-[70px] items-center justify-center border-l border-white/[0.07]">
-
-            <HiOutlineBell
-              size={27}
-            />
-
-            <span className="absolute right-[15px] top-[15px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold">
-              3
-            </span>
-
-          </button>
-
-          {/* PROFILE */}
-
-          <button
-            onClick={() =>
-              navigate(
-                "/institute/website/preview/lms/profile"
-              )
-            }
-            className="flex h-full items-center gap-3 border-l border-white/[0.07] px-5"
-          >
-
-            <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-white/10 bg-blue-500/10">
-
-              {image ? (
-                <img
-                  src={
-                    image
-                  }
-                  alt={
-                    name
-                  }
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <HiOutlineUser
-                    size={23}
-                    className="text-blue-400"
-                  />
-                </div>
-              )}
-
-            </div>
-
-            <div className="hidden text-left md:block">
-
-              <p className="text-[15px] font-semibold">
-                {
-                  name
-                }
-              </p>
-
-              <p className="mt-1 text-xs text-white/55">
-                Student
-              </p>
-
-            </div>
-
-            <span className="ml-3 hidden text-xl text-white/80 md:block">
-              ⌄
-            </span>
-
-          </button>
-
-        </div>
 
       </div>
-    </header>
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+  return (
+
+
+
+    <img
+
+
+
+      src={src}
+
+
+
+      alt={alt}
+
+
+
+      className={className}
+
+
+
+      loading="lazy"
+
+
+
+      onError={() => {
+
+
+
+        console.error(
+
+
+
+          "IMAGE FAILED:",
+
+
+
+          src
+
+
+
+        );
+
+
+
+
+
+        setFailed(true);
+
+
+
+      }}
+
+
+
+    />
+
+
+
   );
+
+
+
 }
 
+
+
+
+
 /* =========================================================
-   PAYMENT STATUS
-========================================================= */
 
-function PaymentStatus({
-  status,
+
+
+   STAT CARD
+
+
+
+\========================================================= */
+
+
+
+
+
+function StatCard({
+
+
+
+  icon,
+
+
+
+  title,
+
+
+
+  value,
+
+
+
+  iconClass,
+
+
+
 }) {
-  const normalized =
-    String(
-      status || ""
-    ).toUpperCase();
 
-  if (
-    normalized ===
-      "PAID" ||
-    normalized ===
-      "SUCCESS" ||
-    normalized ===
-      "COMPLETED"
-  ) {
+
+
+  return (
+
+
+
+    <div
+
+
+
+      className="rounded-2xl border p-5"
+
+
+
+      style={{
+
+
+
+        background:
+
+
+
+          COLORS.card,
+
+
+
+        borderColor:
+
+
+
+          COLORS.border,
+
+
+
+      }}
+
+
+
+    >
+
+
+
+      <div className="flex items-center gap-4">
+
+
+
+
+
+        <div
+
+
+
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
+
+
+
+        >
+
+
+
+          {icon}
+
+
+
+        </div>
+
+
+
+
+
+        <div>
+
+
+
+          <p className="text-[13px] text-white">
+
+
+
+            {title}
+
+
+
+          </p>
+
+
+
+
+
+          <p className="mt-1 text-[25px] font-bold text-white">
+
+
+
+            {value}
+
+
+
+          </p>
+
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  );
+
+
+
+}
+
+
+
+
+
+/* =========================================================
+
+
+
+   STATUS BADGE
+
+
+
+\========================================================= */
+
+
+
+
+
+function StatusBadge({
+
+
+
+  booking,
+
+
+
+}) {
+
+
+
+  if (isPaid(booking)) {
+
+
+
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-4 py-2 text-xs font-bold text-emerald-400">
 
-        <HiOutlineCheckCircle
-          size={15}
-        />
+
+
+      <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-300">
+
+
+
+        <FaCheckCircle />
+
+
 
         Paid
 
+
+
       </span>
+
+
+
     );
+
+
+
   }
 
-  if (
-    normalized ===
-      "PENDING" ||
-    normalized ===
-      "PROCESSING"
-  ) {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-4 py-2 text-xs font-bold text-amber-400">
 
-        <HiOutlineClock
-          size={15}
-        />
+
+
+
+  if (isPending(booking)) {
+
+
+
+    return (
+
+
+
+      <span className="inline-flex items-center gap-2 rounded-lg bg-yellow-500/15 px-4 py-2 text-sm font-semibold text-yellow-300">
+
+
+
+        <FaClock />
+
+
 
         Pending
 
+
+
       </span>
+
+
+
     );
+
+
+
   }
 
-  if (
-    normalized ===
-      "FAILED" ||
-    normalized ===
-      "CANCELLED"
-  ) {
+
+
+
+
+  if (isFailed(booking)) {
+
+
+
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-4 py-2 text-xs font-bold text-rose-400">
 
-        <HiOutlineExclamationCircle
-          size={15}
-        />
 
-        {normalized ===
-        "CANCELLED"
-          ? "Cancelled"
-          : "Failed"}
+
+      <span className="inline-flex items-center gap-2 rounded-lg bg-red-500/15 px-4 py-2 text-sm font-semibold text-red-300">
+
+
+
+        <FaTimesCircle />
+
+
+
+        Failed
+
+
 
       </span>
+
+
+
     );
+
+
+
   }
 
+
+
+
+
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-white/70">
-      {status ||
-        "Unknown"}
+
+
+
+    <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+
+
+
+      <FaClock />
+
+
+
+      {getPaymentStatus(
+
+
+
+        booking
+
+
+
+      ) || "Pending"}
+
+
+
     </span>
+
+
+
   );
+
+
+
 }
 
-/* =========================================================
-   SUMMARY CARD
-========================================================= */
 
-function SummaryCard({
-  icon,
-  value,
-  label,
-  subtitle,
-  type,
-}) {
-  const iconStyle = {
-    paid:
-      "bg-emerald-500 text-white",
-    pending:
-      "bg-amber-500 text-white",
-    transactions:
-      "bg-blue-500 text-white",
-    total:
-      "bg-purple-500 text-white",
-  };
 
-  return (
-    <div className="flex min-h-[105px] items-center gap-4 rounded-xl border border-blue-500/15 bg-[#031120] px-5 py-4">
 
-      <div
-        className={`
-          flex h-[58px]
-          w-[58px]
-          shrink-0
-          items-center
-          justify-center
-          rounded-full
-          ${
-            iconStyle[
-              type
-            ] ||
-            iconStyle.total
-          }
-        `}
-      >
-        {
-          icon
-        }
-      </div>
-
-      <div className="min-w-0">
-
-        <p className="truncate text-2xl font-bold">
-          {
-            value
-          }
-        </p>
-
-        <p className="text-sm font-medium text-white/90">
-          {
-            label
-          }
-        </p>
-
-        {subtitle && (
-          <p className="mt-0.5 text-xs text-white/50">
-            {
-              subtitle
-            }
-          </p>
-        )}
-
-      </div>
-
-    </div>
-  );
-}
 
 /* =========================================================
-   PAYMENT ROW
-========================================================= */
 
-function PaymentRow({
+
+
+   PAYMENT DETAILS MODAL
+
+
+
+\========================================================= */
+
+
+
+
+
+function PaymentDetailsModal({
+
+
+
   booking,
-  onDownload,
+
+
+
+  onClose,
+
+
+
 }) {
-  const payment =
-    getPaymentObject(
-      booking
-    );
 
-  const status =
-    getPaymentStatus(
-      payment
-    );
 
-  const amount =
-    getPaymentAmount(
-      payment
-    );
+
+  if (!booking) {
+
+
+
+    return null;
+
+
+
+  }
+
+
+
+
+
+  const className =
+
+
+
+    getClassName(booking);
+
+
+
+
+
+  const classImage =
+
+
+
+    getClassImage(booking);
+
+
+
+
+
+  const trainerName =
+
+
+
+    getTrainerName(booking);
+
+
+
+
+
+  const trainerImage =
+
+
+
+    getTrainerImage(booking);
+
+
+
+
 
   const transactionId =
-    getTransactionId(
-      payment
-    );
 
-  const date =
-    getPaymentDate(
-      payment
-    );
+
+
+    getTransactionId(booking);
+
+
+
+
+
+  const classId =
+
+
+
+    getClassId(booking);
+
+
+
+
 
   return (
-    <div className="group grid grid-cols-1 gap-4 border-b border-white/[0.06] px-5 py-4 transition hover:bg-white/[0.025] md:grid-cols-[1.2fr_1fr_1fr_1fr_130px] md:items-center">
 
-      {/* COURSE */}
 
-      <div className="min-w-0">
 
-        <div className="flex items-center gap-3">
+    <div
 
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600/30 to-purple-600/30 text-blue-400">
 
-            <HiOutlineBookOpen
-              size={22}
-            />
+
+       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+
+
+
+      onMouseDown={(event) => {
+
+
+
+        if (
+
+
+
+          event.target ===
+
+
+
+          event.currentTarget
+
+
+
+        ) {
+
+
+
+          onClose();
+
+
+
+        }
+
+
+
+      }}
+
+
+
+    >
+
+
+
+      <div className="relative max-h-[90vh] w-full max-w-[650px] overflow-y-auto rounded-2xl border border-blue-500/30 bg-[#000000] shadow-2xl">
+
+
+
+
+
+        {/* HEADER */}
+
+
+
+        <div className="sticky top-0 flex items-center justify-between border-b border-white/10 bg-[#000000] px-6 py-5">
+
+
+
+
+
+          <div>
+
+
+
+            <p className="text-xs text-blue-400">
+
+
+
+              BOOKING DETAILS
+
+
+
+            </p>
+
+
+
+
+
+            <h2 className="mt-1 text-xl font-bold text-white">
+
+
+
+              {className}
+
+
+
+            </h2>
+
+
 
           </div>
 
-          <div className="min-w-0">
 
-            <p className="truncate text-sm font-bold">
-              {
-                getClassName(
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            onClick={onClose}
+
+
+
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 text-white hover:bg-white/10 hover:text-white"
+
+
+
+          >
+
+
+
+            <FaTimes />
+
+
+
+          </button>
+
+
+
+
+
+        </div>
+
+
+
+
+
+        <div className="p-6">
+
+
+
+
+
+          {/* CLASS */}
+
+
+
+          <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-[#000000] p-4">
+
+
+
+
+
+            <SafeImage
+
+
+
+              src={classImage}
+
+
+
+              alt={className}
+
+
+
+              className="h-20 w-24 rounded-lg object-cover"
+
+
+
+            />
+
+
+
+
+
+            <div className="min-w-0">
+
+
+
+
+
+              <h3 className="truncate text-lg font-bold text-white">
+
+
+
+                {className}
+
+
+
+              </h3>
+
+
+
+
+
+              {classId && (
+
+
+
+                <p className="mt-1 text-xs text-white">
+
+
+
+                  Class ID: {classId}
+
+
+
+                </p>
+
+
+
+              )}
+
+
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+          {/* DETAILS */}
+
+
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Amount
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 text-lg font-bold text-white">
+
+
+
+                {formatCurrency(
+
+
+
+                  getAmount(booking)
+
+
+
+                )}
+
+
+
+              </p>
+
+
+
+            </div>
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Payment Status
+
+
+
+              </p>
+
+
+
+
+
+              <div className="mt-2">
+
+
+
+                <StatusBadge
+
+
+
+                  booking={booking}
+
+
+
+                />
+
+
+
+              </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Booking Date
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 font-semibold text-white">
+
+
+
+                {formatDate(
+
+
+
+                  getBookingDate(
+
+
+
+                    booking
+
+
+
+                  )
+
+
+
+                )}
+
+
+
+              </p>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Class Time
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 font-semibold text-white">
+
+
+
+                {formatTime(
+
+
+
+                  getBookingTime(
+
+
+
+                    booking
+
+
+
+                  )
+
+
+
+                ) || "—"}
+
+
+
+              </p>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Payment Method
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 font-semibold text-white">
+
+
+
+                {getPaymentMethod(
+
+
+
                   booking
-                )
-              }
+
+
+
+                )}
+
+
+
+              </p>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <div className="rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Booking ID
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 font-semibold text-white">
+
+
+
+                #
+
+
+
+                {getBookingId(
+
+
+
+                  booking
+
+
+
+                ) ?? "—"}
+
+
+
+              </p>
+
+
+
+
+
+            </div>
+
+
+
+
+
+          </div>
+
+
+
+
+
+          {/* TRAINER */}
+
+
+
+          <div className="mt-5 rounded-xl border border-white/10 bg-[#000000] p-4">
+
+
+
+
+
+            <p className="mb-3 text-xs text-white">
+
+
+
+              Trainer
+
+
+
             </p>
 
-            <p className="mt-1 text-xs text-white/45">
-              Booking #
-              {
-                getBookingId(
-                  booking
-                ) ||
-                "--"
-              }
+
+
+
+
+            <div className="flex items-center gap-3">
+
+
+
+
+
+              <SafeImage
+
+
+
+                src={trainerImage}
+
+
+
+                alt={trainerName}
+
+
+
+                className="h-11 w-11 rounded-full object-cover"
+
+
+
+              />
+
+
+
+
+
+              <span className="font-semibold text-white">
+
+
+
+                {trainerName}
+
+
+
+              </span>
+
+
+
+
+
+            </div>
+
+
+
+
+
+          </div>
+
+
+
+
+
+          {/* TRANSACTION */}
+
+
+
+          {transactionId && (
+
+
+
+            <div className="mt-5 rounded-xl bg-[#000000] p-4">
+
+
+
+
+
+              <p className="text-xs text-white">
+
+
+
+                Transaction ID
+
+
+
+              </p>
+
+
+
+
+
+              <p className="mt-1 break-all text-sm font-medium text-white">
+
+
+
+                {transactionId}
+
+
+
+              </p>
+
+
+
+
+
+            </div>
+
+
+
+          )}
+
+
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+  );
+
+
+
+}
+
+
+
+
+
+/* =========================================================
+
+
+
+   MAIN PAGE
+
+
+
+\========================================================= */
+
+
+
+
+
+export default function WebsitePaymentDetails() {
+  useEffect(() => {
+    const previous = {
+      html: document.documentElement.style.backgroundColor,
+      body: document.body.style.backgroundColor,
+      color: document.body.style.color,
+      margin: document.body.style.margin,
+    };
+    document.documentElement.style.backgroundColor = "#000000";
+    document.body.style.backgroundColor = "#000000";
+    document.body.style.color = "#FFFFFF";
+    document.body.style.margin = "0";
+    return () => {
+      document.documentElement.style.backgroundColor = previous.html;
+      document.body.style.backgroundColor = previous.body;
+      document.body.style.color = previous.color;
+      document.body.style.margin = previous.margin;
+    };
+  }, []);
+
+
+
+
+  const navigate =
+
+
+
+    useNavigate();
+
+
+
+
+
+  const [bookings, setBookings] =
+
+
+
+    useState([]);
+
+
+
+
+
+  const [loading, setLoading] =
+
+
+
+    useState(true);
+
+
+
+
+
+  const [error, setError] =
+
+
+
+    useState("");
+
+
+
+
+
+  const [search, setSearch] =
+
+
+
+    useState("");
+
+
+
+
+
+  const [statusFilter, setStatusFilter] =
+
+
+
+    useState("ALL");
+
+
+
+
+
+  const [classFilter, setClassFilter] =
+
+
+
+    useState("ALL");
+
+
+
+
+
+  const [selectedBooking, setSelectedBooking] = useState(null);
+
+
+
+  const [renewingBookingId, setRenewingBookingId] = useState(null);
+
+
+
+  const [renewError, setRenewError] = useState("");
+
+
+
+
+
+  /* =======================================================
+
+     RENEW EXPIRED ONLINE / LIVE CLASS
+
+  ======================================================= */
+
+
+
+  const handleRenewLiveClass = async (booking) => {
+
+    const bookingId = getBookingId(booking);
+
+    const classId = getClassId(booking);
+
+
+
+    if (!bookingId) return setRenewError("Booking ID is missing.");
+
+    if (!classId) return setRenewError("Class ID is missing.");
+
+    if (!isSubscriptionEnded(booking)) return setRenewError("This live class does not currently require renewal.");
+
+
+
+    try {
+
+      setRenewError("");
+
+      setRenewingBookingId(bookingId);
+
+      if (!(await loadRazorpayScript())) throw new Error("Unable to load Razorpay. Please try again.");
+
+
+
+      const currentUser = getAuth().currentUser;
+
+      if (!currentUser) throw new Error("Please sign in again before renewing this class.");
+
+      const token = await currentUser.getIdToken();
+
+
+
+      const response = await API.post("/payment/create-subscription", { booking_id: bookingId, class_id: classId }, { headers: { Authorization: `Bearer ${token}` } });
+
+      const subscription = response?.data?.data || response?.data || response;
+
+
+
+      if (!subscription?.subscription_id) throw new Error("Razorpay subscription ID was not returned.");
+
+      if (!subscription?.key_id) throw new Error("Razorpay key was not returned.");
+
+      if (typeof window === "undefined" || !window.Razorpay) throw new Error("Razorpay is not available. Please refresh and try again.");
+
+
+
+      const razorpay = new window.Razorpay({
+
+        key: subscription.key_id,
+
+        subscription_id: subscription.subscription_id,
+
+        name: "FineArts",
+
+        description: `${getClassName(booking)} - Live Class Renewal`,
+
+        prefill: { name: currentUser.displayName || "", email: currentUser.email || "", contact: currentUser.phoneNumber || "" },
+
+        theme: { color: "#7C3AED" },
+
+        handler: async (paymentResponse) => {
+
+          try {
+
+            const subscriptionId = paymentResponse?.razorpay_subscription_id || subscription.subscription_id;
+
+            const paymentId = paymentResponse?.razorpay_payment_id;
+
+            const signature = paymentResponse?.razorpay_signature;
+
+            if (!subscriptionId || !paymentId || !signature) throw new Error("Razorpay returned incomplete payment details.");
+
+
+
+            await API.post("/payment/verify-subscription", {
+
+              booking_id: bookingId,
+
+              razorpay_subscription_id: subscriptionId,
+
+              razorpay_payment_id: paymentId,
+
+              razorpay_signature: signature,
+
+            }, { headers: { Authorization: `Bearer ${token}` } });
+
+
+
+            const refreshed = await API.get("/bookings/my", { headers: { Authorization: `Bearer ${token}` } });
+
+            setBookings(getBookingsArray(refreshed));
+
+            setRenewError("");
+
+            alert("Live class renewed successfully!");
+
+          } catch (error) {
+
+            console.error("RENEWAL VERIFICATION ERROR:", error);
+
+            setRenewError(error?.response?.data?.message || error?.message || "Renewal verification failed.");
+
+          } finally {
+
+            setRenewingBookingId(null);
+
+          }
+
+        },
+
+        modal: { ondismiss: () => setRenewingBookingId(null) },
+
+      });
+
+
+
+      razorpay.on("payment.failed", (paymentError) => {
+
+        console.error("LIVE CLASS RENEWAL FAILED:", paymentError);
+
+        setRenewError(paymentError?.error?.description || "Renewal payment failed. Please try again.");
+
+        setRenewingBookingId(null);
+
+      });
+
+      razorpay.open();
+
+    } catch (error) {
+
+      console.error("LIVE CLASS RENEWAL ERROR:", error);
+
+      setRenewError(error?.response?.data?.message || error?.message || "Unable to start renewal.");
+
+      setRenewingBookingId(null);
+
+    }
+
+  };
+
+
+
+
+
+  /* =======================================================
+
+
+
+     FETCH USER BOOKINGS
+
+
+
+  ======================================================= */
+
+
+
+
+
+  useEffect(() => {
+
+
+
+    let mounted = true;
+
+
+
+
+
+    const fetchBookings = async () => {
+
+
+
+      try {
+
+
+
+        setLoading(true);
+
+
+
+        setError("");
+
+
+
+
+
+        console.log(
+
+
+
+          "================================="
+
+
+
+        );
+
+
+
+
+
+        console.log(
+
+
+
+          "PAYMENTS PAGE - FETCH BOOKINGS"
+
+
+
+        );
+
+
+
+
+
+        console.log(
+
+
+
+          "GET /bookings/my"
+
+
+
+        );
+
+
+
+
+
+        /* ===================================================
+
+
+
+           GET FIREBASE USER TOKEN
+
+
+
+
+
+           API interceptor should already add it,
+
+
+
+           but we explicitly send it too so this page
+
+
+
+           is reliable.
+
+
+
+        =================================================== */
+
+
+
+
+
+        let config = {};
+
+
+
+
+
+        try {
+
+
+
+          const auth =
+
+
+
+            getAuth();
+
+
+
+
+
+          const currentUser =
+
+
+
+            auth.currentUser;
+
+
+
+
+
+          if (currentUser) {
+
+
+
+            const token =
+
+
+
+              await currentUser.getIdToken();
+
+
+
+
+
+            config = {
+
+
+
+              headers: {
+
+
+
+                Authorization:
+
+
+
+                  `Bearer ${token}`,
+
+
+
+              },
+
+
+
+            };
+
+
+
+
+
+            console.log(
+
+
+
+              "Firebase token: FOUND"
+
+
+
+            );
+
+
+
+          } else {
+
+
+
+            console.warn(
+
+
+
+              "Firebase currentUser not found. API interceptor will be used."
+
+
+
+            );
+
+
+
+          }
+
+
+
+        } catch (tokenError) {
+
+
+
+          console.warn(
+
+
+
+            "Unable to get Firebase token:",
+
+
+
+            tokenError
+
+
+
+          );
+
+
+
+        }
+
+
+
+
+
+        /* ===================================================
+
+
+
+           CORRECT BACKEND ROUTE
+
+
+
+        =================================================== */
+
+
+
+
+
+        const response =
+
+
+
+          await API.get(
+
+
+
+            "/bookings/my",
+
+
+
+            config
+
+
+
+          );
+
+
+
+
+
+        console.log(
+
+
+
+          "BOOKINGS API RESPONSE:",
+
+
+
+          response
+
+
+
+        );
+
+
+
+
+
+        console.log(
+
+
+
+          "BOOKINGS API DATA:",
+
+
+
+          response?.data
+
+
+
+        );
+
+
+
+
+
+        /* ===================================================
+
+
+
+           NORMALIZE RESPONSE
+
+
+
+        =================================================== */
+
+
+
+
+
+        const list =
+
+
+
+          getBookingsArray(
+
+
+
+            response
+
+
+
+          );
+
+
+
+
+
+        console.log(
+
+
+
+          "FINAL BOOKINGS ARRAY:",
+
+
+
+          list
+
+
+
+        );
+
+
+
+
+
+        console.log(
+
+
+
+          "BOOKINGS COUNT:",
+
+
+
+          list.length
+
+
+
+        );
+
+
+
+
+
+        if (mounted) {
+
+
+
+          setBookings(
+
+
+
+            Array.isArray(list)
+
+
+
+              ? list
+
+
+
+              : []
+
+
+
+          );
+
+
+
+        }
+
+
+
+
+
+      } catch (err) {
+
+
+
+
+
+        console.error(
+
+
+
+          "PAYMENTS PAGE ERROR:",
+
+
+
+          err
+
+
+
+        );
+
+
+
+
+
+        console.error(
+
+
+
+          "PAYMENTS ERROR RESPONSE:",
+
+
+
+          err?.response?.data
+
+
+
+        );
+
+
+
+
+
+        if (mounted) {
+
+
+
+          setBookings([]);
+
+
+
+
+
+          setError(
+
+
+
+            err?.response?.data?.message ||
+
+
+
+            err?.message ||
+
+
+
+            "Unable to load bookings."
+
+
+
+          );
+
+
+
+        }
+
+
+
+
+
+      } finally {
+
+
+
+
+
+        if (mounted) {
+
+
+
+          setLoading(false);
+
+
+
+        }
+
+
+
+
+
+      }
+
+
+
+    };
+
+
+
+
+
+    fetchBookings();
+
+
+
+
+
+    return () => {
+
+
+
+      mounted = false;
+
+
+
+    };
+
+
+
+  }, []);
+
+
+
+
+
+  /* =======================================================
+
+
+
+     CLASS FILTER OPTIONS
+
+
+
+  ======================================================= */
+
+
+
+
+
+  const classOptions =
+
+
+
+    useMemo(() => {
+
+
+
+
+
+      const names =
+
+
+
+        bookings
+
+
+
+          .map((booking) =>
+
+
+
+            getClassName(
+
+
+
+              booking
+
+
+
+            )
+
+
+
+          )
+
+
+
+          .filter(
+
+
+
+            (name) =>
+
+
+
+              name &&
+
+
+
+              name !== "Class"
+
+
+
+          );
+
+
+
+
+
+      return [
+
+
+
+        ...new Set(names),
+
+
+
+      ];
+
+
+
+
+
+    }, [bookings]);
+
+
+
+
+
+  /* =======================================================
+
+
+
+     STATISTICS
+
+
+
+  ======================================================= */
+
+
+
+
+
+  const stats =
+
+
+
+    useMemo(() => {
+
+
+
+
+
+      const totalPaid =
+
+
+
+        bookings
+
+
+
+          .filter(isPaid)
+
+
+
+          .reduce(
+
+
+
+            (sum, booking) =>
+
+
+
+              sum +
+
+
+
+              getAmount(
+
+
+
+                booking
+
+
+
+              ),
+
+
+
+            0
+
+
+
+          );
+
+
+
+
+
+      const pending =
+
+
+
+        bookings.filter(
+
+
+
+          isPending
+
+
+
+        ).length;
+
+
+
+
+
+      const completed =
+
+
+
+        bookings.filter(
+
+
+
+          isPaid
+
+
+
+        ).length;
+
+
+
+
+
+      return {
+
+
+
+        totalPaid,
+
+
+
+        pending,
+
+
+
+        completed,
+
+
+
+        totalBookings:
+
+
+
+          bookings.length,
+
+
+
+      };
+
+
+
+
+
+    }, [bookings]);
+
+
+
+
+
+  /* =======================================================
+
+
+
+     FILTER BOOKINGS
+
+
+
+  ======================================================= */
+
+
+
+
+
+  const filteredBookings =
+
+
+
+    useMemo(() => {
+
+
+
+
+
+      const query =
+
+
+
+        search
+
+
+
+          .trim()
+
+
+
+          .toLowerCase();
+
+
+
+
+
+      return bookings.filter(
+
+
+
+        (booking) => {
+
+
+
+
+
+          const className =
+
+
+
+            getClassName(
+
+
+
+              booking
+
+
+
+            )
+
+
+
+              .toLowerCase();
+
+
+
+
+
+          const trainerName =
+
+
+
+            getTrainerName(
+
+
+
+              booking
+
+
+
+            )
+
+
+
+              .toLowerCase();
+
+
+
+
+
+          const transactionId =
+
+
+
+            String(
+
+
+
+              getTransactionId(
+
+
+
+                booking
+
+
+
+              ) || ""
+
+
+
+            )
+
+
+
+              .toLowerCase();
+
+
+
+
+
+          const bookingId =
+
+
+
+            String(
+
+
+
+              getBookingId(
+
+
+
+                booking
+
+
+
+              ) || ""
+
+
+
+            )
+
+
+
+              .toLowerCase();
+
+
+
+
+
+          const matchesSearch =
+
+
+
+            !query ||
+
+
+
+            className.includes(
+
+
+
+              query
+
+
+
+            ) ||
+
+
+
+            trainerName.includes(
+
+
+
+              query
+
+
+
+            ) ||
+
+
+
+            transactionId.includes(
+
+
+
+              query
+
+
+
+            ) ||
+
+
+
+            bookingId.includes(
+
+
+
+              query
+
+
+
+            );
+
+
+
+
+
+          let matchesStatus =
+
+
+
+            true;
+
+
+
+
+
+          if (
+
+
+
+            statusFilter ===
+
+
+
+            "SUCCESSFUL"
+
+
+
+          ) {
+
+
+
+            matchesStatus =
+
+
+
+              isPaid(
+
+
+
+                booking
+
+
+
+              );
+
+
+
+          }
+
+
+
+
+
+          if (
+
+
+
+            statusFilter ===
+
+
+
+            "PENDING"
+
+
+
+          ) {
+
+
+
+            matchesStatus =
+
+
+
+              isPending(
+
+
+
+                booking
+
+
+
+              );
+
+
+
+          }
+
+
+
+
+
+          if (
+
+
+
+            statusFilter ===
+
+
+
+            "FAILED"
+
+
+
+          ) {
+
+
+
+            matchesStatus =
+
+
+
+              isFailed(
+
+
+
+                booking
+
+
+
+              );
+
+
+
+          }
+
+
+
+
+
+          const matchesClass =
+
+
+
+            classFilter === "ALL" ||
+
+
+
+            getClassName(
+
+
+
+              booking
+
+
+
+            ) === classFilter;
+
+
+
+
+
+          return (
+
+
+
+            matchesSearch &&
+
+
+
+            matchesStatus &&
+
+
+
+            matchesClass
+
+
+
+          );
+
+
+
+        }
+
+
+
+      );
+
+
+
+
+
+    }, [
+
+
+
+      bookings,
+
+
+
+      search,
+
+
+
+      statusFilter,
+
+
+
+      classFilter,
+
+
+
+    ]);
+
+
+
+
+
+  /* =======================================================
+
+
+
+     LOADING
+
+
+
+  ======================================================= */
+
+
+
+
+
+  if (loading) {
+
+
+
+    return (
+
+
+
+      <div className="min-h-screen bg-black text-white">
+
+
+
+
+
+   <main className="flex min-h-screen items-center justify-center pt-4">
+
+
+
+
+
+          <div className="flex flex-col items-center">
+
+
+
+
+
+            <FaSpinner
+
+
+
+              className="animate-spin text-blue-500"
+
+
+
+              size={35}
+
+
+
+            />
+
+
+
+
+
+            <p className="mt-4 text-sm text-white">
+
+
+
+              Loading payment details...
+
+
+
             </p>
+
+
+
+
+
+          </div>
+
+
+
+
+
+        </main>
+
+
+
+      </div>
+
+
+
+    );
+
+
+
+  }
+
+
+
+
+
+  /* =======================================================
+
+
+
+     PAGE
+
+
+
+  ======================================================= */
+
+
+
+
+
+  return (
+
+
+
+    <div className="min-h-screen bg-black text-white">
+
+
+
+
+
+<main className="px-4 pb-16 pt-4 sm:px-6 lg:px-8">
+
+
+
+      {renewError && (
+
+        <div className="mx-auto w-full max-w-[1500px] px-4 pt-4 lg:px-8">
+
+          <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+
+            <FaTimesCircle className="mt-0.5 shrink-0 text-red-400" />
+
+            <div className="min-w-0 flex-1">
+
+              <p className="font-semibold text-red-300">Renewal failed</p>
+
+              <p className="mt-1 text-sm text-red-200/80">{renewError}</p>
+
+            </div>
+
+            <button type="button" onClick={() => setRenewError("")} className="text-red-300 hover:text-white" aria-label="Close renewal error"><FaTimes /></button>
 
           </div>
 
         </div>
 
-      </div>
-
-      {/* TRANSACTION */}
-
-      <div>
-
-        <p className="text-[11px] uppercase tracking-wide text-white/40">
-          Transaction ID
-        </p>
-
-        <p className="mt-1 truncate text-sm font-medium text-white/85">
-          {
-            transactionId ||
-            "Not available"
-          }
-        </p>
-
-      </div>
-
-      {/* DATE */}
-
-      <div>
-
-        <p className="text-[11px] uppercase tracking-wide text-white/40">
-          Payment Date
-        </p>
-
-        <p className="mt-1 text-sm font-medium text-white/85">
-          {
-            formatDate(
-              date
-            )
-          }
-        </p>
-
-      </div>
-
-      {/* AMOUNT */}
-
-      <div>
-
-        <p className="text-[11px] uppercase tracking-wide text-white/40">
-          Amount
-        </p>
-
-        <p className="mt-1 text-base font-bold text-white">
-          {
-            formatCurrency(
-              amount
-            )
-          }
-        </p>
-
-      </div>
-
-      {/* STATUS */}
-
-      <div className="flex items-center justify-between gap-3 md:justify-end">
-
-        <PaymentStatus
-          status={
-            status
-          }
-        />
-
-        {status ===
-          "PAID" && (
-          <button
-            onClick={() =>
-              onDownload(
-                booking
-              )
-            }
-            title="Download receipt"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-white/50 transition hover:bg-blue-500/10 hover:text-blue-400"
-          >
-            <HiOutlineDownload
-              size={18}
-            />
-          </button>
-        )}
-
-      </div>
-
-    </div>
-  );
-}
-
-/* =========================================================
-   MAIN
-========================================================= */
-
-export default function WebsitePaymentDetails() {
-
-  const navigate =
-    useNavigate();
-
-  const [
-    branding,
-    setBranding,
-  ] = useState(
-    DEFAULT_BRANDING
-  );
-
-  const [
-    student,
-    setStudent,
-  ] = useState(null);
+      )}
 
-  const [
-    payments,
-    setPayments,
-  ] = useState([]);
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-  const [
-    mobileOpen,
-    setMobileOpen,
-  ] = useState(false);
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-  const [
-    statusFilter,
-    setStatusFilter,
-  ] = useState("ALL");
-
-  /* =======================================================
-     STUDENT
-  ======================================================= */
-
-  useEffect(() => {
-
-    try {
-
-      const stored =
-        localStorage.getItem(
-          "studentUser"
-        );
-
-      if (stored) {
-        setStudent(
-          JSON.parse(
-            stored
-          )
-        );
-      }
-
-    } catch {
-      setStudent(null);
-    }
-
-  }, []);
-
-  /* =======================================================
-     BRANDING
-  ======================================================= */
-
-  useEffect(() => {
-
-    try {
-
-      const stored =
-        localStorage.getItem(
-          "websiteBranding"
-        );
-
-      if (stored) {
-
-        setBranding(
-          normalizeBranding(
-            JSON.parse(
-              stored
-            )
-          )
-        );
-
-      }
-
-    } catch {
-      setBranding(
-        DEFAULT_BRANDING
-      );
-    }
-
-  }, []);
-
-  /* =======================================================
-     FETCH PAYMENT DATA
-  ======================================================= */
-
-  const fetchPayments =
-    async () => {
-
-      try {
-
-        setLoading(
-          true
-        );
-
-        setError("");
-
-        /*
-         * IMPORTANT:
-         *
-         * Existing project has:
-         *
-         * GET /payments/student/:id
-         *
-         * from paymentService.js.
-         *
-         * We use the logged-in student's
-         * account/student ID here.
-         */
-
-        const studentId =
-          pick(
-            student?.id,
-            student?.account_id,
-            student?.accountId,
-            student?.user_id,
-            student?.userId
-          );
-
-        let response;
-
-        if (
-          studentId
-        ) {
-
-          response =
-            await API.get(
-              `/payments/student/${studentId}`
-            );
-
-        } else {
-
-          /*
-           * Fallback for projects where
-           * authentication middleware resolves
-           * the logged-in student automatically.
-           */
-
-          response =
-            await API.get(
-              "/payments/student"
-            );
-        }
-
-        const payload =
-          response?.data;
-
-        let data =
-          null;
-
-        if (
-          Array.isArray(
-            payload
-          )
-        ) {
-          data =
-            payload;
-        } else if (
-          Array.isArray(
-            payload?.data
-          )
-        ) {
-          data =
-            payload.data;
-        } else if (
-          Array.isArray(
-            payload?.data?.payments
-          )
-        ) {
-          data =
-            payload.data
-              .payments;
-        } else if (
-          Array.isArray(
-            payload?.payments
-          )
-        ) {
-          data =
-            payload.payments;
-        } else if (
-          Array.isArray(
-            payload?.data?.records
-          )
-        ) {
-          data =
-            payload.data.records;
-        } else if (
-          Array.isArray(
-            payload?.records
-          )
-        ) {
-          data =
-            payload.records;
-        }
-
-        /*
-         * Normalize possible payment
-         * response formats.
-         */
-
-        const normalized =
-          (data || []).map(
-            item => {
-
-              /*
-               * Some APIs return:
-               *
-               * {
-               *   booking: {...},
-               *   payment: {...}
-               * }
-               *
-               * Others directly return
-               * booking/payment fields.
-               */
-
-              if (
-                item?.booking
-              ) {
-
-                return {
-                  ...item.booking,
-
-                  payment:
-                    item.payment ||
-                    item.booking.payment ||
-                    {},
-                };
-
-              }
-
-              return item;
-            }
-          );
-
-        setPayments(
-          normalized
-        );
-
-      } catch (err) {
-
-        console.error(
-          "WEBSITE PAYMENT DETAILS ERROR:",
-          err
-        );
-
-        setError(
-          err?.response
-            ?.data?.message ||
-          err?.response
-            ?.data?.error ||
-          "Unable to load payment details."
-        );
-
-        setPayments([]);
-
-      } finally {
-
-        setLoading(
-          false
-        );
-
-      }
-    };
-
-  useEffect(() => {
-
-    if (
-      student !== null
-    ) {
-      fetchPayments();
-    }
-
-  }, [
-    student,
-  ]);
-
-  /* =======================================================
-     FILTER
-  ======================================================= */
-
-  const filteredPayments =
-    useMemo(() => {
-
-      const searchValue =
-        search
-          .trim()
-          .toLowerCase();
-
-      return payments.filter(
-        booking => {
-
-          const payment =
-            getPaymentObject(
-              booking
-            );
-
-          const status =
-            getPaymentStatus(
-              payment
-            );
-
-          if (
-            statusFilter !==
-              "ALL" &&
-            status !==
-              statusFilter
-          ) {
-            return false;
-          }
-
-          if (
-            !searchValue
-          ) {
-            return true;
-          }
-
-          const searchable = [
-            getClassName(
-              booking
-            ),
-            getTrainerName(
-              booking
-            ),
-            getTransactionId(
-              payment
-            ),
-            getBookingId(
-              booking
-            ),
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-          return searchable.includes(
-            searchValue
-          );
-        }
-      );
-
-    }, [
-      payments,
-      search,
-      statusFilter,
-    ]);
-
-  /* =======================================================
-     SUMMARY
-  ======================================================= */
-
-  const summary =
-    useMemo(() => {
-
-      let paidAmount = 0;
-      let pendingAmount = 0;
-
-      let paidCount = 0;
-      let pendingCount = 0;
-
-      payments.forEach(
-        booking => {
-
-          const payment =
-            getPaymentObject(
-              booking
-            );
-
-          const status =
-            getPaymentStatus(
-              payment
-            );
-
-          const amount =
-            getPaymentAmount(
-              payment
-            );
-
-          if (
-            status ===
-              "PAID" ||
-            status ===
-              "SUCCESS" ||
-            status ===
-              "COMPLETED"
-          ) {
-
-            paidAmount +=
-              amount;
-
-            paidCount +=
-              1;
-
-          } else if (
-            status ===
-              "PENDING"
-          ) {
-
-            pendingAmount +=
-              amount;
-
-            pendingCount +=
-              1;
-          }
-
-        }
-      );
-
-      return {
-        paidAmount,
-        pendingAmount,
-        paidCount,
-        pendingCount,
-        transactions:
-          payments.length,
-      };
-
-    }, [
-      payments,
-    ]);
-
-  /* =======================================================
-     DOWNLOAD RECEIPT
-  ======================================================= */
-
-  const handleDownload =
-    booking => {
-
-      const payment =
-        getPaymentObject(
-          booking
-        );
-
-      const receiptWindow =
-        window.open(
-          "",
-          "_blank"
-        );
-
-      if (
-        !receiptWindow
-      ) {
-        return;
-      }
-
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>FineArts Payment Receipt</title>
-
-            <style>
-
-              body {
-                font-family: Arial, sans-serif;
-                padding: 40px;
-                color: #111827;
-              }
-
-              .receipt {
-                max-width: 700px;
-                margin: auto;
-                border: 1px solid #ddd;
-                padding: 35px;
-                border-radius: 12px;
-              }
-
-              .header {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 35px;
-              }
-
-              .logo {
-                font-size: 26px;
-                font-weight: 700;
-              }
-
-              .blue {
-                color: #1687ff;
-              }
-
-              .title {
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 25px;
-              }
-
-              .row {
-                display: flex;
-                justify-content: space-between;
-                border-bottom: 1px solid #eee;
-                padding: 13px 0;
-              }
-
-              .amount {
-                font-size: 22px;
-                font-weight: 700;
-              }
-
-              .paid {
-                color: #059669;
-                font-weight: 700;
-              }
-
-              .footer {
-                margin-top: 30px;
-                color: #6b7280;
-                font-size: 12px;
-              }
-
-            </style>
-          </head>
-
-          <body>
-
-            <div class="receipt">
-
-              <div class="header">
-
-                <div class="logo">
-                  Fine<span class="blue">Arts</span>
-                </div>
+
+
+
+
+        <div className="mx-auto max-w-[1580px]">
+
+
+
+
+
+          {/* =================================================
+
+
+
+              TITLE
+
+
+
+          ================================================= */}
+
+
+
+
+
+          <div className="mb-8">
+
+
+
+
+
+            <h1 className="text-4xl font-bold sm:text-5xl">
+
+
+
+
+
+              <span className="text-white">
+
+
+
+                Payments
+
+
+
+              </span>
+
+
+
+
+
+              <span className="bg-gradient-to-r from-[#1687FF] to-[#087CFF] bg-clip-text text-transparent">
+
+
+
+                {" "}Details
+
+
+
+              </span>
+
+
+
+
+
+            </h1>
+
+
+
+
+
+            <p className="mt-2 text-base text-white">
+
+
+
+              Track your class payments and transactions.
+
+
+
+            </p>
+
+
+
+
+
+          </div>
+
+
+
+
+
+          {/* =================================================
+
+
+
+              ERROR
+
+
+
+          ================================================= */}
+
+
+
+
+
+          {error && (
+
+
+
+            <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/5 p-5">
+
+
+
+
+
+              <div className="flex items-start justify-between gap-4">
+
+
+
+
 
                 <div>
-                  Payment Receipt
-                </div>
 
-              </div>
 
-              <div class="title">
-                Payment Details
-              </div>
 
-              <div class="row">
-                <span>Student</span>
-                <strong>
-                  ${student?.name || "Student"}
-                </strong>
-              </div>
+                  <p className="font-semibold text-red-300">
 
-              <div class="row">
-                <span>Class</span>
-                <strong>
-                  ${getClassName(booking)}
-                </strong>
-              </div>
 
-              <div class="row">
-                <span>Booking ID</span>
-                <strong>
-                  ${getBookingId(booking) || "--"}
-                </strong>
-              </div>
 
-              <div class="row">
-                <span>Transaction ID</span>
-                <strong>
-                  ${getTransactionId(payment) || "--"}
-                </strong>
-              </div>
+                    Unable to load bookings
 
-              <div class="row">
-                <span>Payment Date</span>
-                <strong>
-                  ${formatDate(
-                    getPaymentDate(payment)
-                  )}
-                </strong>
-              </div>
 
-              <div class="row">
-                <span>Status</span>
-                <strong class="paid">
-                  ${getPaymentStatus(payment)}
-                </strong>
-              </div>
 
-              <div class="row">
-                <span>Amount Paid</span>
-                <strong class="amount">
-                  ${formatCurrency(
-                    getPaymentAmount(payment)
-                  )}
-                </strong>
-              </div>
-
-              <div class="footer">
-                This is a system-generated payment receipt.
-              </div>
-
-            </div>
-
-            <script>
-              window.onload = function() {
-                window.print();
-              };
-            </script>
-
-          </body>
-        </html>
-      `;
-
-      receiptWindow.document.write(
-        html
-      );
-
-      receiptWindow.document.close();
-    };
-
-  /* =======================================================
-     DISPLAY NAME
-  ======================================================= */
-
-  const displayName =
-    pick(
-      student?.name,
-      student?.full_name,
-      student?.displayName,
-      "Student"
-    );
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
-  return (
-    <div
-      className="min-h-screen text-white"
-      style={{
-        backgroundColor:
-          branding.pageBackgroundColor,
-
-        fontFamily:
-          `'${branding.fontBody}', sans-serif`,
-      }}
-    >
-
-      {/* SIDEBAR */}
-
-      <Sidebar
-        navigate={
-          navigate
-        }
-        mobileOpen={
-          mobileOpen
-        }
-        setMobileOpen={
-          setMobileOpen
-        }
-      />
-
-      {/* MAIN */}
-
-      <div className="lg:pl-[270px]">
-
-        {/* HEADER */}
-
-        <TopHeader
-          navigate={
-            navigate
-          }
-          student={
-            student
-          }
-          setMobileOpen={
-            setMobileOpen
-          }
-        />
-
-        <main className="px-4 py-5 sm:px-6 lg:px-7">
-
-          {/* =================================================
-              PAGE HEADER
-          ================================================= */}
-
-          <section className="border-b border-white/[0.06] pb-5">
-
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-
-              <div>
-
-                <h1
-                  className="text-4xl font-bold tracking-tight sm:text-[42px]"
-                  style={{
-                    fontFamily:
-                      `'${branding.fontHeading}', sans-serif`,
-                  }}
-                >
-                  Payment
-                  <span className="text-blue-500">
-                    Details
-                  </span>
-                </h1>
-
-                <p className="mt-1 text-base text-white/90">
-                  View your payments, transaction history
-                  and course fee details.
-                </p>
-
-              </div>
-
-              {/* PAYMENT BANNER */}
-
-              <div className="relative flex min-h-[100px] w-full max-w-[465px] items-center overflow-hidden rounded-xl bg-gradient-to-r from-[#3825FF] via-[#2616F3] to-[#6D00F5] px-6">
-
-                <div className="mr-5 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10">
-
-                  <HiOutlineCreditCard
-                    size={45}
-                    className="text-white"
-                  />
-
-                </div>
-
-                <div className="relative z-10">
-
-                  <h2 className="text-lg font-bold">
-                    Payments Made Simple
-                  </h2>
-
-                  <p className="mt-1 max-w-[280px] text-xs leading-4 text-white/85">
-                    Keep track of your course fees and
-                    payment transactions.
                   </p>
 
+
+
+
+
+                  <p className="mt-1 text-sm text-white">
+
+
+
+                    {error}
+
+
+
+                  </p>
+
+
+
                 </div>
 
-                <div className="absolute -bottom-8 -right-3 text-[120px] leading-none text-white/10">
-                  ₹
-                </div>
+
+
+
+
+                <button
+
+
+
+                  type="button"
+
+
+
+                  onClick={() =>
+
+
+
+                    window.location.reload()
+
+
+
+                  }
+
+
+
+                  className="rounded-lg border border-blue-500/50 px-4 py-2 text-sm text-blue-300 hover:bg-blue-500/10"
+
+
+
+                >
+
+
+
+                  Retry
+
+
+
+                </button>
+
+
+
+
 
               </div>
+
+
+
+
 
             </div>
 
-          </section>
+
+
+          )}
+
+
+
+
 
           {/* =================================================
-              SUMMARY
+
+
+
+              STAT CARDS
+
+
+
           ================================================= */}
 
-          <section className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-            <SummaryCard
-              type="paid"
-              value={formatCurrency(
-                summary.paidAmount
-              )}
-              label="Total Paid"
-              subtitle={`${summary.paidCount} successful payment(s)`}
-              icon={
-                <FaRupeeSign
-                  size={25}
-                />
-              }
-            />
 
-            <SummaryCard
-              type="pending"
-              value={formatCurrency(
-                summary.pendingAmount
-              )}
-              label="Pending Amount"
-              subtitle={`${summary.pendingCount} pending payment(s)`}
-              icon={
-                <HiOutlineClock
-                  size={28}
-                />
-              }
-            />
 
-            <SummaryCard
-              type="transactions"
-              value={
-                summary.transactions
-              }
-              label="Transactions"
-              subtitle="All payment records"
-              icon={
-                <HiOutlineCreditCard
-                  size={28}
-                />
-              }
-            />
 
-            <SummaryCard
-              type="total"
-              value={
-                summary.paidCount
-              }
-              label="Successful Payments"
-              subtitle="Completed transactions"
-              icon={
-                <HiOutlineCheckCircle
-                  size={28}
-                />
-              }
-            />
+        <div className="grid grid-cols-4 gap-5">
 
-          </section>
+
+
+  <StatCard
+
+
+
+    icon={<FaWallet size={25} />}
+
+
+
+    title="Total Paid"
+
+
+
+    value={formatCurrency(stats.totalPaid)}
+
+
+
+    iconClass="bg-purple-500/15 text-purple-400"
+
+
+
+  />
+
+
+
+
+
+  <StatCard
+
+
+
+    icon={<FaClock size={25} />}
+
+
+
+    title="Pending Payment"
+
+
+
+    value={stats.pending}
+
+
+
+    iconClass="bg-yellow-500/15 text-yellow-400"
+
+
+
+  />
+
+
+
+
+
+  <StatCard
+
+
+
+    icon={<FaCheckCircle size={25} />}
+
+
+
+    title="Completed Payments"
+
+
+
+    value={stats.completed}
+
+
+
+    iconClass="bg-purple-500/15 text-purple-400"
+
+
+
+  />
+
+
+
+
+
+  <StatCard
+
+
+
+    icon={<FaReceipt size={25} />}
+
+
+
+    title="Total Bookings"
+
+
+
+    value={stats.totalBookings}
+
+
+
+    iconClass="bg-pink-500/15 text-pink-400"
+
+
+
+  />
+
+
+
+</div>
+
+
 
           {/* =================================================
-              FILTERS
+
+
+
+              STATUS TABS
+
+
+
           ================================================= */}
 
-          <section className="mt-4 rounded-xl border border-blue-500/15 bg-[#031120] p-4">
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 
-              {/* SEARCH */}
 
-              <div className="relative flex-1">
 
-                <HiOutlineSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/55"
-                  size={21}
-                />
+          <div className="mt-7 overflow-hidden rounded-2xl border border-white/10 bg-[#000000]">
 
-                <input
-                  value={
-                    search
-                  }
-                  onChange={event =>
-                    setSearch(
-                      event.target
-                        .value
-                    )
-                  }
-                  placeholder="Search class, booking or transaction ID..."
-                  className="h-11 w-full rounded-lg border border-blue-500/20 bg-[#061426] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-blue-500/50"
-                />
 
-              </div>
 
-              {/* STATUS */}
 
-              <div className="relative w-full lg:w-[220px]">
 
-                <HiOutlineFilter
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60"
-                  size={18}
-                />
+            <div className="grid grid-cols-2 sm:grid-cols-4">
 
-                <select
-                  value={
-                    statusFilter
-                  }
-                  onChange={event =>
-                    setStatusFilter(
-                      event.target
-                        .value
-                    )
-                  }
-                  className="h-11 w-full appearance-none rounded-lg border border-blue-500/20 bg-[#061426] pl-10 pr-8 text-sm text-white outline-none"
-                >
 
-                  <option
-                    value="ALL"
-                    className="bg-[#061426]"
-                  >
-                    All Payments
-                  </option>
 
-                  <option
-                    value="PAID"
-                    className="bg-[#061426]"
-                  >
-                    Paid
-                  </option>
 
-                  <option
-                    value="PENDING"
-                    className="bg-[#061426]"
-                  >
-                    Pending
-                  </option>
 
-                  <option
-                    value="FAILED"
-                    className="bg-[#061426]"
-                  >
-                    Failed
-                  </option>
+              {/* ALL */}
 
-                  <option
-                    value="CANCELLED"
-                    className="bg-[#061426]"
-                  >
-                    Cancelled
-                  </option>
 
-                </select>
-
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  ⌄
-                </span>
-
-              </div>
-
-              {/* REFRESH */}
 
               <button
-                onClick={
-                  fetchPayments
+
+
+
+                type="button"
+
+
+
+                onClick={() =>
+
+
+
+                  setStatusFilter(
+
+
+
+                    "ALL"
+
+
+
+                  )
+
+
+
                 }
-                className="flex h-11 items-center justify-center gap-2 rounded-lg border border-blue-500/20 bg-[#061426] px-5 text-sm font-medium text-white/85 transition hover:border-blue-500/50 hover:text-white"
+
+
+
+                className={`flex h-[72px] items-center justify-center gap-3 border-b border-white/10 text-sm font-semibold transition sm:border-b-0 sm:border-r ${
+
+
+
+                  statusFilter ===
+
+
+
+                  "ALL"
+
+
+
+                    ? "bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-white"
+
+
+
+                    : "text-white hover:bg-white/5"
+
+
+
+                }`}
+
+
+
               >
 
-                <HiOutlineRefresh
-                  size={18}
-                />
 
-                Refresh
+
+                <FaList />
+
+
+
+                All Transactions
+
+
 
               </button>
 
+
+
+
+
+              {/* SUCCESSFUL */}
+
+
+
+              <button
+
+
+
+                type="button"
+
+
+
+                onClick={() =>
+
+
+
+                  setStatusFilter(
+
+
+
+                    "SUCCESSFUL"
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                className={`flex h-[72px] items-center justify-center gap-3 border-b border-white/10 text-sm font-semibold transition sm:border-b-0 sm:border-r ${
+
+
+
+                  statusFilter ===
+
+
+
+                  "SUCCESSFUL"
+
+
+
+                    ? "bg-white/5 text-white"
+
+
+
+                    : "text-white hover:bg-white/5"
+
+
+
+                }`}
+
+
+
+              >
+
+
+
+                <FaCheckCircle />
+
+
+
+                Successful
+
+
+
+              </button>
+
+
+
+
+
+              {/* PENDING */}
+
+
+
+              <button
+
+
+
+                type="button"
+
+
+
+                onClick={() =>
+
+
+
+                  setStatusFilter(
+
+
+
+                    "PENDING"
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                className={`flex h-[72px] items-center justify-center gap-3 border-b border-white/10 text-sm font-semibold transition sm:border-b-0 sm:border-r ${
+
+
+
+                  statusFilter ===
+
+
+
+                  "PENDING"
+
+
+
+                    ? "bg-white/5 text-white"
+
+
+
+                    : "text-white hover:bg-white/5"
+
+
+
+                }`}
+
+
+
+              >
+
+
+
+                <FaClock />
+
+
+
+                Pending
+
+
+
+              </button>
+
+
+
+
+
+              {/* FAILED */}
+
+
+
+              <button
+
+
+
+                type="button"
+
+
+
+                onClick={() =>
+
+
+
+                  setStatusFilter(
+
+
+
+                    "FAILED"
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                className={`flex h-[72px] items-center justify-center gap-3 text-sm font-semibold transition ${
+
+
+
+                  statusFilter ===
+
+
+
+                  "FAILED"
+
+
+
+                    ? "bg-white/5 text-white"
+
+
+
+                    : "text-white hover:bg-white/5"
+
+
+
+                }`}
+
+
+
+              >
+
+
+
+                <FaTimesCircle />
+
+
+
+                Failed
+
+
+
+              </button>
+
+
+
+
+
             </div>
 
-          </section>
+
+
+
+
+          </div>
+
+
+
+
 
           {/* =================================================
-              PAYMENT HISTORY
+
+
+
+              SEARCH + FILTERS
+
+
+
           ================================================= */}
 
-          <section className="mt-4 overflow-hidden rounded-xl border border-blue-500/20 bg-[#020D1A]">
 
-            {/* HEADER */}
 
-            <div className="flex flex-col gap-2 border-b border-white/[0.06] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
-              <div>
 
-                <h2 className="text-lg font-bold">
-                  Payment History
-                </h2>
+          <div className="mt-5 flex flex-col gap-4 lg:flex-row">
 
-                <p className="mt-1 text-xs text-white/45">
-                  {
-                    filteredPayments.length
-                  } payment record(s)
-                </p>
 
-              </div>
 
-              <div className="text-sm text-white/60">
 
-                Total Paid:
-                <span className="ml-2 font-bold text-emerald-400">
-                  {
-                    formatCurrency(
-                      summary.paidAmount
-                    )
-                  }
-                </span>
 
-              </div>
+            {/* SEARCH */}
 
-            </div>
 
-            {/* TABLE HEADER */}
 
-            <div className="hidden grid-cols-[1.2fr_1fr_1fr_1fr_130px] gap-4 border-b border-white/[0.06] bg-white/[0.015] px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-white/40 md:grid">
+            <div className="relative flex-1">
 
-              <span>
-                Course / Class
-              </span>
 
-              <span>
-                Transaction
-              </span>
 
-              <span>
-                Date
-              </span>
 
-              <span>
-                Amount
-              </span>
 
-              <span>
-                Status
-              </span>
+              <FaSearch
 
-            </div>
 
-            {/* ROWS */}
 
-            {filteredPayments.length >
-            0 ? (
-              filteredPayments.map(
-                (
-                  booking,
-                  index
-                ) => (
-                  <PaymentRow
-                    key={
-                      getBookingId(
-                        booking
-                      ) ||
-                      index
-                    }
-                    booking={
-                      booking
-                    }
-                    onDownload={
-                      handleDownload
-                    }
-                  />
-                )
-              )
-            ) : (
-              <div className="px-6 py-16 text-center">
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-white"
 
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
 
-                  <HiOutlineCreditCard
-                    size={32}
-                  />
 
-                </div>
+                size={18}
 
-                <h3 className="mt-4 text-base font-semibold">
-                  No payment records found
-                </h3>
 
-                <p className="mt-1 text-sm text-white/45">
-                  Your payment transactions will appear here.
-                </p>
 
-              </div>
-            )}
+              />
 
-          </section>
 
-          {/* =================================================
-              PAYMENT INFORMATION
-          ================================================= */}
 
-          <section className="mt-4 grid gap-4 lg:grid-cols-2">
 
-            {/* SECURITY */}
 
-            <div className="rounded-xl border border-blue-500/20 bg-[#020D1A] p-5">
+              <input
 
-              <div className="flex gap-4">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
 
-                  <HiOutlineCheckCircle
-                    size={28}
-                  />
+                type="text"
 
-                </div>
 
-                <div>
 
-                  <h3 className="font-bold">
-                    Payment Information
-                  </h3>
+                value={search}
 
-                  <div className="mt-2 space-y-2 text-xs text-white/65">
 
-                    <p>
-                      All successful payments are recorded
-                      against your enrolled class.
-                    </p>
 
-                    <p>
-                      Keep your transaction ID for future
-                      payment-related queries.
-                    </p>
+                onChange={(event) =>
 
-                    <p>
-                      Contact your institute if a payment
-                      status does not update.
-                    </p>
 
-                  </div>
 
-                </div>
+                  setSearch(
 
-              </div>
 
-            </div>
 
-            {/* SUPPORT */}
+                    event.target.value
 
-            <div className="rounded-xl border border-blue-500/20 bg-[#020D1A] p-5">
 
-              <div className="flex gap-4">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
+                  )
 
-                  <HiOutlineCreditCard
-                    size={28}
-                  />
 
-                </div>
 
-                <div>
+                }
 
-                  <h3 className="font-bold">
-                    Need Help?
-                  </h3>
 
-                  <p className="mt-2 text-xs leading-5 text-white/65">
-                    If you have questions about a payment,
-                    refund, transaction or receipt, contact
-                    your institute administration team.
-                  </p>
 
-                </div>
+                placeholder="Search by class name, transaction ID or booking ID..."
 
-              </div>
 
-            </div>
 
-          </section>
+                className="h-[62px] w-full rounded-2xl border border-blue-500 bg-[#000000] pl-14 pr-5 text-sm text-white outline-none placeholder:text-white focus:border-blue-400"
 
-          {/* =================================================
-              ERROR
-          ================================================= */}
 
-          {!loading &&
-            error && (
-              <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/5 p-5 text-center">
 
-                <p className="text-sm text-red-300">
-                  {
-                    error
-                  }
-                </p>
+              />
+
+
+
+
+
+              {search && (
+
+
 
                 <button
-                  onClick={
-                    fetchPayments
+
+
+
+                  type="button"
+
+
+
+                  onClick={() =>
+
+
+
+                    setSearch("")
+
+
+
                   }
-                  className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold"
+
+
+
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-white hover:text-white"
+
+
+
                 >
-                  Try Again
+
+
+
+                  <FaTimes />
+
+
+
                 </button>
 
-              </div>
-            )}
 
-          {/* =================================================
-              LOADING
-          ================================================= */}
 
-          {loading && (
-            <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+              )}
 
-              <div className="rounded-xl border border-blue-500/20 bg-[#061426] px-8 py-7 text-center shadow-2xl">
 
-                <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500" />
 
-                <p className="mt-4 text-sm text-white/65">
-                  Loading payment details...
-                </p>
 
-              </div>
 
             </div>
-          )}
 
-        </main>
 
-      </div>
+
+
+
+            {/* STATUS */}
+
+
+
+            <div className="relative w-full lg:w-[185px]">
+
+
+
+
+
+              <select
+
+
+
+                value={
+
+
+
+                  statusFilter
+
+
+
+                }
+
+
+
+                onChange={(event) =>
+
+
+
+                  setStatusFilter(
+
+
+
+                    event.target.value
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                className="h-[62px] w-full appearance-none rounded-2xl border border-white/10 bg-[#000000] px-5 pr-10 text-sm text-white outline-none focus:border-blue-500"
+
+
+
+              >
+
+
+
+
+
+                <option value="ALL">
+
+
+
+                  All Status
+
+
+
+                </option>
+
+
+
+
+
+                <option value="SUCCESSFUL">
+
+
+
+                  Successful
+
+
+
+                </option>
+
+
+
+
+
+                <option value="PENDING">
+
+
+
+                  Pending
+
+
+
+                </option>
+
+
+
+
+
+                <option value="FAILED">
+
+
+
+                  Failed
+
+
+
+                </option>
+
+
+
+
+
+              </select>
+
+
+
+
+
+              <FaChevronDown
+
+
+
+                className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-white"
+
+
+
+                size={12}
+
+
+
+              />
+
+
+
+
+
+            </div>
+
+
+
+
+
+            {/* CLASS */}
+
+
+
+            <div className="relative w-full lg:w-[250px]">
+
+
+
+
+
+              <select
+
+
+
+                value={
+
+
+
+                  classFilter
+
+
+
+                }
+
+
+
+                onChange={(event) =>
+
+
+
+                  setClassFilter(
+
+
+
+                    event.target.value
+
+
+
+                  )
+
+
+
+                }
+
+
+
+                className="h-[62px] w-full appearance-none rounded-2xl border border-white/10 bg-[#000000] px-5 pr-10 text-sm text-white outline-none focus:border-blue-500"
+
+
+
+              >
+
+
+
+
+
+                <option value="ALL">
+
+
+
+                  All Classes
+
+
+
+                </option>
+
+
+
+
+
+                {classOptions.map(
+
+
+
+                  (className) => (
+
+
+
+                    <option
+
+
+
+                      key={className}
+
+
+
+                      value={className}
+
+
+
+                    >
+
+
+
+                      {className}
+
+
+
+                    </option>
+
+
+
+                  )
+
+
+
+                )}
+
+
+
+
+
+              </select>
+
+
+
+
+
+              <FaChevronDown
+
+
+
+                className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-white"
+
+
+
+                size={12}
+
+
+
+              />
+
+
+
+
+
+            </div>
+
+
+
+
+
+          </div>
+
+
+
+
+
+          {/* =================================================
+
+
+
+              TRANSACTIONS TABLE
+
+
+
+          ================================================= */}
+
+
+
+
+
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#000000]">
+
+
+
+
+
+            {/* DESKTOP */}
+
+
+
+            <div className="hidden overflow-x-auto lg:block">
+
+
+
+
+
+              <table className="w-full min-w-[1050px]">
+
+
+
+
+
+                <thead>
+
+
+
+
+
+                  <tr className="border-b border-white/10 bg-[#000000]">
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      #
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Class / Session
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Date
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Amount
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Payment Method
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Status
+
+
+
+                    </th>
+
+
+
+
+
+                    <th className="px-5 py-5 text-left text-xs font-semibold text-white">
+
+
+
+                      Action
+
+
+
+                    </th>
+
+
+
+
+
+                  </tr>
+
+
+
+
+
+                </thead>
+
+
+
+
+
+                <tbody>
+
+
+
+
+
+                  {filteredBookings.map(
+
+
+
+                    (booking, index) => {
+
+
+
+
+
+                      const className =
+
+
+
+                        getClassName(
+
+
+
+                          booking
+
+
+
+                        );
+
+
+
+
+
+                      const classImage =
+
+
+
+                        getClassImage(
+
+
+
+                          booking
+
+
+
+                        );
+
+
+
+
+
+                      const trainerName =
+
+
+
+                        getTrainerName(
+
+
+
+                          booking
+
+
+
+                        );
+
+
+
+
+
+                      return (
+
+
+
+                        <tr
+
+
+
+                          key={
+
+
+
+                            getBookingId(
+
+
+
+                              booking
+
+
+
+                            ) ??
+
+
+
+                            `${className}-${index}`
+
+
+
+                          }
+
+
+
+                          className="border-b border-white/[.07] transition hover:bg-white/[.025]"
+
+
+
+                        >
+
+
+
+
+
+                          {/* NUMBER */}
+
+
+
+                          <td className="px-5 py-5 text-sm text-white">
+
+
+
+                            {index + 1}
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* CLASS */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <div className="flex items-center gap-4">
+
+
+
+
+
+                              <SafeImage
+
+
+
+                                src={
+
+
+
+                                  classImage
+
+
+
+                                }
+
+
+
+                                alt={
+
+
+
+                                  className
+
+
+
+                                }
+
+
+
+                                className="h-[58px] w-[78px] shrink-0 rounded-lg object-cover"
+
+
+
+                              />
+
+
+
+
+
+                              <div className="min-w-0">
+
+
+
+
+
+                                <p className="max-w-[300px] truncate text-sm font-bold text-white">
+
+
+
+                                  {className}
+
+
+
+                                </p>
+
+
+
+
+
+                                <p className="mt-1 text-xs text-white">
+
+
+
+                                  Trainer:{" "}
+
+
+
+                                  {
+
+
+
+                                    trainerName
+
+
+
+                                  }
+
+
+
+                                </p>
+
+
+
+
+
+                              </div>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* DATE */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <p className="text-sm text-white">
+
+
+
+                              {formatDate(
+
+
+
+                                getBookingDate(
+
+
+
+                                  booking
+
+
+
+                                )
+
+
+
+                              )}
+
+
+
+                            </p>
+
+
+
+
+
+                            <p className="mt-1 text-xs text-white">
+
+
+
+                              {formatTime(
+
+
+
+                                getBookingTime(
+
+
+
+                                  booking
+
+
+
+                                )
+
+
+
+                              )}
+
+
+
+                            </p>
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* AMOUNT */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <span className="text-sm font-bold text-white">
+
+
+
+                              {formatCurrency(
+
+
+
+                                getAmount(
+
+
+
+                                  booking
+
+
+
+                                )
+
+
+
+                              )}
+
+
+
+                            </span>
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* PAYMENT METHOD */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <div className="flex items-center gap-3">
+
+
+
+
+
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+
+
+
+                                <FaCreditCard className="text-white" />
+
+
+
+                              </div>
+
+
+
+
+
+                              <span className="text-sm font-semibold text-white">
+
+
+
+                                {getPaymentMethod(
+
+
+
+                                  booking
+
+
+
+                                )}
+
+
+
+                              </span>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* STATUS */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <StatusBadge
+
+
+
+                              booking={
+
+
+
+                                booking
+
+
+
+                              }
+
+
+
+                            />
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                          {/* ACTION */}
+
+
+
+                          <td className="px-5 py-5">
+
+
+
+
+
+                            <button
+
+
+
+                              type="button"
+
+
+
+                              onClick={() =>
+
+
+
+                                setSelectedBooking(
+
+
+
+                                  booking
+
+
+
+                                )
+
+
+
+                              }
+
+
+
+                              className="flex h-11 items-center gap-2 rounded-xl border border-blue-500/70 px-5 text-sm font-semibold text-white transition hover:bg-blue-500/10"
+
+
+
+                            >
+
+
+
+                              <FaEye />
+
+
+
+                              View
+
+
+
+                            </button>
+
+
+
+                            {shouldShowRenewButton(booking) && (
+
+                              <button type="button" disabled={renewingBookingId === getBookingId(booking)} onClick={() => handleRenewLiveClass(booking)} className="mt-2 flex h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-[#1687FF] to-[#087CFF] px-5 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+
+                                {renewingBookingId === getBookingId(booking) ? (
+
+                                  <><FaSpinner className="animate-spin" /> Processing...</>
+
+                                ) : (
+
+                                  <><FaCreditCard /> Renew Live Class</>
+
+                                )}
+
+                              </button>
+
+                            )}
+
+
+
+
+
+                          </td>
+
+
+
+
+
+                        </tr>
+
+
+
+                      );
+
+
+
+                    }
+
+
+
+                  )}
+
+
+
+
+
+                </tbody>
+
+
+
+
+
+              </table>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            {/* MOBILE */}
+
+
+
+            <div className="block lg:hidden">
+
+
+
+
+
+              {filteredBookings.map(
+
+
+
+                (booking, index) => {
+
+
+
+
+
+                  const className =
+
+
+
+                    getClassName(
+
+
+
+                      booking
+
+
+
+                    );
+
+
+
+
+
+                  const classImage =
+
+
+
+                    getClassImage(
+
+
+
+                      booking
+
+
+
+                    );
+
+
+
+
+
+                  const trainerName =
+
+
+
+                    getTrainerName(
+
+
+
+                      booking
+
+
+
+                    );
+
+
+
+
+
+                  return (
+
+
+
+                    <div
+
+
+
+                      key={
+
+
+
+                        getBookingId(
+
+
+
+                          booking
+
+
+
+                        ) ??
+
+
+
+                        `${className}-${index}`
+
+
+
+                      }
+
+
+
+                      className="border-b border-white/10 p-5 last:border-b-0"
+
+
+
+                    >
+
+
+
+
+
+                      <div className="flex gap-4">
+
+
+
+
+
+                        <SafeImage
+
+
+
+                          src={
+
+
+
+                            classImage
+
+
+
+                          }
+
+
+
+                          alt={
+
+
+
+                            className
+
+
+
+                          }
+
+
+
+                          className="h-20 w-24 shrink-0 rounded-xl object-cover"
+
+
+
+                        />
+
+
+
+
+
+                        <div className="min-w-0 flex-1">
+
+
+
+
+
+                          <h3 className="font-bold text-white">
+
+
+
+                            {className}
+
+
+
+                          </h3>
+
+
+
+
+
+                          <p className="mt-1 text-xs text-white">
+
+
+
+                            Trainer:{" "}
+
+
+
+                            {trainerName}
+
+
+
+                          </p>
+
+
+
+
+
+                          <div className="mt-3">
+
+
+
+
+
+                            <StatusBadge
+
+
+
+                              booking={
+
+
+
+                                booking
+
+
+
+                              }
+
+
+
+                            />
+
+
+
+
+
+                          </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                      </div>
+
+
+
+
+
+                      <div className="mt-5 grid grid-cols-2 gap-3">
+
+
+
+
+
+                        <div className="rounded-xl bg-[#000000] p-3">
+
+
+
+
+
+                          <p className="text-[10px] text-white">
+
+
+
+                            Booking Date
+
+
+
+                          </p>
+
+
+
+
+
+                          <p className="mt-1 text-xs font-semibold text-white">
+
+
+
+                            {formatDate(
+
+
+
+                              getBookingDate(
+
+
+
+                                booking
+
+
+
+                              )
+
+
+
+                            )}
+
+
+
+                          </p>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <div className="rounded-xl bg-[#000000] p-3">
+
+
+
+
+
+                          <p className="text-[10px] text-white">
+
+
+
+                            Amount
+
+
+
+                          </p>
+
+
+
+
+
+                          <p className="mt-1 text-xs font-bold text-white">
+
+
+
+                            {formatCurrency(
+
+
+
+                              getAmount(
+
+
+
+                                booking
+
+
+
+                              )
+
+
+
+                            )}
+
+
+
+                          </p>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <div className="rounded-xl bg-[#000000] p-3">
+
+
+
+
+
+                          <p className="text-[10px] text-white">
+
+
+
+                            Payment Method
+
+
+
+                          </p>
+
+
+
+
+
+                          <p className="mt-1 truncate text-xs font-semibold text-white">
+
+
+
+                            {getPaymentMethod(
+
+
+
+                              booking
+
+
+
+                            )}
+
+
+
+                          </p>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <div className="rounded-xl bg-[#000000] p-3">
+
+
+
+
+
+                          <p className="text-[10px] text-white">
+
+
+
+                            Booking ID
+
+
+
+                          </p>
+
+
+
+
+
+                          <p className="mt-1 text-xs font-semibold text-white">
+
+
+
+                            #
+
+
+
+                            {getBookingId(
+
+
+
+                              booking
+
+
+
+                            ) ?? "—"}
+
+
+
+                          </p>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                      </div>
+
+
+
+
+
+                      <button
+
+
+
+                        type="button"
+
+
+
+                        onClick={() =>
+
+
+
+                          setSelectedBooking(
+
+
+
+                            booking
+
+
+
+                          )
+
+
+
+                        }
+
+
+
+                        className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-blue-500/70 text-sm font-semibold text-white hover:bg-blue-500/10"
+
+
+
+                      >
+
+
+
+                        <FaEye />
+
+
+
+                        View Payment
+
+
+
+                      </button>
+
+
+
+                      {shouldShowRenewButton(booking) && (
+
+                        <button type="button" disabled={renewingBookingId === getBookingId(booking)} onClick={() => handleRenewLiveClass(booking)} className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1687FF] to-[#087CFF] text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+
+                          {renewingBookingId === getBookingId(booking) ? (
+
+                            <><FaSpinner className="animate-spin" /> Processing...</>
+
+                          ) : (
+
+                            <><FaCreditCard /> Renew Live Class</>
+
+                          )}
+
+                        </button>
+
+                      )}
+
+
+
+
+
+                    </div>
+
+
+
+                  );
+
+
+
+                }
+
+
+
+              )}
+
+
+
+
+
+            </div>
+
+
+
+
+
+            {/* EMPTY */}
+
+
+
+            {filteredBookings.length === 0 && (
+
+
+
+              <div className="px-6 py-20 text-center">
+
+
+
+
+
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10">
+
+
+
+
+
+                  <FaCreditCard
+
+
+
+                    size={25}
+
+
+
+                    className="text-blue-400"
+
+
+
+                  />
+
+
+
+
+
+                </div>
+
+
+
+
+
+                <h3 className="mt-5 text-lg font-bold text-white">
+
+
+
+                  No transactions found
+
+
+
+                </h3>
+
+
+
+
+
+                <p className="mt-2 text-sm text-white">
+
+
+
+                  {bookings.length === 0
+
+
+
+                    ? "No bookings were returned by the backend."
+
+
+
+                    : "Try changing your search or filters."}
+
+
+
+                </p>
+
+
+
+
+
+              </div>
+
+
+
+            )}
+
+
+
+
+
+          </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+      </main>
+
+
+
+
+
+      {/* =====================================================
+
+
+
+          PAYMENT MODAL
+
+
+
+      ===================================================== */}
+
+
+
+
+
+      <PaymentDetailsModal
+
+
+
+        booking={
+
+
+
+          selectedBooking
+
+
+
+        }
+
+
+
+        onClose={() =>
+
+
+
+          setSelectedBooking(
+
+
+
+            null
+
+
+
+          )
+
+
+
+        }
+
+
+
+      />
+
+
+
+
 
     </div>
+
+
+
   );
+
+
+
 }

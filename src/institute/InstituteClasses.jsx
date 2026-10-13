@@ -9,6 +9,7 @@ import {
   Edit,
   Trash2,
   Search,
+  RefreshCw,
   X,
   Clock,
   Image as ImageIcon,
@@ -34,7 +35,6 @@ const DAYS = [
 const DEFAULT_FORM = {
   title: "",
   description: "",
-  highlights: "",
   image: null,
 
   category_id: "",
@@ -46,6 +46,7 @@ const DEFAULT_FORM = {
 
   level: "BEGINNER",
   mode: "ONLINE",
+  class_type: "LIVE",
 
   students_count: "",
 
@@ -53,6 +54,7 @@ const DEFAULT_FORM = {
   course_end_date: "",
 
   start_time: "",
+  end_time: "",
 
   available_days: [],
 };
@@ -163,6 +165,14 @@ const normalizeDateForInput = (value) => {
 /* =========================================================
    DISPLAY DATE
 ========================================================= */
+
+const getTodayDateInput = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const formatDate = (value) => {
   const normalized = normalizeDateForInput(value);
@@ -407,6 +417,43 @@ const getTrainerName = (trainer) => {
   );
 };
 
+/* Trainer specialization helpers. The /trainers/institute API must return
+   specializations: [{ category_id, subcategory_id }], or category_ids and
+   subcategory_ids, for the selected trainer. */
+const getTrainerSpecializations = (trainer) => {
+  const raw =
+    trainer?.specializations ??
+    trainer?.specialization_pairs ??
+    trainer?.trainer_specializations;
+
+  if (Array.isArray(raw)) {
+    return raw.map((item) => ({
+      category_id: String(
+        item?.category_id ?? item?.categoryId ?? item?.category?.id ?? ""
+      ),
+      subcategory_id: String(
+        item?.subcategory_id ?? item?.subcategoryId ?? item?.subcategory?.id ?? ""
+      ),
+    })).filter((item) => item.category_id && item.subcategory_id);
+  }
+
+  const categoryIds = Array.isArray(trainer?.category_ids)
+    ? trainer.category_ids
+    : Array.isArray(trainer?.categoryIds)
+    ? trainer.categoryIds
+    : [];
+  const subcategoryIds = Array.isArray(trainer?.subcategory_ids)
+    ? trainer.subcategory_ids
+    : Array.isArray(trainer?.subcategoryIds)
+    ? trainer.subcategoryIds
+    : [];
+
+  return subcategoryIds.map((subcategoryId, index) => ({
+    category_id: String(categoryIds[index] ?? ""),
+    subcategory_id: String(subcategoryId ?? ""),
+  })).filter((item) => item.category_id && item.subcategory_id);
+};
+
 /* =========================================================
    CLASS HELPERS
 ========================================================= */
@@ -436,6 +483,20 @@ const getClassTrainerId = (item) => {
     item?.trainer?.id ??
     ""
   );
+};
+
+const getClassType = (item) => {
+  const value =
+    item?.class_type ??
+    item?.classType ??
+    item?.type ??
+    "LIVE";
+
+  const normalized = String(value).trim().toUpperCase();
+
+  // Backend accepts LIVE or RECORDING. Map legacy RECORDED values
+  // to RECORDING so editing older classes remains compatible.
+  return normalized === "RECORDED" ? "RECORDING" : normalized;
 };
 
 /* =========================================================
@@ -801,7 +862,6 @@ export default function InstituteClasses() {
       const values = [
         item?.title,
         item?.description,
-        item?.highlights,
         item?.trainer_name,
         item?.category_name,
         item?.subcategory_name,
@@ -821,23 +881,100 @@ export default function InstituteClasses() {
   }, [classes, searchQuery]);
 
   /* =======================================================
-     RELATED SUBCATEGORIES
+     TRAINER-SPECIFIC CATEGORY / SUBCATEGORY OPTIONS
   ======================================================= */
 
+  const selectedTrainer = useMemo(
+    () => trainers.find((trainer) =>
+      String(getTrainerId(trainer)) === String(formData.trainer_id)
+    ),
+    [trainers, formData.trainer_id]
+  );
+
+  const trainerSpecializations = useMemo(
+    () => getTrainerSpecializations(selectedTrainer),
+    [selectedTrainer]
+  );
+
+  const trainerCategoryOptions = useMemo(() => {
+    const ids = new Set(trainerSpecializations.map((item) => item.category_id));
+    return categories.filter((category) => ids.has(String(getCategoryId(category))));
+  }, [categories, trainerSpecializations]);
+
   const relatedSubcategories = useMemo(() => {
-    if (!formData.category_id) {
-      return [];
+    if (!formData.trainer_id || !formData.category_id) return [];
+
+    const allowedIds = new Set(
+      trainerSpecializations
+        .filter((item) => item.category_id === String(formData.category_id))
+        .map((item) => item.subcategory_id)
+    );
+
+    return subcategories.filter((subcategory) =>
+      allowedIds.has(String(subcategory?.id ?? subcategory?.subcategory_id ?? subcategory?.subcategoryId ?? "")) &&
+      String(getSubcategoryCategoryId(subcategory)) === String(formData.category_id)
+    );
+  }, [subcategories, formData.category_id, formData.trainer_id, trainerSpecializations]);
+
+  // Automatically select the category when the selected trainer
+  // has exactly one category. This also covers opening/editing a class
+  // after the trainer records have loaded.
+  useEffect(() => {
+    if (!formData.trainer_id || trainerCategoryOptions.length !== 1) {
+      return;
     }
 
-    return subcategories.filter(
-      (subcategory) =>
-        String(
-          getSubcategoryCategoryId(subcategory)
-        ) === String(formData.category_id)
+    const onlyCategoryId = String(
+      getCategoryId(trainerCategoryOptions[0])
     );
+
+    if (String(formData.category_id) !== onlyCategoryId) {
+      setFormData((previous) => ({
+        ...previous,
+        category_id: onlyCategoryId,
+        subcategory_id: "",
+      }));
+    }
   }, [
-    subcategories,
+    formData.trainer_id,
     formData.category_id,
+    trainerCategoryOptions,
+  ]);
+
+  // Automatically select the only subcategory available for the
+  // selected trainer and category. This also works when editing a class
+  // and the trainer/category data becomes available after the modal opens.
+  useEffect(() => {
+    if (
+      !formData.trainer_id ||
+      !formData.category_id ||
+      relatedSubcategories.length !== 1
+    ) {
+      return;
+    }
+
+    const onlySubcategory = relatedSubcategories[0];
+    const onlySubcategoryId = String(
+      onlySubcategory?.id ??
+        onlySubcategory?.subcategory_id ??
+        onlySubcategory?.subcategoryId ??
+        ""
+    );
+
+    if (
+      onlySubcategoryId &&
+      String(formData.subcategory_id) !== onlySubcategoryId
+    ) {
+      setFormData((previous) => ({
+        ...previous,
+        subcategory_id: onlySubcategoryId,
+      }));
+    }
+  }, [
+    formData.trainer_id,
+    formData.category_id,
+    formData.subcategory_id,
+    relatedSubcategories,
   ]);
 
   /* =======================================================
@@ -848,6 +985,40 @@ export default function InstituteClasses() {
     setFormData((previous) => ({
       ...previous,
       [field]: value,
+    }));
+  };
+
+  const handleTrainerChange = (event) => {
+    const trainerId = event.target.value;
+    const trainer = trainers.find(
+      (item) => String(getTrainerId(item)) === String(trainerId)
+    );
+    const specializations = getTrainerSpecializations(trainer);
+
+    // Use distinct categories assigned to this trainer.
+    const trainerCategoryIds = [
+      ...new Set(
+        specializations
+          .map((item) => String(item.category_id || ""))
+          .filter(Boolean)
+      ),
+    ];
+
+    // If the trainer has exactly one category, select it immediately.
+    const nextCategoryId =
+      trainerCategoryIds.length === 1 &&
+      categories.some(
+        (category) =>
+          String(getCategoryId(category)) === trainerCategoryIds[0]
+      )
+        ? trainerCategoryIds[0]
+        : "";
+
+    setFormData((previous) => ({
+      ...previous,
+      trainer_id: trainerId,
+      category_id: nextCategoryId,
+      subcategory_id: "",
     }));
   };
 
@@ -954,9 +1125,6 @@ export default function InstituteClasses() {
       description:
         item?.description || "",
 
-      highlights:
-        item?.highlights || "",
-
       image: null,
 
       category_id:
@@ -992,6 +1160,8 @@ export default function InstituteClasses() {
       mode:
         item?.mode || "ONLINE",
 
+      class_type: getClassType(item),
+
       students_count:
         item?.students_count ?? "",
 
@@ -1004,6 +1174,11 @@ export default function InstituteClasses() {
       start_time:
         item?.start_time ||
         item?.default_start_time ||
+        "",
+
+      end_time:
+        item?.end_time ||
+        item?.default_end_time ||
         "",
 
       available_days:
@@ -1139,7 +1314,7 @@ export default function InstituteClasses() {
     ------------------------------------------------ */
 
     const categoryExists =
-      categories.some(
+      trainerCategoryOptions.some(
         (category) =>
           String(
             getCategoryId(category)
@@ -1149,7 +1324,7 @@ export default function InstituteClasses() {
 
     if (!categoryExists) {
       toast.error(
-        "Selected category is not available for this institute"
+        "Selected category is not assigned to this trainer"
       );
 
       return;
@@ -1194,6 +1369,18 @@ export default function InstituteClasses() {
        DATE VALIDATION
     ------------------------------------------------ */
 
+    const todayDate = getTodayDateInput();
+
+    if (formData.course_start_date && formData.course_start_date < todayDate) {
+      toast.error("Course start date cannot be before today");
+      return;
+    }
+
+    if (formData.course_end_date && formData.course_end_date < todayDate) {
+      toast.error("Course end date cannot be before today");
+      return;
+    }
+
     if (
       formData.course_start_date &&
       formData.course_end_date &&
@@ -1222,12 +1409,6 @@ export default function InstituteClasses() {
       "description",
       formData.description.trim()
     );
-
-    payload.append(
-      "highlights",
-      formData.highlights.trim()
-    );
-
     payload.append(
       "category_id",
       formData.category_id
@@ -1263,6 +1444,11 @@ export default function InstituteClasses() {
     payload.append(
       "mode",
       formData.mode || "ONLINE"
+    );
+
+    payload.append(
+      "class_type",
+      formData.class_type || "LIVE"
     );
 
     payload.append(
@@ -1318,6 +1504,17 @@ export default function InstituteClasses() {
       payload.append(
         "start_time",
         formData.start_time
+      );
+    }
+
+    /* -----------------------------------------------
+       END TIME
+    ------------------------------------------------ */
+
+    if (formData.end_time) {
+      payload.append(
+        "end_time",
+        formData.end_time
       );
     }
 
@@ -1453,393 +1650,440 @@ export default function InstituteClasses() {
   ======================================================= */
 
   return (
-    <div className="p-8 text-white min-h-full">
+    <div className="min-h-screen bg-[#07080d] px-4 py-6 text-white md:px-8">
+      <div className="mx-auto max-w-[1500px]">
 
-      {/* ===================================================
-          HEADER
-      =================================================== */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-7">
+        <div className="mb-7 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <BookOpen
+                size={32}
+                className="text-purple-400"
+              />
 
-        <div>
-          <h1 className="text-4xl font-bold text-purple-400">
-            Institute Classes
-          </h1>
+              <h1 className="text-3xl font-bold md:text-4xl">
+                Institute Classes
+              </h1>
+            </div>
 
-          <p className="text-gray-400 mt-2">
-            Manage classes, trainers and LMS access
-            for your institute.
-          </p>
+            <p className="mt-2 text-gray-500">
+              Create and manage classes, trainers and LMS access for your institute.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            {/* REFRESH */}
+            <button
+              type="button"
+              onClick={fetchClasses}
+              disabled={loading}
+              className="flex h-12 items-center gap-2 rounded-xl border border-white/10 bg-[#15121f] px-4 font-semibold text-gray-300 transition hover:border-purple-500/50 hover:text-white disabled:opacity-50"
+              title="Refresh classes"
+            >
+              <RefreshCw
+                size={18}
+                className={loading ? "animate-spin" : ""}
+              />
+
+              <span className="hidden sm:inline">
+                Refresh
+              </span>
+            </button>
+
+            {/* CREATE */}
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 font-bold text-white shadow-lg transition hover:scale-[1.02]"
+              style={{
+                background:
+                  "linear-gradient(135deg,#9b2cff,#ff2aae)",
+              }}
+            >
+              <span className="text-xl leading-none">
+                +
+              </span>
+
+              Add Class
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-3">
+        {/* =================================================
+            SEARCH
+        ================================================= */}
 
-          <button
-            type="button"
-            onClick={fetchClasses}
-            className="px-5 py-3 rounded-xl bg-[#1b1b22] border border-[#30303a] hover:bg-[#24242c] transition-colors"
-          >
-            Refresh
-          </button>
+        <div className="mb-6">
+          <div className="relative w-full">
+            <Search
+              size={20}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+            />
 
-          <button
-            type="button"
-            onClick={openAddModal}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
-          >
-            + Add Class
-          </button>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) =>
+                setSearchQuery(event.target.value)
+              }
+              placeholder="Search classes..."
+              className="h-12 w-full rounded-xl border border-white/10 bg-[#15121f] pl-12 pr-12 text-sm text-white placeholder:text-gray-600 outline-none transition focus:border-purple-500"
+            />
 
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-white"
+                title="Clear search"
+              >
+                <X size={17} />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ===================================================
-          SEARCH
-      =================================================== */}
+        {/* =================================================
+            TABLE
+        ================================================= */}
 
-      <div className="mb-6 relative">
-
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-        />
-
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(event) =>
-            setSearchQuery(
-              event.target.value
-            )
-          }
-          placeholder="Search by class, trainer, category, level or mode..."
-          className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/60"
-        />
-
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() =>
-              setSearchQuery("")
-            }
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
-          >
-            <X size={16} />
-          </button>
-        )}
-
-      </div>
-
-      {/* ===================================================
-          TABLE
-      =================================================== */}
-
-      <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[1700px]">
-
-            <thead className="bg-[#202027]">
-
-              <tr>
-
-                {[
-                  "ID",
-                  "Image",
-                  "Class Name",
-                  "Description",
-                  "Trainer",
-                  "Category",
-                  "Subcategory",
-                  "Level",
-                  "Mode",
-                  "Price",
-                  "Duration",
-                  "Students",
-                  "Start Date",
-                  "End Date",
-                  "Start Time",
-                  "Available Days",
-                  "Actions",
-                ].map((heading) => (
-                  <th
-                    key={heading}
-                    className="p-4 text-left whitespace-nowrap text-sm"
-                  >
-                    {heading}
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#10121a]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1800px] border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-[#15121f]">
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    ID
                   </th>
-                ))}
 
-              </tr>
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Image
+                  </th>
 
-            </thead>
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Class Name
+                  </th>
 
-            <tbody>
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Description
+                  </th>
 
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={17}
-                    className="p-16 text-center text-gray-400"
-                  >
-                    Loading classes...
-                  </td>
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Trainer
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Category
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Subcategory
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Class Type
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Price
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Duration
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Level
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Mode
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Students
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Start Date
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    End Date
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Start Time
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    End Time
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-bold text-gray-400">
+                    Days
+                  </th>
+
+                  <th className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-gray-400">
+                    Actions
+                  </th>
                 </tr>
-              ) : filteredClasses.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={17}
-                    className="p-16 text-center"
-                  >
-                    <Search
-                      size={40}
-                      className="mx-auto text-gray-700 mb-3"
-                    />
+              </thead>
 
-                    <p className="text-gray-400 text-lg">
-                      {searchQuery
-                        ? "No classes found matching your search"
-                        : "No classes available"}
-                    </p>
-                  </td>
-                </tr>
-              ) : (
-                filteredClasses.map(
-                  (item) => (
-                    <tr
-                      key={item.id}
-                      className="border-t border-[#2c2c35] hover:bg-[#1b1b21] transition-colors"
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={19}
+                      className="px-6 py-16 text-center text-gray-400"
                     >
+                      Loading classes...
+                    </td>
+                  </tr>
+                ) : filteredClasses.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={19}
+                      className="px-6 py-16 text-center"
+                    >
+                      <div className="flex flex-col items-center justify-center">
+                        <BookOpen
+                          size={42}
+                          className="mb-3 text-gray-700"
+                        />
 
-                      {/* ID */}
-                      <td className="p-4 whitespace-nowrap">
-                        {item.id}
-                      </td>
+                        <p className="font-semibold text-gray-400">
+                          {searchQuery
+                            ? "No classes found."
+                            : "No classes created yet."}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredClasses.map((item) => {
+                    const imageUrl = getImageUrl(item?.image);
+                    const days = parseDays(item?.available_days);
+                    const classType = getClassType(item);
 
-                      {/* IMAGE */}
-                      <td className="p-4">
-
-                        {item.image ? (
-                          <img
-                            src={getImageUrl(
-                              item.image
-                            )}
-                            alt={
-                              item.title ||
-                              "Class"
-                            }
-                            className="w-12 h-12 rounded-xl object-cover border border-[#333]"
-                            onError={(event) => {
-                              event.currentTarget.style.display =
-                                "none";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-[#26262b] flex items-center justify-center">
-                            <ImageIcon
-                              size={18}
-                              className="text-gray-600"
-                            />
-                          </div>
-                        )}
-
-                      </td>
-
-                      {/* CLASS NAME */}
-                      <td className="p-4 font-semibold whitespace-nowrap">
-                        {item.title || "-"}
-                      </td>
-
-                      {/* DESCRIPTION */}
-                      <td
-                        className="p-4 text-gray-300 max-w-[180px]"
-                        title={
-                          item.description ||
-                          ""
-                        }
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-white/5 transition last:border-b-0 hover:bg-white/[0.025]"
                       >
-                        {truncate(
-                          item.description,
-                          35
-                        )}
-                      </td>
+                        {/* ID */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-400">
+                          {item.id}
+                        </td>
 
-                      {/* TRAINER */}
-                      <td className="p-4 whitespace-nowrap">
-                        {item.trainer_name ||
-                          "-"}
-                      </td>
-
-                      {/* CATEGORY */}
-                      <td className="p-4 whitespace-nowrap">
-                        {item.category_name ||
-                          "-"}
-                      </td>
-
-                      {/* SUBCATEGORY */}
-                      <td className="p-4 whitespace-nowrap">
-                        {item.subcategory_name ||
-                          "-"}
-                      </td>
-
-                      {/* LEVEL */}
-                      <td className="p-4 whitespace-nowrap">
-
-                        <span className="px-2.5 py-1 rounded-full text-xs bg-purple-500/20 text-purple-300">
-                          {item.level || "-"}
-                        </span>
-
-                      </td>
-
-                      {/* MODE */}
-                      <td className="p-4 whitespace-nowrap">
-
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-xs ${modeClass(
-                            item.mode
-                          )}`}
-                        >
-                          {item.mode || "-"}
-                        </span>
-
-                      </td>
-
-                      {/* PRICE */}
-                      <td className="p-4 font-semibold whitespace-nowrap">
-                        ₹{item.price ?? 0}
-                      </td>
-
-                      {/* DURATION */}
-                      <td className="p-4 whitespace-nowrap">
-                        {item.duration
-                          ? `${item.duration} min`
-                          : "-"}
-                      </td>
-
-                      {/* STUDENTS */}
-                      <td className="p-4 font-semibold whitespace-nowrap">
-                        {item.students_count ??
-                          0}
-                      </td>
-
-                      {/* START DATE */}
-                      <td className="p-4 whitespace-nowrap">
-                        {formatDate(
-                          item.start_date
-                        )}
-                      </td>
-
-                      {/* END DATE */}
-                      <td className="p-4 whitespace-nowrap">
-                        {formatDate(
-                          item.end_date
-                        )}
-                      </td>
-
-                      {/* START TIME */}
-                      <td className="p-4 whitespace-nowrap">
-
-                        <span className="inline-flex items-center gap-1">
-
-                          <Clock
-                            size={14}
-                            className="text-gray-500"
-                          />
-
-                          {formatTime(
-                            item.start_time
+                        {/* IMAGE */}
+                        <td className="whitespace-nowrap px-4 py-5">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={item.title || "Class"}
+                              className="h-12 w-12 rounded-xl border border-white/10 object-cover"
+                              onError={(event) => {
+                                event.currentTarget.style.display =
+                                  "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10">
+                              <BookOpen
+                                size={20}
+                                className="text-purple-400"
+                              />
+                            </div>
                           )}
+                        </td>
 
-                        </span>
+                        {/* CLASS NAME */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm font-bold text-white">
+                          {item.title || "-"}
+                        </td>
 
-                      </td>
+                        {/* DESCRIPTION */}
+                        <td className="max-w-[260px] whitespace-nowrap px-4 py-5 text-sm text-gray-400">
+                          <div className="max-w-[260px] overflow-hidden text-ellipsis whitespace-nowrap">
+                            {item.description || "-"}
+                          </div>
+                        </td>
 
-                      {/* DAYS */}
-                      <td
-                        className="p-4 whitespace-nowrap"
-                        title={formatDays(
-                          item.available_days
-                        )}
-                      >
-                        {formatDays(
-                          item.available_days
-                        )}
-                      </td>
+                        {/* TRAINER */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.trainer_name || "-"}
+                        </td>
 
-                      {/* ACTIONS */}
-                      <td className="p-4">
+                        {/* CATEGORY */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.category_name || item.category || "-"}
+                        </td>
 
-                        <div className="flex items-center gap-2">
+                        {/* SUBCATEGORY */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.subcategory_name ||
+                            item.subcategory ||
+                            "-"}
+                        </td>
 
-                          {/* LMS */}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigate(
-                                `/institute/lms/${item.id}`
-                              )
-                            }
-                            className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
-                            title="Manage LMS"
+                        {/* CLASS TYPE */}
+                        <td className="whitespace-nowrap px-4 py-5">
+                          <span
+                            className={[
+                              "inline-flex items-center whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-bold",
+                              classType === "RECORDING"
+                                ? "border-pink-500/20 bg-pink-500/10 text-pink-300"
+                                : "border-purple-500/20 bg-purple-500/10 text-purple-300",
+                            ].join(" ")}
                           >
-                            <BookOpen
-                              size={17}
-                              className="text-purple-300"
+                            {classType === "RECORDING"
+                              ? "Recorded Class"
+                              : "Live Class"}
+                          </span>
+                        </td>
+
+                        {/* PRICE */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm font-semibold text-white">
+                          {item.price !== undefined &&
+                          item.price !== null
+                            ? `₹${Number(item.price).toFixed(2)}`
+                            : "-"}
+                        </td>
+
+                        {/* DURATION */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.duration
+                            ? `${item.duration} min`
+                            : "-"}
+                        </td>
+
+                        {/* LEVEL */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.level || "BEGINNER"}
+                        </td>
+
+                        {/* MODE */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {String(item.mode || "ONLINE").toUpperCase() ===
+                          "OFFLINE"
+                            ? "Offline"
+                            : "Online"}
+                        </td>
+
+                        {/* STUDENTS */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {item.students_count ??
+                            item.max_students ??
+                            0}
+                        </td>
+
+                        {/* START DATE */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {formatDate(item.start_date)}
+                        </td>
+
+                        {/* END DATE */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm text-gray-300">
+                          {formatDate(item.end_date)}
+                        </td>
+
+                        {/* START TIME */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm font-semibold text-gray-300">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock
+                              size={14}
+                              className="text-gray-500"
                             />
-                          </button>
+                            {formatTime(item.start_time)}
+                          </span>
+                        </td>
 
-                          {/* EDIT */}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openEditModal(
-                                item
-                              )
-                            }
-                            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit
-                              size={17}
-                              className="text-white"
-                            />
-                          </button>
+                        {/* END TIME */}
+                        <td className="whitespace-nowrap px-4 py-5 text-sm font-semibold text-gray-300">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock size={14} className="text-gray-500" />
+                            {formatTime(item.end_time || item.default_end_time)}
+                          </span>
+                        </td>
 
-                          {/* DELETE */}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openDeleteModal(
-                                item
-                              )
-                            }
-                            className="p-2 rounded-lg hover:bg-red-500/10 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2
-                              size={17}
-                              className="text-red-400"
-                            />
-                          </button>
+                        {/* DAYS */}
+                        <td className="whitespace-nowrap px-4 py-5">
+                          <div className="flex flex-nowrap items-center gap-1">
+                            {days.length > 0
+                              ? days.map((day) => (
+                                  <span
+                                    key={day}
+                                    className="inline-flex shrink-0 whitespace-nowrap rounded-lg border border-purple-500/20 bg-purple-500/10 px-2 py-1 text-xs font-semibold text-purple-300"
+                                  >
+                                    {DAYS.find(
+                                      (entry) =>
+                                        entry.value === day
+                                    )?.label || day}
+                                  </span>
+                                ))
+                              : "-"}
+                          </div>
+                        </td>
 
-                        </div>
+                        {/* ACTIONS */}
+                        <td className="whitespace-nowrap px-4 py-5">
+                          <div className="flex items-center justify-end gap-2">
 
-                      </td>
+                            {/* LMS */}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/institute/lms/${item.id}`
+                                )
+                              }
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-300 transition hover:bg-blue-500/20"
+                              title="Manage LMS"
+                            >
+                              <BookOpen size={17} />
+                            </button>
 
-                    </tr>
-                  )
-                )
-              )}
+                            {/* EDIT */}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openEditModal(item)
+                              }
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/30 bg-purple-500/10 text-purple-300 transition hover:bg-purple-500/20"
+                              title="Edit"
+                            >
+                              <Edit size={17} />
+                            </button>
 
-            </tbody>
-
-          </table>
-
+                            {/* DELETE */}
+                            <button
+                              type="button"
+                              disabled={deleting}
+                              onClick={() =>
+                                openDeleteModal(item)
+                              }
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+                              title="Delete"
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-
       </div>
-
       {/* ===================================================
           ADD / EDIT MODAL
       =================================================== */}
@@ -1921,28 +2165,7 @@ export default function InstituteClasses() {
                   rows={3}
                   placeholder="Enter class description"
                 />
-
-                {/* HIGHLIGHTS */}
-                <label className={labelClass}>
-                  Highlights
-                </label>
-
-                <textarea
-                  value={
-                    formData.highlights
-                  }
-                  onChange={(event) =>
-                    updateForm(
-                      "highlights",
-                      event.target.value
-                    )
-                  }
-                  className={inputClass}
-                  rows={2}
-                  placeholder="Enter class highlights"
-                />
-
-                {/* IMAGE */}
+{/* IMAGE */}
                 <label className={labelClass}>
                   Class Image
                 </label>
@@ -1983,12 +2206,7 @@ export default function InstituteClasses() {
                   value={
                     formData.trainer_id
                   }
-                  onChange={(event) =>
-                    updateForm(
-                      "trainer_id",
-                      event.target.value
-                    )
-                  }
+                  onChange={handleTrainerChange}
                   className={selectClass}
                   required
                   disabled={
@@ -2050,20 +2268,22 @@ export default function InstituteClasses() {
                       required
                       disabled={
                         dropdownLoading ||
-                        categories.length ===
-                          0
+                        !formData.trainer_id ||
+                        trainerCategoryOptions.length === 0
                       }
                     >
 
                       <option value="">
                         {dropdownLoading
                           ? "Loading categories..."
-                          : categories.length
+                          : !formData.trainer_id
+                          ? "Select Trainer First"
+                          : trainerCategoryOptions.length
                           ? "Select Category"
-                          : "No categories available"}
+                          : "No categories assigned to this trainer"}
                       </option>
 
-                      {categories.map(
+                      {trainerCategoryOptions.map(
                         (category) => (
                           <option
                             key={getCategoryId(
@@ -2143,6 +2363,22 @@ export default function InstituteClasses() {
                   </div>
 
                 </div>
+
+                {/* CLASS TYPE */}
+                <label className={labelClass}>
+                  Class Type *
+                </label>
+                <select
+                  value={formData.class_type}
+                  onChange={(event) =>
+                    updateForm("class_type", event.target.value)
+                  }
+                  className={selectClass}
+                  required
+                >
+                  <option value="LIVE">Live Class</option>
+                  <option value="RECORDING">Recorded Class</option>
+                </select>
 
                 {/* PRICE + DURATION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2224,6 +2460,7 @@ export default function InstituteClasses() {
 
                     <input
                       type="date"
+                      min={getTodayDateInput()}
                       value={
                         formData.course_start_date
                       }
@@ -2256,8 +2493,10 @@ export default function InstituteClasses() {
                         formData.course_end_date
                       }
                       min={
-                        formData.course_start_date ||
-                        undefined
+                        formData.course_start_date &&
+                        formData.course_start_date > getTodayDateInput()
+                          ? formData.course_start_date
+                          : getTodayDateInput()
                       }
                       onChange={(event) =>
                         updateForm(
@@ -2290,6 +2529,19 @@ export default function InstituteClasses() {
                       event.target.value
                     )
                   }
+                  className={inputClass}
+                />
+
+                {/* END TIME */}
+                <label className={labelClass}>
+                  End Time
+                </label>
+
+                <input
+                  type="time"
+                  value={formData.end_time}
+                  min={formData.start_time || undefined}
+                  onChange={(event) => updateForm("end_time", event.target.value)}
                   className={inputClass}
                 />
 

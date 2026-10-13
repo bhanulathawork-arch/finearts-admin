@@ -47,6 +47,7 @@ import AdminAssignments from "./pages/AdminAssignments";
 import AdminAttendance from "./pages/AdminAttendance";
 import AdminLMS from "./pages/AdminLMS";
 import AdminRecordings  from "./pages/AdminRecordings";
+import AdminLive  from "./pages/AdminLive";
 
 import WebsiteTemplates from "./pages/websiteTemplates/WebsiteTemplates";
 import CreateWebsiteTemplate from "./pages/websiteTemplates/CreateWebsiteTemplate";
@@ -72,6 +73,7 @@ import AssignmentsInstitute from "./institute/InstituteAssignments";
 import AttendanceInstitute from "./institute/InstituteAttendance";
 import LMSInstitute from "./institute/InstituteLMS";
 import RecordingsInstitute from "./institute/InstituteRecordings";
+import LiveInstitute from "./institute/InstituteLive";
 
 /* =========================================================
    INSTITUTE STUDENTS
@@ -148,6 +150,7 @@ import TrainerSession from "./trainer/TrainerSession";
 import TrainerAttendance from "./trainer/TrainerAttendance";
 import TrainerAssignments from "./trainer/TrainerAssignments";
 import TrainerRecordings from "./trainer/TrainerRecordings";
+import TrainerLive from "./trainer/TrainerLive";
 import TrainerLMS from "./trainer/TrainerLMS";
 
 
@@ -612,6 +615,10 @@ function App() {
                 path="/admin/recordings"
                 element={<AdminRecordings />}
               />
+               <Route
+                path="/admin/live"
+                element={<AdminLive />}
+              />
 
               <Route
                 path="/testimonials"
@@ -857,10 +864,10 @@ function App() {
                   element={<AttendanceInstitute />}
                 />
 
-                <Route
+                {/* <Route
                   path="lms"
                   element={<LMSInstitute />}
-                />
+                /> */}
 
                 <Route
                   path="lms/:classId"
@@ -871,7 +878,10 @@ function App() {
                   path="recordings"
                   element={<RecordingsInstitute />}
                 />
-
+                 <Route
+                  path="Live"
+                  element={<LiveInstitute />}
+                />
 
                 {/* STUDENTS */}
 
@@ -1025,10 +1035,10 @@ function App() {
                   element={<TrainerClasses />}
                 />
 
-                <Route
+                {/* <Route
                   path="lms"
                   element={<TrainerLMS />}
-                />
+                /> */}
 
                 <Route
                   path="lms/:classId"
@@ -1061,14 +1071,19 @@ function App() {
                 />
 
                 <Route
-                  path="assignments"
-                  element={<TrainerAssignments />}
-                />
+  path="assignments"
+  element={<TrainerAssignments />}
+/>
 
-                <Route
-                  path="recordings"
-                  element={<TrainerRecordings />}
-                />
+<Route
+  path="live"
+  element={<TrainerLive />}
+/>
+
+<Route
+  path="recordings"
+  element={<TrainerRecordings />}
+/>
 
               </Route>
 

@@ -1,4845 +1,3756 @@
+import React, { useEffect, useMemo, useState } from "react";
 
-// import { useEffect, useMemo, useState } from "react";
-// import {
-//   useNavigate,
-//   useOutletContext,
-// } from "react-router-dom";
-// import { onAuthStateChanged } from "firebase/auth";
-
-// import {
-//   FaHome,
-//   FaBookOpen,
-//   FaVideo,
-//   FaPlayCircle,
-//   FaCalendarAlt,
-//   FaFileAlt,
-//   FaClipboardCheck,
-//   FaCreditCard,
-//   FaUser,
-//   FaBell,
-//   FaSearch,
-//   FaArrowRight,
-//   FaBars,
-//   FaTimes,
-//   FaChevronRight,
-//   FaClock,
-//   FaGraduationCap,
-//   FaPlay,
-// } from "react-icons/fa";
-
-// import { auth } from "../../config/firebase";
-
-// /* =========================================================
-//    API
-// ========================================================= */
-
-// const API =
-//   import.meta.env.VITE_API_URL ||
-//   "https://finearts-backend.onrender.com/api";
-
-// /* =========================================================
-//    STORAGE HELPERS
-// ========================================================= */
-
-// const getStoredStudent = () => {
-//   try {
-//     const raw =
-//       localStorage.getItem("studentUser");
-
-//     if (!raw) {
-//       return null;
-//     }
-
-//     const parsed = JSON.parse(raw);
-
-//     return parsed &&
-//       typeof parsed === "object"
-//       ? parsed
-//       : null;
-//   } catch (error) {
-//     console.error(
-//       "STUDENT STORAGE ERROR:",
-//       error
-//     );
-
-//     localStorage.removeItem(
-//       "studentUser"
-//     );
-
-//     return null;
-//   }
-// };
-
-// const getStudentToken = () => {
-//   const token =
-//     localStorage.getItem(
-//       "studentToken"
-//     );
-
-//   if (
-//     !token ||
-//     token === "null" ||
-//     token === "undefined"
-//   ) {
-//     return null;
-//   }
-
-//   return token;
-// };
-
-// /* =========================================================
-//    SAFE FIREBASE TOKEN
-// ========================================================= */
-
-// const getSafeStudentToken = async (
-//   firebaseUser,
-//   forceRefresh = false
-// ) => {
-//   /*
-//     Normal request:
-//     Use stored token first.
-
-//     This prevents unnecessary Firebase
-//     token requests and helps avoid
-//     auth/quota-exceeded.
-//   */
-
-//   if (!forceRefresh) {
-//     const storedToken =
-//       getStudentToken();
-
-//     if (storedToken) {
-//       console.log(
-//         "STUDENT TOKEN: USING STORED TOKEN"
-//       );
-
-//       return storedToken;
-//     }
-//   }
-
-//   if (!firebaseUser) {
-//     return null;
-//   }
-
-//   try {
-//     const token =
-//       await firebaseUser.getIdToken(
-//         forceRefresh
-//       );
-
-//     if (token) {
-//       localStorage.setItem(
-//         "studentToken",
-//         token
-//       );
-
-//       console.log(
-//         "STUDENT TOKEN: FIREBASE TOKEN AVAILABLE"
-//       );
-
-//       return token;
-//     }
-
-//     return null;
-//   } catch (error) {
-//     console.error(
-//       "STUDENT TOKEN ERROR:",
-//       error
-//     );
-
-//     /*
-//       If Firebase fails but an existing
-//       token exists, continue using it.
-//     */
-
-//     const fallbackToken =
-//       getStudentToken();
-
-//     if (fallbackToken) {
-//       console.warn(
-//         "STUDENT TOKEN: USING FALLBACK TOKEN"
-//       );
-
-//       return fallbackToken;
-//     }
-
-//     return null;
-//   }
-// };
-
-// /* =========================================================
-//    INSTITUTE ID
-// ========================================================= */
-
-// const getStoredInstituteId = () => {
-//   const keys = [
-//     "instituteId",
-//     "institute_id",
-//     "websiteInstituteId",
-//     "website_institute_id",
-//     "selectedInstituteId",
-//     "selected_institute_id",
-//   ];
-
-//   for (const key of keys) {
-//     const value =
-//       localStorage.getItem(key);
-
-//     if (!value) {
-//       continue;
-//     }
-
-//     const id = Number(value);
-
-//     if (
-//       Number.isInteger(id) &&
-//       id > 0
-//     ) {
-//       return id;
-//     }
-//   }
-
-//   return null;
-// };
-
-// const resolveInstituteId = (
-//   context,
-//   student = null
-// ) => {
-//   const candidates = [
-//     context?.instituteId,
-//     context?.institute_id,
-
-//     context?.website?.institute_id,
-//     context?.website?.instituteId,
-
-//     context?.websiteData?.institute_id,
-//     context?.websiteData?.instituteId,
-
-//     context?.publicWebsite?.institute_id,
-//     context?.publicWebsite?.instituteId,
-
-//     student?.institute_id,
-//     student?.instituteId,
-//     student?.institute?.id,
-
-//     getStoredInstituteId(),
-//   ];
-
-//   for (const value of candidates) {
-//     const id = Number(value);
-
-//     if (
-//       Number.isInteger(id) &&
-//       id > 0
-//     ) {
-//       return id;
-//     }
-//   }
-
-//   try {
-//     const params =
-//       new URLSearchParams(
-//         window.location.search
-//       );
-
-//     const queryInstituteId =
-//       params.get("institute_id");
-
-//     const id =
-//       Number(queryInstituteId);
-
-//     if (
-//       Number.isInteger(id) &&
-//       id > 0
-//     ) {
-//       return id;
-//     }
-//   } catch (error) {
-//     console.warn(
-//       "INSTITUTE ID URL ERROR:",
-//       error
-//     );
-//   }
-
-//   return null;
-// };
-
-// /* =========================================================
-//    SAVE STUDENT
-// ========================================================= */
-
-// const saveStudent = (
-//   student,
-//   token = null,
-//   instituteId = null
-// ) => {
-//   if (!student) {
-//     return;
-//   }
-
-//   try {
-//     localStorage.setItem(
-//       "studentUser",
-//       JSON.stringify(student)
-//     );
-
-//     localStorage.setItem(
-//       "studentRole",
-//       "STUDENT"
-//     );
-
-//     localStorage.setItem(
-//       "studentLoggedIn",
-//       "true"
-//     );
-
-//     if (token) {
-//       localStorage.setItem(
-//         "studentToken",
-//         token
-//       );
-//     }
-
-//     if (instituteId) {
-//       localStorage.setItem(
-//         "instituteId",
-//         String(instituteId)
-//       );
-
-//       localStorage.setItem(
-//         "institute_id",
-//         String(instituteId)
-//       );
-//     }
-//   } catch (error) {
-//     console.error(
-//       "SAVE STUDENT ERROR:",
-//       error
-//     );
-//   }
-// };
-
-// /* =========================================================
-//    NORMALIZE STUDENT
-// ========================================================= */
-
-// const normalizeStudent = (
-//   result,
-//   firebaseUser,
-//   existingStudent
-// ) => {
-//   const data =
-//     result?.data ||
-//     result?.student ||
-//     result ||
-//     {};
-
-//   const student =
-//     data?.student || {};
-
-//   const account =
-//     data?.account || {};
-
-//   const user =
-//     data?.user || {};
-
-//   return {
-//     ...(existingStudent || {}),
-//     ...data,
-//     ...student,
-
-//     uid:
-//       data?.uid ||
-//       data?.firebase_uid ||
-//       existingStudent?.uid ||
-//       firebaseUser?.uid ||
-//       null,
-
-//     firebase_uid:
-//       data?.firebase_uid ||
-//       existingStudent?.firebase_uid ||
-//       firebaseUser?.uid ||
-//       null,
-
-//     student_id:
-//       data?.student_id ||
-//       student?.student_id ||
-//       student?.id ||
-//       existingStudent?.student_id ||
-//       null,
-
-//     institute_id:
-//       data?.institute_id ||
-//       student?.institute_id ||
-//       existingStudent?.institute_id ||
-//       null,
-
-//     name:
-//       data?.name ||
-//       data?.full_name ||
-//       student?.name ||
-//       user?.full_name ||
-//       existingStudent?.name ||
-//       existingStudent?.full_name ||
-//       firebaseUser?.displayName ||
-//       "Student",
-
-//     full_name:
-//       data?.full_name ||
-//       data?.name ||
-//       student?.name ||
-//       user?.full_name ||
-//       existingStudent?.full_name ||
-//       existingStudent?.name ||
-//       firebaseUser?.displayName ||
-//       "Student",
-
-//     email:
-//       data?.email ||
-//       account?.email ||
-//       user?.email ||
-//       existingStudent?.email ||
-//       firebaseUser?.email ||
-//       "",
-
-//     phone:
-//       data?.phone ||
-//       data?.phone_number ||
-//       account?.phone_number ||
-//       user?.phone_number ||
-//       existingStudent?.phone ||
-//       existingStudent?.phone_number ||
-//       firebaseUser?.phoneNumber ||
-//       "",
-
-//     profile_image:
-//       data?.profile_image ||
-//       data?.student_photo ||
-//       student?.profile_image ||
-//       user?.profile_image ||
-//       existingStudent?.profile_image ||
-//       firebaseUser?.photoURL ||
-//       "",
-
-//     photoURL:
-//       data?.photoURL ||
-//       existingStudent?.photoURL ||
-//       firebaseUser?.photoURL ||
-//       data?.profile_image ||
-//       "",
-//   };
-// };
-
-// /* =========================================================
-//    RESPONSE HELPERS
-// ========================================================= */
-
-// const extractArray = (
-//   result,
-//   keys = []
-// ) => {
-//   if (Array.isArray(result)) {
-//     return result;
-//   }
-
-//   for (const key of keys) {
-//     if (
-//       Array.isArray(
-//         result?.[key]
-//       )
-//     ) {
-//       return result[key];
-//     }
-
-//     if (
-//       Array.isArray(
-//         result?.data?.[key]
-//       )
-//     ) {
-//       return result.data[key];
-//     }
-//   }
-
-//   if (
-//     Array.isArray(
-//       result?.data
-//     )
-//   ) {
-//     return result.data;
-//   }
-
-//   return [];
-// };
-
-// const getImage = (
-//   value,
-//   fallbackName = "Course"
-// ) => {
-//   if (value) {
-//     return value;
-//   }
-
-//   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-//     fallbackName
-//   )}&background=07152A&color=ffffff&bold=true&size=600`;
-// };
-
-// const formatDate = value => {
-//   if (!value) {
-//     return "Date unavailable";
-//   }
-
-//   const date =
-//     new Date(value);
-
-//   if (
-//     Number.isNaN(
-//       date.getTime()
-//     )
-//   ) {
-//     return String(value);
-//   }
-
-//   return date.toLocaleDateString(
-//     "en-IN",
-//     {
-//       weekday: "short",
-//       day: "2-digit",
-//       month: "short",
-//     }
-//   );
-// };
-
-// const formatTime = value => {
-//   if (!value) {
-//     return "Time unavailable";
-//   }
-
-//   const date =
-//     new Date(value);
-
-//   if (
-//     !Number.isNaN(
-//       date.getTime()
-//     )
-//   ) {
-//     return date.toLocaleTimeString(
-//       "en-IN",
-//       {
-//         hour: "2-digit",
-//         minute: "2-digit",
-//       }
-//     );
-//   }
-
-//   return String(value);
-// };
-
-// /* =========================================================
-//    DASHBOARD
-// ========================================================= */
-
-// const WebsitePreviewDashboard = () => {
-//   const navigate =
-//     useNavigate();
-
-//   const context =
-//     useOutletContext() || {};
-
-//   const branding =
-//     context.branding || {};
-
-//   const primaryColor =
-//     branding.primaryColor ||
-//     branding.primary_color ||
-//     "#087CFF";
-
-//   const accentColor =
-//     branding.accentColor ||
-//     branding.accent_color ||
-//     "#6D2BFF";
-
-//   const pageBackground =
-//     branding.pageBackgroundColor ||
-//     branding.page_background_color ||
-//     "#020914";
-
-//   const [
-//     student,
-//     setStudent,
-//   ] = useState(() =>
-//     context.studentUser ||
-//     getStoredStudent()
-//   );
-
-//   const [
-//     firebaseUser,
-//     setFirebaseUser,
-//   ] = useState(
-//     auth.currentUser
-//   );
-
-//   const [
-//     token,
-//     setToken,
-//   ] = useState(
-//     getStudentToken()
-//   );
-
-//   const [
-//     courses,
-//     setCourses,
-//   ] = useState([]);
-
-//   const [
-//     sessions,
-//     setSessions,
-//   ] = useState([]);
-
-//   const [
-//     bookings,
-//     setBookings,
-//   ] = useState([]);
-
-//   const [
-//     loading,
-//     setLoading,
-//   ] = useState(true);
-
-//   const [
-//     dataLoading,
-//     setDataLoading,
-//   ] = useState(false);
-
-//   const [
-//     mobileMenu,
-//     setMobileMenu,
-//   ] = useState(false);
-
-//   const [
-//     search,
-//     setSearch,
-//   ] = useState("");
-
-//   const [
-//     error,
-//     setError,
-//   ] = useState("");
-
-//   /* =======================================================
-//      FIREBASE AUTH
-//   ======================================================= */
-
-//   useEffect(() => {
-//     let mounted = true;
-
-//     const unsubscribe =
-//       onAuthStateChanged(
-//         auth,
-//         async user => {
-//           if (!mounted) {
-//             return;
-//           }
-
-//           setFirebaseUser(user);
-
-//           const storedStudent =
-//             getStoredStudent();
-
-//           if (storedStudent) {
-//             setStudent(
-//               previous => ({
-//                 ...(previous || {}),
-//                 ...storedStudent,
-//               })
-//             );
-//           }
-
-//           if (user) {
-//             try {
-//               const freshToken =
-//                 await getSafeStudentToken(
-//                   user
-//                 );
-
-//               if (
-//                 mounted &&
-//                 freshToken
-//               ) {
-//                 setToken(
-//                   freshToken
-//                 );
-
-//                 localStorage.setItem(
-//                   "studentToken",
-//                   freshToken
-//                 );
-//               }
-//             } catch (authError) {
-//               console.error(
-//                 "TOKEN ERROR:",
-//                 authError
-//               );
-//             }
-//           }
-
-//           if (mounted) {
-//             setLoading(false);
-//           }
-//         }
-//       );
-
-//     return () => {
-//       mounted = false;
-//       unsubscribe();
-//     };
-//   }, []);
-
-//   /* =======================================================
-//      CONTEXT STUDENT
-//   ======================================================= */
-
-//   useEffect(() => {
-//     if (
-//       context.studentUser &&
-//       typeof context.studentUser ===
-//         "object"
-//     ) {
-//       setStudent(
-//         previous => ({
-//           ...(previous || {}),
-//           ...context.studentUser,
-//         })
-//       );
-
-//       saveStudent(
-//         context.studentUser,
-//         getStudentToken(),
-//         resolveInstituteId(
-//           context,
-//           context.studentUser
-//         )
-//       );
-//     }
-//   }, [
-//     context.studentUser,
-//     context.instituteId,
-//     context.institute_id,
-//   ]);
-
-//   /* =======================================================
-//      FETCH PROFILE
-//   ======================================================= */
-
-//   useEffect(() => {
-//     let mounted = true;
-
-//     const fetchStudentProfile =
-//       async firebaseUser => {
-//         if (!firebaseUser?.uid) {
-//           return;
-//         }
-
-//         const currentInstituteId =
-//           resolveInstituteId(
-//             context,
-//             getStoredStudent()
-//           );
-
-//         if (!currentInstituteId) {
-//           console.warn(
-//             "STUDENT PROFILE: Institute ID missing"
-//           );
-
-//           return;
-//         }
-
-//         try {
-//           const freshToken =
-//             await getSafeStudentToken(
-//               firebaseUser
-//             );
-
-//           if (!freshToken) {
-//             throw new Error(
-//               "Student authentication token is unavailable."
-//             );
-//           }
-
-//           const response =
-//             await fetch(
-//               `${API}/students/me?institute_id=${encodeURIComponent(
-//                 currentInstituteId
-//               )}`,
-//               {
-//                 method: "GET",
-
-//                 headers: {
-//                   Accept:
-//                     "application/json",
-
-//                   Authorization:
-//                     `Bearer ${freshToken}`,
-//                 },
-//               }
-//             );
-
-//           const result =
-//             await response
-//               .json()
-//               .catch(() => ({}));
-
-//           if (!response.ok) {
-//             throw new Error(
-//               result?.message ||
-//               result?.error ||
-//               "Unable to load student profile."
-//             );
-//           }
-
-//           const normalized =
-//             normalizeStudent(
-//               result,
-//               firebaseUser,
-//               getStoredStudent()
-//             );
-
-//           normalized.institute_id =
-//             normalized.institute_id ||
-//             currentInstituteId;
-
-//           saveStudent(
-//             normalized,
-//             freshToken,
-//             currentInstituteId
-//           );
-
-//           if (mounted) {
-//             setStudent(
-//               normalized
-//             );
-
-//             setToken(
-//               freshToken
-//             );
-//           }
-//         } catch (profileError) {
-//           console.warn(
-//             "STUDENT PROFILE REFRESH:",
-//             profileError
-//           );
-//         }
-//       };
-
-//     if (firebaseUser) {
-//       fetchStudentProfile(
-//         firebaseUser
-//       );
-//     }
-
-//     return () => {
-//       mounted = false;
-//     };
-//   }, [
-//     firebaseUser,
-//     context,
-//   ]);
-
-//   /* =======================================================
-//      DASHBOARD API REQUEST
-//   ======================================================= */
-
-//   useEffect(() => {
-//     if (!token) {
-//       console.warn(
-//         "STUDENT DASHBOARD: No token available"
-//       );
-
-//       return;
-//     }
-
-//     let mounted = true;
-
-//     const requestJson =
-//       async (
-//         url,
-//         requestName
-//       ) => {
-//         try {
-//           const response =
-//             await fetch(
-//               url,
-//               {
-//                 method: "GET",
-
-//                 headers: {
-//                   Accept:
-//                     "application/json",
-
-//                   Authorization:
-//                     `Bearer ${token}`,
-//                 },
-//               }
-//             );
-
-//           const result =
-//             await response
-//               .json()
-//               .catch(() => ({}));
-
-//           console.log(
-//             `${requestName} STATUS:`,
-//             response.status
-//           );
-
-//           if (!response.ok) {
-//             throw new Error(
-//               result?.message ||
-//               result?.error ||
-//               `${requestName} failed with status ${response.status}`
-//             );
-//           }
-
-//           return result;
-//         } catch (error) {
-//           console.error(
-//             `${requestName} ERROR:`,
-//             error
-//           );
-
-//           throw error;
-//         }
-//       };
-
-//     const loadDashboard =
-//       async () => {
-//         setDataLoading(true);
-//         setError("");
-
-//         /* ================================================
-//            COURSES
-//         ================================================ */
-
-//         try {
-//         const result =
-//   await requestJson(
-//     `${API}/lms/students/courses`,
-//     "STUDENT COURSES"
-//   );
-
-//           if (mounted) {
-//             setCourses(
-//               extractArray(
-//                 result,
-//                 [
-//                   "courses",
-//                   "items",
-//                   "results",
-//                 ]
-//               )
-//             );
-//           }
-//         } catch (error) {
-//           if (mounted) {
-//             setCourses([]);
-//           }
-//         }
-
-//         /* ================================================
-//            SESSIONS
-//         ================================================ */
-
-//         try {
-//           const result =
-//             await requestJson(
-//               `${API}/sessions/user/upcoming`,
-//               "STUDENT SESSIONS"
-//             );
-
-//           if (mounted) {
-//             setSessions(
-//               extractArray(
-//                 result,
-//                 [
-//                   "sessions",
-//                   "upcoming",
-//                   "items",
-//                 ]
-//               )
-//             );
-//           }
-//         } catch (error) {
-//           if (mounted) {
-//             setSessions([]);
-//           }
-//         }
-
-//         /* ================================================
-//            BOOKINGS
-//         ================================================ */
-
-//         try {
-//           console.log(
-//             "=========================================="
-//           );
-
-//           console.log(
-//             "FETCHING STUDENT BOOKINGS"
-//           );
-
-//           console.log(
-//             "BOOKINGS URL:",
-//             `${API}/bookings/my`
-//           );
-
-//           console.log(
-//             "STUDENT TOKEN:",
-//             token
-//               ? "YES"
-//               : "NO"
-//           );
-
-//           console.log(
-//             "=========================================="
-//           );
-
-//           const result =
-//             await requestJson(
-//               `${API}/bookings/my`,
-//               "STUDENT BOOKINGS"
-//             );
-
-//           const bookingList =
-//             extractArray(
-//               result,
-//               [
-//                 "bookings",
-//                 "items",
-//                 "results",
-//               ]
-//             );
-
-//           console.log(
-//             "STUDENT BOOKINGS COUNT:",
-//             bookingList.length
-//           );
-
-//           if (mounted) {
-//             setBookings(
-//               bookingList
-//             );
-//           }
-//         } catch (bookingError) {
-//           console.error(
-//             "STUDENT BOOKINGS ERROR:",
-//             bookingError
-//           );
-
-//           if (mounted) {
-//             setBookings([]);
-//           }
-//         }
-
-//         if (mounted) {
-//           setDataLoading(false);
-//         }
-//       };
-
-//     loadDashboard();
-
-//     return () => {
-//       mounted = false;
-//     };
-//   }, [token]);
-
-//   /* =======================================================
-//      DERIVED DATA
-//   ======================================================= */
-
-//   const displayName =
-//     student?.name ||
-//     student?.full_name ||
-//     student?.displayName ||
-//     firebaseUser?.displayName ||
-//     "Student";
-
-//   const firstName =
-//     displayName
-//       .trim()
-//       .split(" ")[0] ||
-//     "Student";
-
-//   const profileImage =
-//     student?.profile_image ||
-//     student?.photoURL ||
-//     firebaseUser?.photoURL ||
-//     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-//       displayName
-//     )}&background=087CFF&color=fff&bold=true&size=200`;
-
-//   const totalPayments =
-//     useMemo(() => {
-//       return bookings
-//         .filter(booking => {
-//           const status =
-//             booking?.payment?.status ||
-//             booking?.payment_status ||
-//             booking?.status;
-
-//           return (
-//             String(
-//               status || ""
-//             ).toUpperCase() ===
-//             "PAID"
-//           );
-//         })
-//         .reduce(
-//           (
-//             sum,
-//             booking
-//           ) => {
-//             const amount =
-//               booking?.payment
-//                 ?.amount ??
-//               booking?.amount ??
-//               booking?.price ??
-//               booking?.total_amount ??
-//               0;
-
-//             return (
-//               sum +
-//               Number(
-//                 amount || 0
-//               )
-//             );
-//           },
-//           0
-//         );
-//     }, [bookings]);
-
-//   const filteredCourses =
-//     useMemo(() => {
-//       const value =
-//         search
-//           .trim()
-//           .toLowerCase();
-
-//       if (!value) {
-//         return courses.slice(
-//           0,
-//           4
-//         );
-//       }
-
-//       return courses
-//         .filter(course => {
-//           return (
-//             String(
-//               course?.title || ""
-//             )
-//               .toLowerCase()
-//               .includes(value) ||
-
-//             String(
-//               course?.name || ""
-//             )
-//               .toLowerCase()
-//               .includes(value) ||
-
-//             String(
-//               course?.trainer_name ||
-//                 ""
-//             )
-//               .toLowerCase()
-//               .includes(value) ||
-
-//             String(
-//               course?.level || ""
-//             )
-//               .toLowerCase()
-//               .includes(value)
-//           );
-//         })
-//         .slice(0, 4);
-//     }, [
-//       courses,
-//       search,
-//     ]);
-
-//   const upcomingSessions =
-//     useMemo(() => {
-//       return [...sessions]
-//         .sort((a, b) => {
-//           const aDate =
-//             new Date(
-//               a?.start_time ||
-//               a?.start_at ||
-//               a?.session_date ||
-//               a?.date ||
-//               0
-//             ).getTime();
-
-//           const bDate =
-//             new Date(
-//               b?.start_time ||
-//               b?.start_at ||
-//               b?.session_date ||
-//               b?.date ||
-//               0
-//             ).getTime();
-
-//           return (
-//             aDate -
-//             bDate
-//           );
-//         })
-//         .slice(0, 3);
-//     }, [sessions]);
-
-//   /* =======================================================
-//      NAVIGATION
-//   ======================================================= */
-
-//   const go = path => {
-//     setMobileMenu(false);
-//     navigate(path);
-//   };
-
-//   const menuItems = [
-//     {
-//       label: "Dashboard",
-//       icon: <FaHome />,
-//       path:
-//         "/institute/website/preview/dashboard",
-//     },
-
-//     {
-//       label: "My Learning",
-//       icon: <FaBookOpen />,
-//       path:
-//         "/institute/website/preview/my-learning",
-//     },
-
-//     {
-//       label: "Live Sessions",
-//       icon: <FaVideo />,
-//       path:
-//         "/institute/website/preview/sessions",
-//     },
-
-//     {
-//       label: "Recordings",
-//       icon: <FaPlayCircle />,
-//       path:
-//         "/institute/website/preview/recordings",
-//     },
-
-//     {
-//       label: "My Bookings",
-//       icon: <FaCalendarAlt />,
-//       path:
-//         "/institute/website/preview/my-bookings",
-//     },
-
-//     {
-//       label: "Assignments",
-//       icon: <FaFileAlt />,
-//       path:
-//         "/institute/website/preview/assignments",
-//     },
-
-//     {
-//       label: "Attendance",
-//       icon: <FaClipboardCheck />,
-//       path:
-//         "/institute/website/preview/attendance",
-//     },
-
-//     {
-//       label: "Payment Details",
-//       icon: <FaCreditCard />,
-//       path:
-//         "/institute/website/preview/payments",
-//     },
-
-//     {
-//       label: "Profile",
-//       icon: <FaUser />,
-//       path:
-//         "/institute/website/preview/profile",
-//     },
-//   ];
-
-//   /* =======================================================
-//      JOIN SESSION
-//   ======================================================= */
-
-//   const handleJoinSession =
-//     session => {
-//       const meetingUrl =
-//         session?.meeting_url ||
-//         session?.meetingUrl ||
-//         session?.join_url ||
-//         session?.joinUrl ||
-//         session?.zoom_link ||
-//         session?.google_meet_link;
-
-//       if (meetingUrl) {
-//         window.open(
-//           meetingUrl,
-//           "_blank",
-//           "noopener,noreferrer"
-//         );
-
-//         return;
-//       }
-
-//       console.warn(
-//         "No meeting URL available:",
-//         session
-//       );
-//     };
-
-//   /* =======================================================
-//      LOADING
-//   ======================================================= */
-
-//   if (loading) {
-//     return (
-//       <div
-//         className="flex min-h-screen items-center justify-center text-white"
-//         style={{
-//           background:
-//             pageBackground,
-//         }}
-//       >
-//         <div className="text-center">
-//           <div
-//             className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-white/10"
-//             style={{
-//               borderTopColor:
-//                 primaryColor,
-
-//               borderRightColor:
-//                 accentColor,
-//             }}
-//           />
-
-//           <p className="text-sm text-white/60">
-//             Loading student dashboard...
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   /* =======================================================
-//      RENDER
-//   ======================================================= */
-
-//   return (
-//     <div
-//       className="min-h-screen overflow-x-hidden text-white"
-//       style={{
-//         background:
-//           pageBackground,
-//       }}
-//     >
-//       {/* =================================================
-//           BACKGROUND GLOW
-//       ================================================= */}
-
-//       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-//         <div
-//           className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full blur-[150px]"
-//           style={{
-//             background:
-//               `${primaryColor}12`,
-//           }}
-//         />
-
-//         <div
-//           className="absolute -bottom-40 right-0 h-[500px] w-[500px] rounded-full blur-[150px]"
-//           style={{
-//             background:
-//               `${accentColor}10`,
-//           }}
-//         />
-//       </div>
-
-//       {/* =================================================
-//           MOBILE OVERLAY
-//       ================================================= */}
-
-//       {mobileMenu && (
-//         <div
-//           className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
-//           onClick={() =>
-//             setMobileMenu(false)
-//           }
-//         />
-//       )}
-
-//       {/* =================================================
-//           SIDEBAR
-//       ================================================= */}
-
-//       <aside
-//         className={`
-//           fixed left-0 top-0 z-50
-//           flex h-screen w-[270px]
-//           flex-col
-//           border-r border-white/[0.07]
-//           bg-[#020B18]/95
-//           backdrop-blur-2xl
-//           transition-transform duration-300
-//           ${
-//             mobileMenu
-//               ? "translate-x-0"
-//               : "-translate-x-full lg:translate-x-0"
-//           }
-//         `}
-//       >
-//         {/* LOGO */}
-
-//         <div className="flex h-[82px] items-center border-b border-white/[0.06] px-7">
-//           <div className="flex items-center gap-3">
-//             <div
-//               className="flex h-11 w-11 items-center justify-center rounded-xl text-xl shadow-lg"
-//               style={{
-//                 background:
-//                   `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-
-//                 boxShadow:
-//                   `0 0 30px ${primaryColor}35`,
-//               }}
-//             >
-//               <FaGraduationCap />
-//             </div>
-
-//             <div>
-//               <h1 className="text-xl font-black tracking-tight">
-//                 Fine
-//                 <span
-//                   style={{
-//                     color:
-//                       primaryColor,
-//                   }}
-//                 >
-//                   Arts
-//                 </span>
-//               </h1>
-
-//               <p className="text-[11px] text-white/50">
-//                 Student LMS
-//               </p>
-//             </div>
-
-//             <button
-//               type="button"
-//               className="ml-auto text-white/60 lg:hidden"
-//               onClick={() =>
-//                 setMobileMenu(
-//                   false
-//                 )
-//               }
-//             >
-//               <FaTimes />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* NAVIGATION */}
-
-//         <nav className="flex-1 overflow-y-auto px-4 py-6">
-//           <div className="space-y-1.5">
-//             {menuItems.map(
-//               item => {
-//                 const active =
-//                   item.label ===
-//                   "Dashboard";
-
-//                 return (
-//                   <button
-//                     key={item.label}
-//                     type="button"
-//                     onClick={() =>
-//                       go(item.path)
-//                     }
-//                     className={`
-//                       group flex w-full
-//                       items-center gap-4
-//                       rounded-xl px-4 py-3.5
-//                       text-left transition-all
-//                       ${
-//                         active
-//                           ? "text-white"
-//                           : "text-white/70 hover:bg-white/[0.05] hover:text-white"
-//                       }
-//                     `}
-//                     style={
-//                       active
-//                         ? {
-//                             background:
-//                               `linear-gradient(90deg, ${primaryColor}28, ${primaryColor}0A)`,
-
-//                             boxShadow:
-//                               `inset 3px 0 0 ${primaryColor}, 0 0 25px ${primaryColor}10`,
-//                           }
-//                         : {}
-//                     }
-//                   >
-//                     <span
-//                       className="flex w-6 justify-center text-lg"
-//                       style={
-//                         active
-//                           ? {
-//                               color:
-//                                 primaryColor,
-//                             }
-//                           : {}
-//                       }
-//                     >
-//                       {item.icon}
-//                     </span>
-
-//                     <span className="text-sm font-medium">
-//                       {item.label}
-//                     </span>
-//                   </button>
-//                 );
-//               }
-//             )}
-//           </div>
-//         </nav>
-
-//         {/* BOTTOM BRANDING */}
-
-//         <div className="border-t border-white/[0.06] p-5">
-//           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4">
-//             <p
-//               className="font-serif text-sm italic leading-6"
-//               style={{
-//                 color:
-//                   `${primaryColor}CC`,
-//               }}
-//             >
-//               "Art Builds
-//               <br />
-//               A Better
-//               <br />
-//               You"
-//             </p>
-
-//             <div
-//               className="mt-3 h-1 w-8 rounded-full"
-//               style={{
-//                 background:
-//                   `linear-gradient(90deg, ${primaryColor}, ${accentColor})`,
-//               }}
-//             />
-//           </div>
-//         </div>
-//       </aside>
-
-//       {/* =================================================
-//           MAIN
-//       ================================================= */}
-
-//       <div className="relative lg:pl-[270px]">
-//         {/* TOP BAR */}
-
-//         <header className="sticky top-0 z-30 h-[82px] border-b border-white/[0.07] bg-[#020914]/85 backdrop-blur-2xl">
-//           <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">
-//             <button
-//               type="button"
-//               className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-white lg:hidden"
-//               onClick={() =>
-//                 setMobileMenu(true)
-//               }
-//             >
-//               <FaBars />
-//             </button>
-
-//             <div className="relative max-w-[560px] flex-1">
-//               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" />
-
-//               <input
-//                 value={search}
-//                 onChange={event =>
-//                   setSearch(
-//                     event.target.value
-//                   )
-//                 }
-//                 placeholder="Search courses, classes, recordings or topics..."
-//                 className="h-12 w-full rounded-xl border border-white/[0.09] bg-white/[0.035] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-white/20"
-//               />
-//             </div>
-
-//             <div className="ml-auto flex items-center gap-3">
-//               <button
-//                 type="button"
-//                 className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-lg text-white/80 transition hover:bg-white/[0.06]"
-//               >
-//                 <FaBell />
-
-//                 {upcomingSessions.length >
-//                   0 && (
-//                   <span
-//                     className="absolute right-2 top-2 h-2 w-2 rounded-full"
-//                     style={{
-//                       background:
-//                         primaryColor,
-//                     }}
-//                   />
-//                 )}
-//               </button>
-
-//               <button
-//                 type="button"
-//                 onClick={() =>
-//                   go(
-//                     "/institute/website/preview/profile"
-//                   )
-//                 }
-//                 className="flex items-center gap-3 border-l border-white/[0.08] pl-4"
-//               >
-//                 <img
-//                   src={profileImage}
-//                   alt={displayName}
-//                   className="h-10 w-10 rounded-full border border-white/10 object-cover"
-//                 />
-
-//                 <div className="hidden text-left sm:block">
-//                   <p className="max-w-[130px] truncate text-sm font-semibold">
-//                     {displayName}
-//                   </p>
-
-//                   <p className="text-xs text-white/45">
-//                     Student
-//                   </p>
-//                 </div>
-
-//                 <FaChevronRight className="hidden rotate-90 text-xs text-white/50 sm:block" />
-//               </button>
-//             </div>
-//           </div>
-//         </header>
-
-//         {/* CONTENT */}
-
-//         <main className="mx-auto w-full max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-//           {error && (
-//             <div className="mb-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-//               {error}
-//             </div>
-//           )}
-
-//           {/* =================================================
-//               TOP GRID
-//           ================================================= */}
-
-//           <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
-//             {/* HERO */}
-
-//             <section
-//               className="relative min-h-[270px] overflow-hidden rounded-2xl border border-white/[0.09]"
-//               style={{
-//                 background:
-//                   `radial-gradient(circle at 75% 50%, ${primaryColor}30, transparent 30%), linear-gradient(135deg, #031024 0%, #020914 65%, #050B18 100%)`,
-//               }}
-//             >
-//               <div
-//                 className="absolute right-[-100px] top-[-100px] h-[420px] w-[420px] rounded-full blur-[90px]"
-//                 style={{
-//                   background:
-//                     `${primaryColor}25`,
-//                 }}
-//               />
-
-//               <div
-//                 className="absolute bottom-[-130px] right-[100px] h-[300px] w-[300px] rounded-full blur-[80px]"
-//                 style={{
-//                   background:
-//                     `${accentColor}25`,
-//                 }}
-//               />
-
-//               <div className="pointer-events-none absolute inset-0 overflow-hidden">
-//                 <div
-//                   className="absolute right-[15%] top-[15%] h-44 w-44 rounded-full border-[35px] border-white/[0.025]"
-//                   style={{
-//                     boxShadow:
-//                       `0 0 80px ${primaryColor}20`,
-//                   }}
-//                 />
-
-//                 <div
-//                   className="absolute -right-10 bottom-[-80px] h-64 w-[500px] rotate-[-18deg] rounded-[50%] border-[3px] opacity-60"
-//                   style={{
-//                     borderColor:
-//                       `${primaryColor}50`,
-//                   }}
-//                 />
-
-//                 <div
-//                   className="absolute right-20 bottom-[-40px] h-40 w-[400px] rotate-[-12deg] rounded-[50%] border-[2px] opacity-40"
-//                   style={{
-//                     borderColor:
-//                       `${accentColor}60`,
-//                   }}
-//                 />
-//               </div>
-
-//               <div className="relative z-10 flex h-full min-h-[270px] flex-col justify-center px-6 py-8 sm:px-8 lg:px-10">
-//                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/75">
-//                   Welcome back,
-//                 </p>
-
-//                 <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-//                   {firstName}
-//                   <span className="ml-2">
-//                     👋
-//                   </span>
-//                 </h1>
-
-//                 <p className="mt-3 max-w-[560px] text-sm leading-6 text-white/65 sm:text-base">
-//                   Keep learning, keep creating.
-//                   Every session brings you
-//                   closer to your goals.
-//                 </p>
-
-//                 <div className="mt-6 flex flex-wrap gap-3">
-//                   <button
-//                     type="button"
-//                     onClick={() =>
-//                       go(
-//                         "/institute/website/preview/my-learning"
-//                       )
-//                     }
-//                     className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:scale-[1.02]"
-//                     style={{
-//                       background:
-//                         `linear-gradient(90deg, ${primaryColor}, ${accentColor})`,
-//                       boxShadow:
-//                         `0 10px 30px ${primaryColor}25`,
-//                     }}
-//                   >
-//                     Continue Learning
-//                     <FaArrowRight />
-//                   </button>
-
-//                   <button
-//                     type="button"
-//                     onClick={() =>
-//                       go(
-//                         "/institute/website/preview/classes"
-//                       )
-//                     }
-//                     className="rounded-xl border border-white/15 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
-//                   >
-//                     Explore Courses
-//                   </button>
-//                 </div>
-//               </div>
-//             </section>
-
-//             {/* UPCOMING SESSIONS */}
-
-//             <section className="rounded-2xl border border-white/[0.08] bg-[#041020]/80 p-4 shadow-2xl">
-//               <div className="mb-4 flex items-center justify-between">
-//                 <h2 className="text-lg font-bold">
-//                   Upcoming Live Sessions
-//                 </h2>
-
-//                 <button
-//                   type="button"
-//                   onClick={() =>
-//                     go(
-//                       "/institute/website/preview/sessions"
-//                     )
-//                   }
-//                   className="text-xs font-semibold"
-//                   style={{
-//                     color:
-//                       primaryColor,
-//                   }}
-//                 >
-//                   View All
-//                 </button>
-//               </div>
-
-//               {dataLoading ? (
-//                 <div className="space-y-3">
-//                   {[1, 2, 3].map(
-//                     item => (
-//                       <div
-//                         key={item}
-//                         className="h-[78px] animate-pulse rounded-xl bg-white/[0.04]"
-//                       />
-//                     )
-//                   )}
-//                 </div>
-//               ) : upcomingSessions.length ===
-//                 0 ? (
-//                 <div className="flex min-h-[170px] flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.08] text-center">
-//                   <FaVideo className="mb-3 text-2xl text-white/25" />
-
-//                   <p className="text-sm font-semibold text-white/70">
-//                     No upcoming sessions
-//                   </p>
-
-//                   <p className="mt-1 text-xs text-white/35">
-//                     Your upcoming live classes
-//                     will appear here.
-//                   </p>
-//                 </div>
-//               ) : (
-//                 <div className="space-y-3">
-//                   {upcomingSessions.map(
-//                     (
-//                       session,
-//                       index
-//                     ) => (
-//                       <LiveSessionCard
-//                         key={
-//                           session?.id ||
-//                           session?.session_id ||
-//                           index
-//                         }
-//                         session={
-//                           session
-//                         }
-//                         primaryColor={
-//                           primaryColor
-//                         }
-//                         onJoin={() =>
-//                           handleJoinSession(
-//                             session
-//                           )
-//                         }
-//                       />
-//                     )
-//                   )}
-//                 </div>
-//               )}
-//             </section>
-//           </div>
-
-//           {/* =================================================
-//               QUICK ACTIONS
-//           ================================================= */}
-
-//           <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-//             <QuickAction
-//               icon={<FaBookOpen />}
-//               title="My Learning"
-//               subtitle="Continue Courses"
-//               primaryColor={
-//                 primaryColor
-//               }
-//               accentColor={
-//                 accentColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/my-learning"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaVideo />}
-//               title="Live Sessions"
-//               subtitle="Join Upcoming"
-//               primaryColor={
-//                 accentColor
-//               }
-//               accentColor={
-//                 primaryColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/sessions"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaPlayCircle />}
-//               title="Recordings"
-//               subtitle="Watch Anytime"
-//               primaryColor={
-//                 primaryColor
-//               }
-//               accentColor={
-//                 accentColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/recordings"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaCalendarAlt />}
-//               title="My Bookings"
-//               subtitle={
-//                 bookings.length
-//                   ? `${bookings.length} Booked Classes`
-//                   : "View Booked Classes"
-//               }
-//               primaryColor={
-//                 accentColor
-//               }
-//               accentColor={
-//                 primaryColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/my-bookings"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaFileAlt />}
-//               title="Assignments"
-//               subtitle="View & Submit"
-//               primaryColor={
-//                 primaryColor
-//               }
-//               accentColor={
-//                 accentColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/assignments"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaClipboardCheck />}
-//               title="Attendance"
-//               subtitle="Track Your Classes"
-//               primaryColor={
-//                 accentColor
-//               }
-//               accentColor={
-//                 primaryColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/attendance"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaCreditCard />}
-//               title="Payment Details"
-//               subtitle={
-//                 totalPayments > 0
-//                   ? `₹${totalPayments.toLocaleString(
-//                       "en-IN"
-//                     )} Paid`
-//                   : "View Transactions"
-//               }
-//               primaryColor={
-//                 primaryColor
-//               }
-//               accentColor={
-//                 accentColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/payments"
-//                 )
-//               }
-//             />
-
-//             <QuickAction
-//               icon={<FaUser />}
-//               title="Profile"
-//               subtitle="Manage Your Account"
-//               primaryColor={
-//                 accentColor
-//               }
-//               accentColor={
-//                 primaryColor
-//               }
-//               onClick={() =>
-//                 go(
-//                   "/institute/website/preview/profile"
-//                 )
-//               }
-//             />
-//           </section>
-
-//           {/* =================================================
-//               MY LEARNING
-//           ================================================= */}
-
-//           <section className="mt-8">
-//             <div className="mb-5 flex items-center justify-between">
-//               <div>
-//                 <h2 className="text-2xl font-black">
-//                   My Learning
-//                 </h2>
-
-//                 <p className="mt-1 text-xs text-white/40">
-//                   Continue where you left off
-//                 </p>
-//               </div>
-
-//               <button
-//                 type="button"
-//                 onClick={() =>
-//                   go(
-//                     "/institute/website/preview/my-learning"
-//                   )
-//                 }
-//                 className="flex items-center gap-2 text-sm font-semibold"
-//                 style={{
-//                   color:
-//                     primaryColor,
-//                 }}
-//               >
-//                 View All Courses
-//                 <FaArrowRight className="text-xs" />
-//               </button>
-//             </div>
-
-//             {dataLoading ? (
-//               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-//                 {[1, 2, 3, 4].map(
-//                   item => (
-//                     <div
-//                       key={item}
-//                       className="h-[280px] animate-pulse rounded-2xl bg-white/[0.04]"
-//                     />
-//                   )
-//                 )}
-//               </div>
-//             ) : filteredCourses.length ===
-//               0 ? (
-//               <EmptyCourses
-//                 primaryColor={
-//                   primaryColor
-//                 }
-//                 onBrowse={() =>
-//                   go(
-//                     "/institute/website/preview/classes"
-//                   )
-//                 }
-//               />
-//             ) : (
-//               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-//                 {filteredCourses.map(
-//                   (
-//                     course,
-//                     index
-//                   ) => (
-//                     <CourseCard
-//                       key={
-//                         course?.id ||
-//                         course?.class_id ||
-//                         index
-//                       }
-//                       course={
-//                         course
-//                       }
-//                       primaryColor={
-//                         primaryColor
-//                       }
-//                       accentColor={
-//                         accentColor
-//                       }
-//                       onContinue={() =>
-//                         go(
-//                           `/institute/website/preview/my-learning/${
-//                             course?.id ||
-//                             course?.class_id
-//                           }`
-//                         )
-//                       }
-//                     />
-//                   )
-//                 )}
-//               </div>
-//             )}
-//           </section>
-//         </main>
-//       </div>
-//     </div>
-//   );
-// };
-
-// /* =========================================================
-//    QUICK ACTION
-// ========================================================= */
-
-// const QuickAction = ({
-//   icon,
-//   title,
-//   subtitle,
-//   primaryColor,
-//   accentColor,
-//   onClick,
-// }) => {
-//   return (
-//     <button
-//       type="button"
-//       onClick={onClick}
-//       className="group flex min-h-[100px] items-center gap-4 rounded-2xl border border-white/[0.07] bg-[#041020]/75 px-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-white/[0.05]"
-//     >
-//       <div
-//         className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl text-xl text-white transition-transform group-hover:scale-105"
-//         style={{
-//           background:
-//             `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-//           boxShadow:
-//             `0 8px 30px ${primaryColor}25`,
-//         }}
-//       >
-//         {icon}
-//       </div>
-
-//       <div className="min-w-0">
-//         <h3 className="text-sm font-bold text-white">
-//           {title}
-//         </h3>
-
-//         <p className="mt-1 text-xs text-white/45">
-//           {subtitle}
-//         </p>
-//       </div>
-
-//       <FaChevronRight className="ml-auto text-xs text-white/25 transition-transform group-hover:translate-x-1" />
-//     </button>
-//   );
-// };
-
-// /* =========================================================
-//    LIVE SESSION CARD
-// ========================================================= */
-
-// const LiveSessionCard = ({
-//   session,
-//   primaryColor,
-//   onJoin,
-// }) => {
-//   const title =
-//     session?.title ||
-//     session?.session_title ||
-//     session?.class_name ||
-//     session?.class_title ||
-//     "Live Session";
-
-//   const image =
-//     session?.image ||
-//     session?.class_image ||
-//     session?.thumbnail ||
-//     session?.cover_image;
-
-//   const dateValue =
-//     session?.start_time ||
-//     session?.start_at ||
-//     session?.session_date ||
-//     session?.date;
-
-//   const timeValue =
-//     session?.start_time ||
-//     session?.start_at ||
-//     session?.date;
-
-//   return (
-//     <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-2.5">
-//       <div className="h-[62px] w-[76px] flex-shrink-0 overflow-hidden rounded-lg bg-white/5">
-//         <img
-//           src={getImage(
-//             image,
-//             title
-//           )}
-//           alt={title}
-//           className="h-full w-full object-cover"
-//           onError={event => {
-//             event.currentTarget.src =
-//               getImage(
-//                 null,
-//                 title
-//               );
-//           }}
-//         />
-//       </div>
-
-//       <div className="min-w-0 flex-1">
-//         <h3 className="truncate text-sm font-bold">
-//           {title}
-//         </h3>
-
-//         <div className="mt-1 flex items-center gap-2 text-[11px] text-white/45">
-//           <FaCalendarAlt />
-
-//           <span>
-//             {formatDate(
-//               dateValue
-//             )}
-//           </span>
-
-//           <span>•</span>
-
-//           <FaClock />
-
-//           <span>
-//             {formatTime(
-//               timeValue
-//             )}
-//           </span>
-//         </div>
-//       </div>
-
-//       <button
-//         type="button"
-//         onClick={onJoin}
-//         className="flex-shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-white"
-//         style={{
-//           background:
-//             `linear-gradient(135deg, ${primaryColor}, #0057FF)`,
-//         }}
-//       >
-//         Join
-//       </button>
-//     </div>
-//   );
-// };
-
-// /* =========================================================
-//    COURSE CARD
-// ========================================================= */
-
-// const CourseCard = ({
-//   course,
-//   primaryColor,
-//   accentColor,
-//   onContinue,
-// }) => {
-//   const title =
-//     course?.title ||
-//     course?.name ||
-//     "Course";
-
-//   const image =
-//     course?.image ||
-//     course?.class_image ||
-//     course?.thumbnail ||
-//     course?.cover_image;
-
-//   const level =
-//     course?.level ||
-//     "Beginner";
-
-//   const totalLessons =
-//     Number(
-//       course?.totalLessons ??
-//       course?.total_lessons ??
-//       course?.lesson_count ??
-//       course?.lessons ??
-//       0
-//     ) || 0;
-
-//   const progress =
-//     Number(
-//       course?.progress ??
-//       course?.progress_percentage ??
-//       course?.completion_percentage ??
-//       0
-//     ) || 0;
-
-//   const status =
-//     course?.status ||
-//     course?.learning_status ||
-//     (progress > 0
-//       ? "In Progress"
-//       : "Start Course");
-
-//   const isInProgress =
-//     progress > 0 ||
-//     String(status)
-//       .toLowerCase()
-//       .includes("progress");
-
-//   return (
-//     <div className="group overflow-hidden rounded-2xl border border-white/[0.08] bg-[#041020]/80 transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.14] hover:shadow-2xl">
-//       {/* IMAGE */}
-
-//       <div className="relative h-[165px] overflow-hidden">
-//         <img
-//           src={getImage(
-//             image,
-//             title
-//           )}
-//           alt={title}
-//           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-//           onError={event => {
-//             event.currentTarget.src =
-//               getImage(
-//                 null,
-//                 title
-//               );
-//           }}
-//         />
-
-//         <div className="absolute inset-0 bg-gradient-to-t from-[#041020] via-transparent to-transparent" />
-
-//         {/* STATUS */}
-
-//         <div
-//           className="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md"
-//           style={{
-//             background:
-//               isInProgress
-//                 ? `${primaryColor}DD`
-//                 : `${accentColor}DD`,
-//           }}
-//         >
-//           {isInProgress
-//             ? "In Progress"
-//             : level}
-//         </div>
-
-//         {/* PLAY */}
-
-//         <div
-//           className="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-full text-white opacity-0 shadow-lg transition group-hover:opacity-100"
-//           style={{
-//             background:
-//               `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-//           }}
-//         >
-//           <FaPlay className="ml-0.5 text-xs" />
-//         </div>
-//       </div>
-
-//       {/* CONTENT */}
-
-//       <div className="p-4">
-//         <h3 className="min-h-[48px] text-base font-bold leading-6 text-white">
-//           {title}
-//         </h3>
-
-//         <div className="mt-3 flex items-center gap-4 text-xs text-white/50">
-//           <span className="flex items-center gap-1.5">
-//             <FaCalendarAlt />
-//             {totalLessons} Lessons
-//           </span>
-
-//           <span className="flex items-center gap-1.5">
-//             <FaUser />
-//             {level}
-//           </span>
-//         </div>
-
-//         {/* PROGRESS */}
-
-//         {isInProgress && (
-//           <div className="mt-4">
-//             <div className="mb-1.5 flex items-center justify-between text-[10px] text-white/40">
-//               <span>
-//                 Progress
-//               </span>
-
-//               <span>
-//                 {Math.min(
-//                   100,
-//                   Math.max(
-//                     0,
-//                     progress
-//                   )
-//                 )}
-//                 %
-//               </span>
-//             </div>
-
-//             <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-//               <div
-//                 className="h-full rounded-full transition-all"
-//                 style={{
-//                   width:
-//                     `${Math.min(
-//                       100,
-//                       Math.max(
-//                         0,
-//                         progress
-//                       )
-//                     )}%`,
-
-//                   background:
-//                     `linear-gradient(90deg, ${primaryColor}, ${accentColor})`,
-//                 }}
-//               />
-//             </div>
-//           </div>
-//         )}
-
-//         {/* BUTTON */}
-
-//         <button
-//           type="button"
-//           onClick={onContinue}
-//           className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border text-sm font-bold transition hover:text-white"
-//           style={{
-//             borderColor:
-//               `${primaryColor}80`,
-
-//             color:
-//               primaryColor,
-//           }}
-//         >
-//           {isInProgress
-//             ? "Continue"
-//             : "Start Course"}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// /* =========================================================
-//    EMPTY COURSES
-// ========================================================= */
-
-// const EmptyCourses = ({
-//   primaryColor,
-//   onBrowse,
-// }) => {
-//   return (
-//     <div className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.015] py-16 text-center">
-//       <div
-//         className="mb-5 flex justify-center text-4xl"
-//         style={{
-//           color:
-//             `${primaryColor}55`,
-//         }}
-//       >
-//         <FaBookOpen />
-//       </div>
-
-//       <p className="text-lg font-semibold text-white">
-//         No courses yet
-//       </p>
-
-//       <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
-//         Your enrolled courses will appear
-//         here once you start learning.
-//       </p>
-
-//       {onBrowse && (
-//         <button
-//           type="button"
-//           onClick={onBrowse}
-//           className="mt-6 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-//           style={{
-//             background:
-//               primaryColor,
-//           }}
-//         >
-//           Browse Classes
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default WebsitePreviewDashboard;
-
-
-
-
-
-import { useEffect, useMemo, useState } from "react";
-import {
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 
 import {
+
   FaHome,
+
   FaBookOpen,
+
   FaVideo,
+
   FaPlayCircle,
+
   FaCalendarAlt,
+
   FaFileAlt,
+
   FaClipboardCheck,
+
   FaCreditCard,
+
   FaUser,
-  FaBell,
+
   FaSearch,
+
+  FaBell,
+
   FaArrowRight,
-  FaBars,
-  FaTimes,
-  FaChevronRight,
+
+  FaChevronDown,
+
+  FaSignOutAlt,
+
   FaClock,
-  FaGraduationCap,
-  FaPlay,
-  FaCheckCircle,
-  FaLock,
+
+  FaUserTie,
+
+  FaSpinner,
+
+  FaBars,
+
+  FaExclamationCircle,
+
 } from "react-icons/fa";
 
 import { auth } from "../../config/firebase";
 
-/* =========================================================
-   API
-========================================================= */
+
+
+const WEBSITE_PREVIEW_DASHBOARD_STYLES = `
+
+html, body, #root {
+
+  min-height: 100%;
+
+  margin: 0;
+
+  background: #000000;
+
+}
+
+/* Blue scrollbar for the website LMS dashboard */
+html, body, #root,
+.finearts-lms,
+.finearts-lms * {
+  scrollbar-width: thin;
+  scrollbar-color: #0879ff #000000;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.finearts-lms::-webkit-scrollbar,
+.finearts-lms *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+#root::-webkit-scrollbar-track,
+.finearts-lms::-webkit-scrollbar-track,
+.finearts-lms *::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+#root::-webkit-scrollbar-thumb,
+.finearts-lms::-webkit-scrollbar-thumb,
+.finearts-lms *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0879ff 0%, #09b9ff 100%);
+  border: 1px solid #000000;
+  border-radius: 10px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+#root::-webkit-scrollbar-thumb:hover,
+.finearts-lms::-webkit-scrollbar-thumb:hover,
+.finearts-lms *::-webkit-scrollbar-thumb:hover {
+  background: #38d7ff;
+}
+
+
+
+:root {
+
+  --lms-bg: #000000;
+
+  --lms-sidebar: #000000;
+
+  --lms-card: #061827;
+
+  --lms-card-2: #071b2b;
+
+  --lms-border: rgba(42, 142, 255, 0.2);
+
+  --lms-text: #f7fbff;
+
+  --lms-muted: #b4c4d9;
+
+  --lms-blue: #0879ff;
+
+  --lms-cyan: #09b9ff;
+
+  --lms-purple: #6b20ff;
+
+}
+
+
+
+.finearts-lms,
+
+.finearts-lms * {
+
+  box-sizing: border-box;
+
+}
+
+
+
+.finearts-lms {
+
+  min-height: 100vh;
+
+  width: 100%;
+
+  display: flex;
+
+  overflow: hidden;
+
+  color: var(--lms-text);
+
+  background: #000000;
+
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+}
+
+
+
+.finearts-lms button,
+
+.finearts-lms input {
+
+  font: inherit;
+
+}
+
+
+
+.lms-sidebar {
+
+  position: fixed;
+
+  top: 80px;
+
+  bottom: 70px;
+
+  left: 0;
+
+  z-index: 80;
+
+  width: 271px;
+
+  height: auto;
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
+
+  display: flex;
+
+  flex-direction: column;
+
+  padding: 18px 16px;
+
+  background: #000000;
+
+  border-right: 1px solid #111111;
+
+}
+
+.lms-brand {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  height: 76px;
+
+  padding: 0 9px;
+
+}
+
+
+
+.lms-brand-mark {
+
+  width: 39px;
+
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #2489ff;
+
+  font-size: 43px;
+
+  line-height: 1;
+
+  text-shadow: 0 0 20px rgba(26, 126, 255, 0.9);
+
+  transform: rotate(-12deg);
+
+}
+
+
+
+.lms-brand-name {
+
+  font-size: 31px;
+
+  line-height: 1;
+
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
+
+}
+
+
+
+.lms-brand-name span {
+
+  color: #1786ff;
+
+}
+
+
+
+.lms-brand-sub {
+
+  margin-top: 5px;
+
+  color: #afbdd0;
+
+  font-size: 14px;
+
+}
+
+
+
+.lms-mobile-close,
+
+.lms-menu-button {
+
+  display: none;
+
+}
+
+
+
+.lms-content-menu-button {
+
+  margin: 12px 12px 0 auto;
+
+}
+
+
+
+.lms-nav {
+
+  margin-top: 17px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+}
+
+
+
+.lms-nav-item {
+
+  position: relative;
+
+  width: 100%;
+
+  min-height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 19px;
+
+  padding: 0 17px;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  color: #e6edf7;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s ease;
+
+}
+
+
+
+.lms-nav-item svg {
+
+  width: 23px;
+
+  font-size: 22px;
+
+  flex: 0 0 23px;
+
+}
+
+
+
+.lms-nav-item span {
+
+  font-size: 16px;
+
+  white-space: nowrap;
+
+}
+
+
+
+.lms-nav-item:hover {
+
+  background: rgba(15, 113, 238, 0.12);
+
+}
+
+
+
+.lms-nav-item.active {
+
+  color: #fff;
+
+  background: linear-gradient(90deg, #0877ff 0%, #0879ff 55%, #0789ff 100%);
+
+  box-shadow: 0 0 24px rgba(0, 115, 255, 0.62), inset 0 0 12px rgba(255,255,255,0.08);
+
+}
+
+
+
+.lms-sidebar-art {
+
+  position: relative;
+
+  flex: 1;
+
+  min-height: 180px;
+
+  margin: 32px -16px -5px;
+
+  padding: 48px 38px 20px;
+
+  overflow: hidden;
+
+  color: #6cb2ff;
+
+  font-family: Georgia, serif;
+
+  font-style: italic;
+
+  font-size: 24px;
+
+  line-height: 1.15;
+
+  background: #000000;
+
+}
+
+
+
+.lms-art-line {
+
+  position: relative;
+
+  z-index: 3;
+
+}
+
+
+
+.lms-art-glow {
+
+  position: absolute;
+
+  width: 280px;
+
+  height: 120px;
+
+  left: -5px;
+
+  bottom: 8px;
+
+  border-radius: 50%;
+
+  border-top: 3px solid rgba(41, 110, 255, 0.85);
+
+  box-shadow: 0 -22px 70px rgba(34, 87, 255, 0.35);
+
+  transform: rotate(-11deg);
+
+}
+
+
+
+.lms-art-glow::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 110px;
+
+  height: 3px;
+
+  left: 0;
+
+  top: -4px;
+
+  background: linear-gradient(90deg, #096fff, #741cff);
+
+  box-shadow: 0 0 18px #2b6fff;
+
+}
+
+
+
+.lms-logout {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 12px 17px;
+
+  border: 0;
+
+  color: #aebdd0;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  text-align: left;
+
+}
+
+
+
+.lms-logout:hover {
+
+  color: #fff;
+
+}
+
+
+
+.lms-main {
+
+  width: calc(100% - 271px);
+
+  min-height: 100vh;
+
+  margin-left: 271px;
+
+  background: #000000;
+
+}
+
+
+
+.lms-topbar {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 50;
+
+  height: 82px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 0 26px;
+
+  background: #000000;
+
+  border-bottom: 1px solid #111111;
+
+  backdrop-filter: none;
+
+}
+
+
+
+.lms-search-wrap {
+
+  position: relative;
+
+  width: min(515px, 48vw);
+
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 0 18px;
+
+  border: 1px solid rgba(30, 117, 205, 0.25);
+
+  border-radius: 10px;
+
+  background: #000000;
+
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+
+}
+
+
+
+.lms-search-wrap svg {
+
+  color: #e7f2ff;
+
+  font-size: 19px;
+
+}
+
+
+
+.lms-search-wrap input {
+
+  width: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  color: #eaf2fb;
+
+  background: transparent;
+
+  font-size: 14px;
+
+}
+
+
+
+.lms-search-wrap input::placeholder {
+
+  color: #b2bfd1;
+
+}
+
+
+
+.lms-search-results {
+
+  position: absolute;
+
+  top: 67px;
+
+  left: 26px;
+
+  width: min(515px, 48vw);
+
+  padding: 8px;
+
+  border: 1px solid rgba(44, 136, 234, 0.28);
+
+  border-radius: 13px;
+
+  background: rgba(3, 19, 32, 0.98);
+
+  box-shadow: 0 22px 60px rgba(0,0,0,.5);
+
+}
+
+
+
+.lms-search-results button {
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 11px 13px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color: #fff;
+
+  background: transparent;
+
+  cursor: pointer;
+
+}
+
+
+
+.lms-search-results button:hover {
+
+  background: rgba(15, 116, 235, 0.14);
+
+}
+
+
+
+.lms-search-results svg {
+
+  color: #2291ff;
+
+}
+
+
+
+.lms-no-results {
+
+  padding: 15px;
+
+  color: #8ea1b7;
+
+  font-size: 13px;
+
+}
+
+
+
+.lms-topbar-actions {
+
+  margin-left: auto;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+}
+
+
+
+.lms-notification {
+
+  position: relative;
+
+  width: 60px;
+
+  height: 100%;
+
+  display: grid;
+
+  place-items: center;
+
+  color: #edf4fc;
+
+  border: 0;
+
+  border-left: 1px solid rgba(47, 126, 199, 0.2);
+
+  border-right: 1px solid rgba(47, 126, 199, 0.2);
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-size: 20px;
+
+}
+
+
+
+.lms-notification span {
+
+  position: absolute;
+
+  top: 20px;
+
+  right: 12px;
+
+  min-width: 16px;
+
+  height: 16px;
+
+  padding: 0 4px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 99px;
+
+  color: #fff;
+
+  background: #ff4b5f;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+}
+
+
+
+.lms-user-menu {
+
+  min-width: 242px;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 0 20px;
+
+}
+
+
+
+.lms-user-avatar {
+
+  width: 45px;
+
+  height: 45px;
+
+  overflow: hidden;
+
+  flex: 0 0 45px;
+
+  display: grid;
+
+  place-items: center;
+
+  border: 2px solid rgba(255,255,255,0.35);
+
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #132b49, #0b7cff);
+
+  color: #fff;
+
+  font-weight: 800;
+
+}
+
+
+
+.lms-user-avatar img {
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+}
+
+
+
+.lms-user-copy {
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+}
+
+
+
+.lms-user-copy strong {
+
+  font-size: 14px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+
+
+.lms-user-copy small {
+
+  color: #b3bfd0;
+
+  font-size: 12px;
+
+}
+
+
+
+.lms-user-chevron {
+
+  margin-left: auto;
+
+  color: #e8eff7;
+
+  font-size: 12px;
+
+}
+
+
+
+.lms-content {
+
+  width: 100%;
+
+  padding: 14px 23px 45px;
+
+}
+
+
+
+.lms-error-banner {
+
+  margin-bottom: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 14px;
+
+  border: 1px solid rgba(255, 179, 0, 0.22);
+
+  border-radius: 10px;
+
+  color: #ffc95d;
+
+  background: rgba(255, 179, 0, 0.08);
+
+  font-size: 13px;
+
+}
+
+
+
+.lms-dashboard-grid {
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) 390px;
+
+  gap: 14px;
+
+}
+
+
+
+.lms-hero {
+
+  position: relative;
+
+  min-height: 267px;
+
+  overflow: hidden;
+
+  border: 1px solid #111111;
+
+  border-radius: 11px;
+
+  background: #000000;
+
+}
+
+
+
+.lms-hero-image {
+
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+  object-position: center;
+
+}
+
+
+
+.lms-hero-overlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background: #000000;
+
+}
+
+
+
+.lms-hero-content {
+
+  position: relative;
+
+  z-index: 2;
+
+  padding: 34px 26px;
+
+}
+
+
+
+.lms-eyebrow {
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.7px;
+
+}
+
+
+
+.lms-hero h1 {
+
+  margin: 8px 0 7px;
+
+  font-size: clamp(38px, 4vw, 50px);
+
+  line-height: 1;
+
+  letter-spacing: -1.6px;
+
+}
+
+
+
+.lms-hero h1 span {
+
+  font-size: 0.72em;
+
+}
+
+
+
+.lms-hero p {
+
+  margin: 0;
+
+  color: #f2f5fa;
+
+  font-size: 16px;
+
+  line-height: 1.45;
+
+}
+
+
+
+.lms-hero-actions {
+
+  margin-top: 26px;
+
+  display: flex;
+
+  gap: 14px;
+
+}
+
+
+
+.lms-primary-button,
+
+.lms-outline-button {
+
+  min-height: 49px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  padding: 0 28px;
+
+  border-radius: 9px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+}
+
+
+
+.lms-primary-button {
+
+  color: #fff;
+
+  border: 1px solid rgba(74, 173, 255, 0.35);
+
+  background: linear-gradient(90deg, #095bff, #0aabff);
+
+  box-shadow: 0 10px 30px rgba(4, 111, 255, 0.27);
+
+}
+
+
+
+.lms-primary-button:hover {
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 14px 35px rgba(4, 111, 255, 0.4);
+
+}
+
+
+
+.lms-outline-button {
+
+  color: #fff;
+
+  border: 1px solid #167cff;
+
+  background: #000000;
+
+}
+
+
+
+.lms-outline-button:hover {
+
+  background: rgba(11, 110, 255, 0.13);
+
+}
+
+
+
+.lms-upcoming-panel {
+
+  min-height: 267px;
+
+  padding: 17px 16px;
+
+  border: 1px solid #111111;
+
+  border-radius: 12px;
+
+  background: #000000;
+
+}
+
+
+
+.lms-panel-heading,
+
+.lms-section-heading {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+}
+
+
+
+.lms-panel-heading h2,
+
+.lms-section-heading h2 {
+
+  margin: 0;
+
+  font-size: 19px;
+
+  letter-spacing: -0.4px;
+
+}
+
+
+
+.lms-panel-heading button,
+
+.lms-section-heading button {
+
+  border: 0;
+
+  color: #27a0ff;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+}
+
+
+
+.lms-upcoming-row {
+
+  min-height: 65px;
+
+  display: grid;
+
+  grid-template-columns: 70px minmax(0, 1fr) 61px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 12px;
+
+}
+
+
+
+.lms-upcoming-image {
+
+  width: 70px;
+
+  height: 58px;
+
+  overflow: hidden;
+
+  display: grid;
+
+  place-items: center;
+
+  border: 1px solid rgba(38, 125, 217, 0.28);
+
+  border-radius: 8px;
+
+  color: #40aaff;
+
+  background: #071c30;
+
+}
+
+
+
+.lms-upcoming-image img {
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+}
+
+
+
+.lms-upcoming-info {
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+}
+
+
+
+.lms-upcoming-info strong {
+
+  font-size: 13px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+
+
+.lms-upcoming-info span {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #b5c6dc;
+
+  font-size: 11px;
+
+}
+
+
+
+.lms-join-btn {
+
+  height: 40px;
+
+  border: 1px solid #137aff;
+
+  border-radius: 8px;
+
+  color: #fff;
+
+  background: linear-gradient(90deg, #0a55f7, #087dff);
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+}
+
+
+
+.lms-join-btn:disabled {
+
+  cursor: not-allowed;
+
+  opacity: 0.5;
+
+}
+
+
+
+.lms-panel-loading,
+
+.lms-empty-small {
+
+  min-height: 180px;
+
+  display: grid;
+
+  place-items: center;
+
+  color: #8fa3b9;
+
+  font-size: 12px;
+
+  text-align: center;
+
+}
+
+
+
+.lms-feature-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 13px;
+
+  margin-top: 13px;
+
+}
+
+
+
+.lms-dashboard-icon-card {
+
+  min-height: 101px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 17px;
+
+  padding: 16px 18px;
+
+  border: 1px solid rgba(31, 107, 174, 0.2);
+
+  border-radius: 12px;
+
+  color: #fff;
+
+  background: linear-gradient(135deg, rgba(5, 29, 49, 0.97), rgba(4, 20, 34, 0.97));
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s ease;
+
+}
+
+
+
+.lms-dashboard-icon-card:hover {
+
+  transform: translateY(-2px);
+
+  border-color: rgba(29, 125, 255, 0.48);
+
+  box-shadow: 0 12px 30px rgba(0, 71, 145, 0.18);
+
+}
+
+
+
+.lms-icon-box {
+
+  width: 59px;
+
+  height: 59px;
+
+  flex: 0 0 59px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 13px;
+
+  font-size: 25px;
+
+  color: #fff;
+
+}
+
+
+
+.lms-icon-box.blue {
+
+  background: linear-gradient(145deg, #075aff, #0d8cff);
+
+  box-shadow: 0 8px 25px rgba(0, 109, 255, 0.35);
+
+}
+
+
+
+.lms-icon-box.purple {
+
+  background: linear-gradient(145deg, #4615f5, #7a16ff);
+
+  box-shadow: 0 8px 25px rgba(105, 19, 255, 0.3);
+
+}
+
+
+
+.lms-icon-copy {
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+}
+
+
+
+.lms-icon-copy strong {
+
+  font-size: 15px;
+
+}
+
+
+
+.lms-icon-copy small {
+
+  color: #a9bbd2;
+
+  font-size: 12px;
+
+}
+
+
+
+.lms-learning-section {
+
+  margin-top: 25px;
+
+}
+
+
+
+.lms-section-heading {
+
+  margin-bottom: 12px;
+
+}
+
+
+
+.lms-section-heading h2 {
+
+  font-size: 21px;
+
+}
+
+
+
+.lms-section-heading button {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  text-decoration: underline;
+
+}
+
+
+
+.lms-course-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 13px;
+
+}
+
+
+
+.lms-course-card {
+
+  overflow: hidden;
+
+  border: 1px solid rgba(31, 110, 182, 0.26);
+
+  border-radius: 12px;
+
+  background: linear-gradient(180deg, #061a2c 0%, #041525 100%);
+
+}
+
+
+
+.lms-course-image-wrap {
+
+  position: relative;
+
+  height: 110px;
+
+  overflow: hidden;
+
+}
+
+
+
+.lms-course-image {
+
+  width: 100%;
+
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+}
+
+
+
+.lms-image-fallback {
+
+  display: grid;
+
+  place-items: center;
+
+  color: #39a1ff;
+
+  background: radial-gradient(circle, rgba(20, 111, 255, .25), transparent 55%), #06182a;
+
+  font-size: 34px;
+
+}
+
+
+
+.lms-course-badge {
+
+  position: absolute;
+
+  top: 10px;
+
+  right: 10px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  color: #fff;
+
+  background: rgba(0, 24, 49, 0.86);
+
+  border: 1px solid rgba(66, 148, 238, 0.35);
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+}
+
+
+
+.lms-course-body {
+
+  padding: 13px 15px 14px;
+
+}
+
+
+
+.lms-course-body h3 {
+
+  min-height: 42px;
+
+  margin: 0 0 8px;
+
+  font-size: 16px;
+
+  line-height: 1.3;
+
+}
+
+
+
+.lms-course-meta {
+
+  display: flex;
+
+  gap: 12px;
+
+  color: #bdcce0;
+
+  font-size: 11px;
+
+}
+
+
+
+.lms-course-meta span,
+
+.lms-course-trainer {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+}
+
+
+
+.lms-course-meta svg,
+
+.lms-course-trainer svg {
+
+  color: #c6d3e5;
+
+}
+
+
+
+.lms-course-trainer {
+
+  margin-top: 9px;
+
+  color: #aebfd5;
+
+  font-size: 11px;
+
+}
+
+
+
+.lms-course-body button {
+
+  width: 100%;
+
+  min-height: 38px;
+
+  margin-top: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  border: 1px solid #1681ff;
+
+  border-radius: 8px;
+
+  color: #0b98ff;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+  font-size: 12px;
+
+}
+
+
+
+.lms-course-body button:hover {
+
+  color: #fff;
+
+  background: #0879ff;
+
+}
+
+
+
+.lms-learning-loading,
+
+.lms-empty-learning {
+
+  min-height: 180px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 16px;
+
+  padding: 25px;
+
+  border: 1px dashed rgba(45, 129, 214, 0.24);
+
+  border-radius: 13px;
+
+  color: #91a5ba;
+
+  text-align: center;
+
+}
+
+
+
+.lms-empty-learning {
+
+  justify-content: flex-start;
+
+  text-align: left;
+
+}
+
+
+
+.lms-empty-icon {
+
+  width: 58px;
+
+  height: 58px;
+
+  flex: 0 0 58px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 13px;
+
+  color: #20a0ff;
+
+  background: rgba(15, 113, 255, 0.12);
+
+  font-size: 25px;
+
+}
+
+
+
+.lms-empty-learning h3 {
+
+  margin: 0 0 5px;
+
+  color: #fff;
+
+  font-size: 16px;
+
+}
+
+
+
+.lms-empty-learning p {
+
+  margin: 0;
+
+  color: #91a5ba;
+
+  font-size: 12px;
+
+}
+
+
+
+.lms-empty-learning .lms-primary-button {
+
+  margin-left: auto;
+
+  min-height: 42px;
+
+  padding: 0 18px;
+
+  white-space: nowrap;
+
+}
+
+
+
+.lms-loading-screen {
+
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  gap: 13px;
+
+  color: #dfeeff;
+
+  background: #000000;
+
+}
+
+
+
+.lms-spinner {
+
+  color: #1887ff;
+
+  animation: lms-spin 0.8s linear infinite;
+
+}
+
+
+
+.lms-loading-screen .lms-spinner {
+
+  font-size: 28px;
+
+}
+
+
+
+@keyframes lms-spin {
+
+  to { transform: rotate(360deg); }
+
+}
+
+
+
+.lms-sidebar-overlay {
+
+  display: none;
+
+}
+
+
+
+@media (max-width: 1250px) {
+
+  .lms-dashboard-grid {
+
+    grid-template-columns: minmax(0, 1fr) 340px;
+
+  }
+
+
+
+  .lms-feature-grid,
+
+  .lms-course-grid {
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  }
+
+}
+
+
+
+@media (max-width: 1000px) {
+
+  .lms-sidebar {
+
+    transform: translateX(-102%);
+
+    transition: transform 0.25s ease;
+
+  }
+
+
+
+  .lms-sidebar.open {
+
+    transform: translateX(0);
+
+  }
+
+
+
+  .lms-sidebar-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 70;
+
+    display: block;
+
+    border: 0;
+
+    background: rgba(0,0,0,.6);
+
+    backdrop-filter: blur(3px);
+
+  }
+
+
+
+  .lms-mobile-close,
+
+  .lms-menu-button {
+
+    display: grid;
+
+    place-items: center;
+
+    border: 0;
+
+    color: #fff;
+
+    background: transparent;
+
+    cursor: pointer;
+
+  }
+
+
+
+  .lms-mobile-close {
+
+    margin-left: auto;
+
+    font-size: 18px;
+
+  }
+
+
+
+  .lms-menu-button {
+
+    width: 42px;
+
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border-radius: 9px;
+
+    background: rgba(16, 120, 255, .12);
+
+  }
+
+
+
+  .lms-main {
+
+    width: 100%;
+
+    margin-left: 0;
+
+  }
+
+
+
+  .lms-dashboard-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+
+  .lms-upcoming-panel {
+
+    min-height: auto;
+
+  }
+
+}
+
+
+
+@media (max-width: 720px) {
+
+  .lms-topbar {
+
+    height: 70px;
+
+    padding: 0 12px;
+
+    gap: 10px;
+
+  }
+
+
+
+  .lms-search-wrap {
+
+    width: auto;
+
+    flex: 1;
+
+    height: 44px;
+
+  }
+
+
+
+  .lms-topbar-actions {
+
+    margin-left: 0;
+
+  }
+
+
+
+  .lms-notification {
+
+    width: 40px;
+
+    border: 0;
+
+  }
+
+
+
+  .lms-user-copy,
+
+  .lms-user-chevron {
+
+    display: none;
+
+  }
+
+
+
+  .lms-user-menu {
+
+    min-width: auto;
+
+    padding: 0;
+
+  }
+
+
+
+  .lms-user-avatar {
+
+    width: 38px;
+
+    height: 38px;
+
+    flex-basis: 38px;
+
+  }
+
+
+
+  .lms-content {
+
+    padding: 10px 10px 30px;
+
+  }
+
+
+
+  .lms-hero {
+
+    min-height: 340px;
+
+  }
+
+
+
+  .lms-hero-content {
+
+    padding: 30px 20px;
+
+  }
+
+
+
+  .lms-hero h1 {
+
+    font-size: 37px;
+
+  }
+
+
+
+  .lms-hero p {
+
+    font-size: 14px;
+
+  }
+
+
+
+  .lms-hero p br {
+
+    display: none;
+
+  }
+
+
+
+  .lms-hero-actions {
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+  }
+
+
+
+  .lms-hero-quote {
+
+    display: none;
+
+  }
+
+
+
+  .lms-feature-grid,
+
+  .lms-course-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+
+
+  .lms-upcoming-row {
+
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+
+  }
+
+
+
+  .lms-upcoming-image {
+
+    width: 58px;
+
+    height: 53px;
+
+  }
+
+
+
+  .lms-empty-learning {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+  }
+
+
+
+  .lms-empty-learning .lms-primary-button {
+
+    margin-left: 0;
+
+  }
+
+}
+
+
+
+`;
+
+
 
 const API =
+
   import.meta.env.VITE_API_URL ||
-  "https://finearts-backend.onrender.com/api";
 
-/* =========================================================
-   THEME
-========================================================= */
+  "http\://localhost:5000/api";
 
-const COLORS = {
-  black: "#02060B",
-  black2: "#050A11",
-  surface: "#07111D",
-  surface2: "#0A1624",
-  surface3: "#0D1B2B",
-  blue: "#087CFF",
-  electricBlue: "#00B7FF",
-  cyan: "#20D9FF",
-  blueDark: "#003B8F",
-  border: "rgba(80,170,255,0.14)",
-};
 
-/* =========================================================
-   STORAGE HELPERS
-========================================================= */
+
+const LMS_BASE = "/institute/website/preview/lms";
+
+
 
 const getStoredStudent = () => {
+
   try {
+
     const raw = localStorage.getItem("studentUser");
 
-    if (!raw) return null;
+    return raw ? JSON.parse(raw) : null;
 
-    const parsed = JSON.parse(raw);
-
-    return parsed && typeof parsed === "object"
-      ? parsed
-      : null;
-  } catch (error) {
-    console.error("STUDENT STORAGE ERROR:", error);
-
-    localStorage.removeItem("studentUser");
+  } catch {
 
     return null;
+
   }
+
 };
 
-const getStudentToken = () => {
-  const token = localStorage.getItem("studentToken");
 
-  if (
-    !token ||
-    token === "null" ||
-    token === "undefined"
-  ) {
-    return null;
-  }
 
-  return token;
-};
+const getStoredToken = () =>
 
-/* =========================================================
-   SAFE FIREBASE TOKEN
-========================================================= */
+  localStorage.getItem("studentToken") || null;
 
-const getSafeStudentToken = async (
-  firebaseUser,
-  forceRefresh = false
-) => {
-  if (!forceRefresh) {
-    const storedToken = getStudentToken();
 
-    if (storedToken) {
-      return storedToken;
-    }
-  }
-
-  if (!firebaseUser) {
-    return null;
-  }
-
-  try {
-    const token = await firebaseUser.getIdToken(
-      forceRefresh
-    );
-
-    if (token) {
-      localStorage.setItem(
-        "studentToken",
-        token
-      );
-
-      return token;
-    }
-
-    return null;
-  } catch (error) {
-    console.error(
-      "STUDENT TOKEN ERROR:",
-      error
-    );
-
-    const fallbackToken =
-      getStudentToken();
-
-    return fallbackToken || null;
-  }
-};
-
-/* =========================================================
-   INSTITUTE ID
-========================================================= */
 
 const getStoredInstituteId = () => {
+
   const keys = [
-    "instituteId",
+
+    "currentInstituteId",
+
+    "current_institute_id",
+
     "institute_id",
+
     "websiteInstituteId",
+
     "website_institute_id",
+
     "selectedInstituteId",
+
     "selected_institute_id",
+
+    "previewInstituteId",
+
   ];
+
+
 
   for (const key of keys) {
-    const value =
-      localStorage.getItem(key);
 
-    if (!value) continue;
+    const value = Number(localStorage.getItem(key));
 
-    const id = Number(value);
+    if (Number.isInteger(value) && value > 0) return value;
 
-    if (
-      Number.isInteger(id) &&
-      id > 0
-    ) {
-      return id;
-    }
   }
 
-  return null;
-};
 
-const resolveInstituteId = (
-  context,
-  student = null
-) => {
-  const candidates = [
-    context?.instituteId,
-    context?.institute_id,
-
-    context?.website?.institute_id,
-    context?.website?.instituteId,
-
-    context?.websiteData?.institute_id,
-    context?.websiteData?.instituteId,
-
-    context?.publicWebsite?.institute_id,
-    context?.publicWebsite?.instituteId,
-
-    student?.institute_id,
-    student?.instituteId,
-
-    student?.institute?.id,
-
-    getStoredInstituteId(),
-  ];
-
-  for (const value of candidates) {
-    const id = Number(value);
-
-    if (
-      Number.isInteger(id) &&
-      id > 0
-    ) {
-      return id;
-    }
-  }
 
   try {
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
 
-    const queryInstituteId =
-      params.get("institute_id");
+    const stored = JSON.parse(localStorage.getItem("institute") || "null");
 
-    const id =
-      Number(queryInstituteId);
+    const value = Number(
 
-    if (
-      Number.isInteger(id) &&
-      id > 0
-    ) {
-      return id;
-    }
-  } catch (error) {
-    console.warn(
-      "INSTITUTE ID URL ERROR:",
-      error
+      stored?.institute?.id ||
+
+        stored?.institute_id ||
+
+        stored?.instituteId ||
+
+        stored?.id
+
     );
+
+    if (Number.isInteger(value) && value > 0) return value;
+
+  } catch {
+
+    // ignore malformed local storage
+
   }
+
+
 
   return null;
+
 };
 
-/* =========================================================
-   SAVE STUDENT
-========================================================= */
 
-const saveStudent = (
-  student,
-  token = null,
-  instituteId = null
-) => {
-  if (!student) return;
 
-  try {
-    localStorage.setItem(
-      "studentUser",
-      JSON.stringify(student)
-    );
+const responseData = (payload) => payload?.data ?? payload ?? {};
 
-    localStorage.setItem(
-      "studentRole",
-      "STUDENT"
-    );
 
-    localStorage.setItem(
-      "studentLoggedIn",
-      "true"
-    );
 
-    if (token) {
-      localStorage.setItem(
-        "studentToken",
-        token
-      );
-    }
+const asArray = (value) => (Array.isArray(value) ? value : []);
 
-    if (instituteId) {
-      localStorage.setItem(
-        "instituteId",
-        String(instituteId)
-      );
 
-      localStorage.setItem(
-        "institute_id",
-        String(instituteId)
-      );
-    }
-  } catch (error) {
-    console.error(
-      "SAVE STUDENT ERROR:",
-      error
-    );
+
+const firstValue = (...values) =>
+
+  values.find(
+
+    (value) =>
+
+      value !== undefined &&
+
+      value !== null &&
+
+      String(value).trim() !== ""
+
+  );
+
+
+
+const imageOf = (item) =>
+
+  firstValue(
+
+    item?.image,
+
+    item?.image_url,
+
+    item?.banner_image,
+
+    item?.banner_url,
+
+    item?.cover_image,
+
+    item?.thumbnail,
+
+    item?.thumbnail_url,
+
+    item?.class_image,
+
+    item?.profile_image,
+
+    item?.photoURL,
+
+    item?.logo
+
+  ) || "";
+
+
+
+const nameOf = (student) =>
+
+  firstValue(
+
+    student?.name,
+
+    student?.full_name,
+
+    student?.displayName,
+
+    student?.student?.name,
+
+    student?.student?.full_name,
+
+    student?.user?.full_name,
+
+    "Student"
+
+  );
+
+
+
+const avatarOf = (student) =>
+
+  firstValue(
+
+    student?.profile_image,
+
+    student?.student_photo,
+
+    student?.photoURL,
+
+    student?.student?.profile_image,
+
+    student?.user?.profile_image
+
+  ) || "";
+
+
+
+const classIdOf = (item) =>
+
+  Number(
+
+    item?.class_id ||
+
+      item?.classId ||
+
+      item?.id ||
+
+      item?.class?.id
+
+  );
+
+
+
+const formatDate = (value) => {
+
+  if (!value) return "Date not available";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleDateString("en-IN", {
+
+    weekday: "short",
+
+    day: "2-digit",
+
+    month: "short",
+
+  });
+
+};
+
+
+
+const formatTime = (value) => {
+
+  if (!value) return "Time not available";
+
+  const raw = String(value);
+
+  const date = new Date(raw);
+
+
+
+  if (raw.includes("T") && !Number.isNaN(date.getTime())) {
+
+    return date.toLocaleTimeString("en-IN", {
+
+      hour: "2-digit",
+
+      minute: "2-digit",
+
+    });
+
   }
+
+
+
+  const match = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+
+  if (!match) return raw;
+
+
+
+  let hour = Number(match[1]);
+
+  const minute = match[2];
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12 || 12;
+
+  return `${hour}:${minute} ${suffix}`;
+
 };
 
-/* =========================================================
-   NORMALIZE STUDENT
-========================================================= */
 
-const normalizeStudent = (
-  result,
-  firebaseUser,
-  existingStudent
-) => {
-  const data =
-    result?.data ||
-    result?.student ||
-    result ||
-    {};
 
-  const student =
-    data?.student || {};
+const normalizeBookings = (payload) => {
 
-  const account =
-    data?.account || {};
+  const data = responseData(payload);
 
-  const user =
-    data?.user || {};
+  return asArray(
+
+    Array.isArray(data)
+
+      ? data
+
+      : data?.bookings || data?.data?.bookings || data?.data
+
+  );
+
+};
+
+
+
+const normalizeSessions = (payload) => {
+
+  const data = responseData(payload);
+
+  return asArray(
+
+    data?.sessions ||
+
+      data?.data?.sessions ||
+
+      (Array.isArray(data) ? data : [])
+
+  );
+
+};
+
+
+
+const normalizeWebsite = (payload) => {
+
+  const data = responseData(payload);
 
   return {
-    ...(existingStudent || {}),
+
     ...data,
-    ...student,
 
-    uid:
-      data?.uid ||
-      data?.firebase_uid ||
-      existingStudent?.uid ||
-      firebaseUser?.uid ||
-      null,
+    institute: data?.institute || {},
 
-    firebase_uid:
-      data?.firebase_uid ||
-      existingStudent?.firebase_uid ||
-      firebaseUser?.uid ||
-      null,
+    website: data?.website || {},
 
-    student_id:
-      data?.student_id ||
-      student?.student_id ||
-      student?.id ||
-      existingStudent?.student_id ||
-      null,
+    branding: data?.branding || {},
 
-    institute_id:
-      data?.institute_id ||
-      student?.institute_id ||
-      existingStudent?.institute_id ||
-      null,
+    banners: asArray(data?.banners),
 
-    name:
-      data?.name ||
-      data?.full_name ||
-      student?.name ||
-      user?.full_name ||
-      existingStudent?.name ||
-      existingStudent?.full_name ||
-      firebaseUser?.displayName ||
-      "Student",
+    classes: asArray(data?.classes || data?.courses),
 
-    full_name:
-      data?.full_name ||
-      data?.name ||
-      student?.name ||
-      user?.full_name ||
-      existingStudent?.full_name ||
-      existingStudent?.name ||
-      firebaseUser?.displayName ||
-      "Student",
+    courses: asArray(data?.courses || data?.classes),
 
-    email:
-      data?.email ||
-      account?.email ||
-      user?.email ||
-      existingStudent?.email ||
-      firebaseUser?.email ||
-      "",
-
-    phone:
-      data?.phone ||
-      data?.phone_number ||
-      account?.phone_number ||
-      user?.phone_number ||
-      existingStudent?.phone ||
-      existingStudent?.phone_number ||
-      firebaseUser?.phoneNumber ||
-      "",
-
-    profile_image:
-      data?.profile_image ||
-      data?.student_photo ||
-      student?.profile_image ||
-      user?.profile_image ||
-      existingStudent?.profile_image ||
-      firebaseUser?.photoURL ||
-      "",
-
-    photoURL:
-      data?.photoURL ||
-      existingStudent?.photoURL ||
-      firebaseUser?.photoURL ||
-      data?.profile_image ||
-      "",
-  };
-};
-
-/* =========================================================
-   RESPONSE HELPERS
-========================================================= */
-
-const extractArray = (
-  result,
-  keys = []
-) => {
-  if (Array.isArray(result)) {
-    return result;
-  }
-
-  for (const key of keys) {
-    if (
-      Array.isArray(result?.[key])
-    ) {
-      return result[key];
-    }
-
-    if (
-      Array.isArray(
-        result?.data?.[key]
-      )
-    ) {
-      return result.data[key];
-    }
-  }
-
-  if (
-    Array.isArray(result?.data)
-  ) {
-    return result.data;
-  }
-
-  return [];
-};
-
-/* =========================================================
-   IMAGE
-========================================================= */
-
-const getImage = (
-  value,
-  fallbackName = "FineArts"
-) => {
-  if (value) return value;
-
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    fallbackName
-  )}&background=07111D&color=00B7FF&bold=true&size=600`;
-};
-
-/* =========================================================
-   DATE
-========================================================= */
-
-const formatDate = value => {
-  if (!value) {
-    return "Date unavailable";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-    }
-  );
-};
-
-const formatTime = value => {
-  if (!value) {
-    return "Time unavailable";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    !Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return date.toLocaleTimeString(
-      "en-IN",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
-  }
-
-  return String(value);
-};
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-const WebsitePreviewDashboard = () => {
-  const navigate =
-    useNavigate();
-
-  const context =
-    useOutletContext() || {};
-
-  const [student, setStudent] =
-    useState(
-      context.studentUser ||
-      getStoredStudent()
-    );
-
-  const [firebaseUser, setFirebaseUser] =
-    useState(
-      auth.currentUser
-    );
-
-  const [token, setToken] =
-    useState(
-      getStudentToken()
-    );
-
-  const [courses, setCourses] =
-    useState([]);
-
-  const [sessions, setSessions] =
-    useState([]);
-
-  const [bookings, setBookings] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [dataLoading, setDataLoading] =
-    useState(false);
-
-  const [mobileMenu, setMobileMenu] =
-    useState(false);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
-
-  /* =======================================================
-     AUTH
-  ======================================================= */
-
-  useEffect(() => {
-    let mounted = true;
-
-    const unsubscribe =
-      onAuthStateChanged(
-        auth,
-        async user => {
-          if (!mounted) return;
-
-          setFirebaseUser(user);
-
-          const storedStudent =
-            getStoredStudent();
-
-          if (storedStudent) {
-            setStudent(previous => ({
-              ...(previous || {}),
-              ...storedStudent,
-            }));
-          }
-
-          if (user) {
-            try {
-              const freshToken =
-                await getSafeStudentToken(
-                  user
-                );
-
-              if (
-                mounted &&
-                freshToken
-              ) {
-                setToken(
-                  freshToken
-                );
-
-                localStorage.setItem(
-                  "studentToken",
-                  freshToken
-                );
-              }
-            } catch (authError) {
-              console.error(
-                "TOKEN ERROR:",
-                authError
-              );
-            }
-          }
-
-          if (mounted) {
-            setLoading(false);
-          }
-        }
-      );
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
-  }, []);
-
-  /* =======================================================
-     CONTEXT STUDENT
-  ======================================================= */
-
-  useEffect(() => {
-    if (
-      context.studentUser &&
-      typeof context.studentUser ===
-        "object"
-    ) {
-      setStudent(previous => ({
-        ...(previous || {}),
-        ...context.studentUser,
-      }));
-
-      saveStudent(
-        context.studentUser,
-        getStudentToken(),
-        resolveInstituteId(
-          context,
-          context.studentUser
-        )
-      );
-    }
-  }, [
-    context.studentUser,
-    context.instituteId,
-    context.institute_id,
-  ]);
-
-  /* =======================================================
-     STUDENT PROFILE
-  ======================================================= */
-
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchStudentProfile =
-      async firebaseUser => {
-        if (!firebaseUser?.uid) {
-          return;
-        }
-
-        const currentInstituteId =
-          resolveInstituteId(
-            context,
-            getStoredStudent()
-          );
-
-        if (!currentInstituteId) {
-          console.warn(
-            "STUDENT PROFILE: Institute ID missing"
-          );
-
-          return;
-        }
-
-        try {
-          const freshToken =
-            await getSafeStudentToken(
-              firebaseUser
-            );
-
-          if (!freshToken) {
-            return;
-          }
-
-          const response =
-            await fetch(
-              `${API}/students/me?institute_id=${encodeURIComponent(
-                currentInstituteId
-              )}`,
-              {
-                method: "GET",
-                headers: {
-                  Accept:
-                    "application/json",
-                  Authorization:
-                    `Bearer ${freshToken}`,
-                },
-              }
-            );
-
-          const result =
-            await response
-              .json()
-              .catch(() => ({}));
-
-          if (!response.ok) {
-            throw new Error(
-              result?.message ||
-                result?.error ||
-                "Unable to load student profile."
-            );
-          }
-
-          const normalized =
-            normalizeStudent(
-              result,
-              firebaseUser,
-              getStoredStudent()
-            );
-
-          normalized.institute_id =
-            normalized.institute_id ||
-            currentInstituteId;
-
-          saveStudent(
-            normalized,
-            freshToken,
-            currentInstituteId
-          );
-
-          if (mounted) {
-            setStudent(
-              normalized
-            );
-
-            setToken(
-              freshToken
-            );
-          }
-        } catch (profileError) {
-          console.warn(
-            "STUDENT PROFILE REFRESH:",
-            profileError
-          );
-        }
-      };
-
-    if (firebaseUser) {
-      fetchStudentProfile(
-        firebaseUser
-      );
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [
-    firebaseUser,
-    context,
-  ]);
-
-  /* =======================================================
-     DASHBOARD API
-  ======================================================= */
-
-  useEffect(() => {
-    if (!token) {
-      setDataLoading(false);
-      return;
-    }
-
-    let mounted = true;
-
-    const requestJson =
-      async (
-        url,
-        requestName
-      ) => {
-        try {
-          const response =
-            await fetch(
-              url,
-              {
-                method: "GET",
-                headers: {
-                  Accept:
-                    "application/json",
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              }
-            );
-
-          const result =
-            await response
-              .json()
-              .catch(() => ({}));
-
-          if (!response.ok) {
-            throw new Error(
-              result?.message ||
-                result?.error ||
-                `${requestName} failed`
-            );
-          }
-
-          return result;
-        } catch (requestError) {
-          console.error(
-            `${requestName} ERROR:`,
-            requestError
-          );
-
-          throw requestError;
-        }
-      };
-
-    const loadDashboard =
-      async () => {
-        setDataLoading(true);
-        setError("");
-
-        /* COURSES */
-
-        try {
-          const result =
-            await requestJson(
-              `${API}/lms/students/courses`,
-              "STUDENT COURSES"
-            );
-
-          if (mounted) {
-            setCourses(
-              extractArray(
-                result,
-                [
-                  "courses",
-                  "items",
-                  "results",
-                ]
-              )
-            );
-          }
-        } catch (courseError) {
-          if (mounted) {
-            setCourses([]);
-          }
-        }
-
-        /* SESSIONS */
-
-        try {
-          const result =
-            await requestJson(
-              `${API}/sessions/user/upcoming`,
-              "STUDENT SESSIONS"
-            );
-
-          if (mounted) {
-            setSessions(
-              extractArray(
-                result,
-                [
-                  "sessions",
-                  "upcoming",
-                  "items",
-                ]
-              )
-            );
-          }
-        } catch (sessionError) {
-          if (mounted) {
-            setSessions([]);
-          }
-        }
-
-        /* BOOKINGS */
-
-        try {
-          const result =
-            await requestJson(
-              `${API}/bookings/my`,
-              "STUDENT BOOKINGS"
-            );
-
-          const bookingList =
-            extractArray(
-              result,
-              [
-                "bookings",
-                "items",
-                "results",
-              ]
-            );
-
-          if (mounted) {
-            setBookings(
-              bookingList
-            );
-          }
-        } catch (bookingError) {
-          if (mounted) {
-            setBookings([]);
-          }
-        }
-
-        if (mounted) {
-          setDataLoading(false);
-        }
-      };
-
-    loadDashboard();
-
-    return () => {
-      mounted = false;
-    };
-  }, [token]);
-
-  /* =======================================================
-     DISPLAY DATA
-  ======================================================= */
-
-  const displayName =
-    student?.name ||
-    student?.full_name ||
-    student?.displayName ||
-    firebaseUser?.displayName ||
-    "Student";
-
-  const firstName =
-    displayName
-      .trim()
-      .split(" ")[0] ||
-    "Student";
-
-  const profileImage =
-    student?.profile_image ||
-    student?.photoURL ||
-    firebaseUser?.photoURL ||
-    getImage(
-      null,
-      displayName
-    );
-
-  const totalPayments =
-    useMemo(() => {
-      return bookings
-        .filter(booking => {
-          const status =
-            booking?.payment?.status ||
-            booking?.payment_status ||
-            booking?.status;
-
-          return (
-            String(
-              status || ""
-            ).toUpperCase() ===
-            "PAID"
-          );
-        })
-        .reduce(
-          (sum, booking) => {
-            const amount =
-              booking?.payment
-                ?.amount ??
-              booking?.amount ??
-              booking?.price ??
-              booking?.total_amount ??
-              0;
-
-            return (
-              sum +
-              Number(amount || 0)
-            );
-          },
-          0
-        );
-    }, [bookings]);
-
-  const filteredCourses =
-    useMemo(() => {
-      const value =
-        search
-          .trim()
-          .toLowerCase();
-
-      if (!value) {
-        return courses.slice(
-          0,
-          4
-        );
-      }
-
-      return courses
-        .filter(course => {
-          return (
-            String(
-              course?.title || ""
-            )
-              .toLowerCase()
-              .includes(value) ||
-            String(
-              course?.name || ""
-            )
-              .toLowerCase()
-              .includes(value) ||
-            String(
-              course?.trainer_name ||
-                ""
-            )
-              .toLowerCase()
-              .includes(value) ||
-            String(
-              course?.level || ""
-            )
-              .toLowerCase()
-              .includes(value)
-          );
-        })
-        .slice(0, 4);
-    }, [
-      courses,
-      search,
-    ]);
-
-  const upcomingSessions =
-    useMemo(() => {
-      return [...sessions]
-        .sort((a, b) => {
-          const aDate =
-            new Date(
-              a?.start_time ||
-                a?.start_at ||
-                a?.session_date ||
-                a?.date ||
-                0
-            ).getTime();
-
-          const bDate =
-            new Date(
-              b?.start_time ||
-                b?.start_at ||
-                b?.session_date ||
-                b?.date ||
-                0
-            ).getTime();
-
-          return (
-            aDate - bDate
-          );
-        })
-        .slice(0, 3);
-    }, [sessions]);
-
-  /* =======================================================
-     NAVIGATION
-  ======================================================= */
-
-  const go = path => {
-    setMobileMenu(false);
-    navigate(path);
   };
 
-  const menuItems = [
-    {
-      label: "Dashboard",
-      icon: <FaHome />,
-      path:
-        "/institute/website/preview/dashboard",
-    },
-    {
-      label: "My Learning",
-      icon: <FaBookOpen />,
-      path:
-        "/institute/website/preview/my-learning",
-    },
-    {
-      label: "Live Sessions",
-      icon: <FaVideo />,
-      path:
-        "/institute/website/preview/sessions",
-    },
-    {
-      label: "Recordings",
-      icon: <FaPlayCircle />,
-      path:
-        "/institute/website/preview/recordings",
-    },
-    {
-      label: "My Bookings",
-      icon: <FaCalendarAlt />,
-      path:
-        "/institute/website/preview/my-bookings",
-    },
-    {
-      label: "Assignments",
-      icon: <FaFileAlt />,
-      path:
-        "/institute/website/preview/assignments",
-    },
-    {
-      label: "Attendance",
-      icon: <FaClipboardCheck />,
-      path:
-        "/institute/website/preview/attendance",
-    },
-    {
-      label: "Payment Details",
-      icon: <FaCreditCard />,
-      path:
-        "/institute/website/preview/payments",
-    },
-    {
-      label: "Profile",
-      icon: <FaUser />,
-      path:
-        "/institute/website/preview/profile",
-    },
+};
+
+
+
+const getHomeBanner = (website) => {
+
+  const banners = asArray(website?.banners);
+
+  const home = banners.find((banner) => {
+
+    const type = String(
+
+      banner?.banner_type || banner?.bannerType || banner?.type || ""
+
+    ).toUpperCase();
+
+    return type === "HOME" || type === "HERO";
+
+  });
+
+  return home || banners[0] || null;
+
+};
+
+
+
+const isPaidConfirmed = (booking) =>
+
+  String(booking?.status || "").toUpperCase() === "CONFIRMED" &&
+
+  String(booking?.payment_status || "").toUpperCase() === "PAID";
+
+
+
+const dedupeClassesFromBookings = (bookings) => {
+
+  const map = new Map();
+
+
+
+  bookings.forEach((booking) => {
+
+    if (!isPaidConfirmed(booking)) return;
+
+    const id = classIdOf(booking);
+
+    if (!Number.isInteger(id) || id <= 0) return;
+
+    if (!map.has(id)) map.set(id, booking);
+
+  });
+
+
+
+  return Array.from(map.values());
+
+};
+
+
+
+const getProgress = (booking) => {
+
+  const candidates = [
+
+    booking?.progress,
+
+    booking?.progress_percentage,
+
+    booking?.completion_percentage,
+
+    booking?.class_progress,
+
   ];
 
-  /* =======================================================
-     JOIN SESSION
-  ======================================================= */
 
-  const handleJoinSession =
-    session => {
-      const meetingUrl =
-        session?.meeting_url ||
-        session?.meetingUrl ||
-        session?.join_url ||
-        session?.joinUrl ||
-        session?.zoom_link ||
-        session?.google_meet_link;
 
-      if (meetingUrl) {
-        window.open(
-          meetingUrl,
-          "_blank",
-          "noopener,noreferrer"
-        );
+  const value = candidates.find(
 
-        return;
-      }
+    (item) => item !== undefined && item !== null && item !== ""
 
-      alert(
-        "Meeting link is not available for this session."
-      );
-    };
+  );
 
-  /* =======================================================
-     LOADING
-  ======================================================= */
 
-  if (loading) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center text-white"
-        style={{
-          background:
-            COLORS.black,
-        }}
-      >
-        <div className="text-center">
-          <div
-            className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-4 border-white/10"
-            style={{
-              borderTopColor:
-                COLORS.blue,
-              borderRightColor:
-                COLORS.electricBlue,
-            }}
-          />
 
-          <p className="text-sm text-white/50">
-            Loading student dashboard...
-          </p>
-        </div>
-      </div>
+  if (value === undefined) return null;
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) return null;
+
+  return Math.min(100, Math.max(0, Math.round(number)));
+
+};
+
+
+
+const fetchJson = async (url, token = null) => {
+
+  const headers = { Accept: "application/json" };
+
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+
+
+  const response = await fetch(url, { headers });
+
+  const payload = await response.json().catch(() => ({}));
+
+
+
+  if (!response.ok) {
+
+    const error = new Error(
+
+      payload?.message || payload?.error || `Request failed (${response.status})`
+
     );
+
+    error.status = response.status;
+
+    throw error;
+
   }
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
 
-  return (
-    <div
-      className="min-h-screen overflow-x-hidden text-white"
-      style={{
-        background:
-          `radial-gradient(circle at 80% 0%, rgba(0,119,255,0.08), transparent 25%), ${COLORS.black}`,
-      }}
-    >
-      {/* =================================================
-          BACKGROUND BLUE GLOW
-      ================================================= */}
 
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div
-          className="absolute -left-48 -top-48 h-[600px] w-[600px] rounded-full blur-[180px]"
-          style={{
-            background:
-              "rgba(0,119,255,0.12)",
-          }}
-        />
+  return payload;
 
-        <div
-          className="absolute -bottom-48 right-[-100px] h-[600px] w-[600px] rounded-full blur-[180px]"
-          style={{
-            background:
-              "rgba(0,183,255,0.08)",
-          }}
-        />
-      </div>
-
-      {/* =================================================
-          MOBILE OVERLAY
-      ================================================= */}
-
-      {mobileMenu && (
-        <div
-          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden"
-          onClick={() =>
-            setMobileMenu(false)
-          }
-        />
-      )}
-
-      {/* =================================================
-          SIDEBAR
-      ================================================= */}
-
-      <aside
-        className={`
-          fixed left-0 top-0 z-50
-          flex h-screen w-[270px]
-          flex-col
-          border-r border-blue-400/[0.10]
-          bg-[#020914]/95
-          backdrop-blur-2xl
-          transition-transform duration-300
-          ${
-            mobileMenu
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
-          }
-        `}
-      >
-        {/* LOGO */}
-
-        <div className="flex h-[92px] items-center border-b border-blue-400/[0.08] px-7">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-12 w-12 items-center justify-center rounded-xl text-xl text-white"
-              style={{
-                background:
-                  `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-                boxShadow:
-                  `0 0 35px rgba(0,124,255,0.35)`,
-              }}
-            >
-              <FaGraduationCap />
-            </div>
-
-            <div>
-              <h1 className="text-2xl font-black tracking-tight">
-                Fine
-                <span
-                  style={{
-                    color:
-                      COLORS.electricBlue,
-                  }}
-                >
-                  Arts
-                </span>
-              </h1>
-
-              <p className="text-[11px] text-white/45">
-                Student LMS
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className="ml-auto text-white/60 lg:hidden"
-              onClick={() =>
-                setMobileMenu(false)
-              }
-            >
-              <FaTimes />
-            </button>
-          </div>
-        </div>
-
-        {/* NAVIGATION */}
-
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="space-y-1.5">
-            {menuItems.map(
-              item => {
-                const active =
-                  item.label ===
-                  "Dashboard";
-
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() =>
-                      go(item.path)
-                    }
-                    className={`
-                      group flex w-full
-                      items-center gap-4
-                      rounded-xl px-4 py-3.5
-                      text-left
-                      transition-all
-                      ${
-                        active
-                          ? "text-white"
-                          : "text-white/65 hover:bg-blue-500/[0.06] hover:text-white"
-                      }
-                    `}
-                    style={
-                      active
-                        ? {
-                            background:
-                              "linear-gradient(90deg, rgba(8,124,255,0.22), rgba(8,124,255,0.03))",
-                            boxShadow:
-                              `inset 3px 0 0 ${COLORS.blue}, 0 0 30px rgba(8,124,255,0.08)`,
-                          }
-                        : {}
-                    }
-                  >
-                    <span
-                      className="flex w-6 justify-center text-lg"
-                      style={
-                        active
-                          ? {
-                              color:
-                                COLORS.electricBlue,
-                            }
-                          : {}
-                      }
-                    >
-                      {item.icon}
-                    </span>
-
-                    <span className="text-sm font-medium">
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              }
-            )}
-          </div>
-        </nav>
-
-        {/* SIDEBAR QUOTE */}
-
-        <div className="border-t border-blue-400/[0.08] p-5">
-          <div
-            className="relative overflow-hidden rounded-2xl border p-5"
-            style={{
-              borderColor:
-                "rgba(0,183,255,0.14)",
-              background:
-                "linear-gradient(145deg, rgba(8,124,255,0.10), rgba(0,0,0,0.2))",
-            }}
-          >
-            <div
-              className="absolute -right-10 -bottom-10 h-28 w-28 rounded-full blur-3xl"
-              style={{
-                background:
-                  COLORS.blue,
-              }}
-            />
-
-            <p
-              className="relative font-serif text-sm italic leading-6"
-              style={{
-                color:
-                  "rgba(0,183,255,0.85)",
-              }}
-            >
-              "Art Builds
-              <br />
-              A Better
-              <br />
-              You"
-            </p>
-
-            <div
-              className="relative mt-3 h-1 w-10 rounded-full"
-              style={{
-                background:
-                  `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-              }}
-            />
-          </div>
-        </div>
-      </aside>
-
-      {/* =================================================
-          MAIN
-      ================================================= */}
-
-      <div className="relative lg:pl-[270px]">
-
-        {/* TOP BAR */}
-
-        <header className="sticky top-0 z-30 h-[82px] border-b border-blue-400/[0.08] bg-[#020914]/85 backdrop-blur-2xl">
-          <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">
-
-            {/* MOBILE BUTTON */}
-
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-400/[0.10] bg-white/[0.03] text-white lg:hidden"
-              onClick={() =>
-                setMobileMenu(true)
-              }
-            >
-              <FaBars />
-            </button>
-
-            {/* SEARCH */}
-
-            <div className="relative max-w-[620px] flex-1">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-
-              <input
-                value={search}
-                onChange={event =>
-                  setSearch(
-                    event.target.value
-                  )
-                }
-                placeholder="Search courses, classes, recordings or topics..."
-                className="h-12 w-full rounded-xl border border-blue-400/[0.13] bg-[#06111E]/80 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-blue-400/40 focus:ring-2 focus:ring-blue-500/10"
-              />
-            </div>
-
-            {/* RIGHT */}
-
-            <div className="ml-auto flex items-center gap-3">
-
-              {/* NOTIFICATION */}
-
-              <button
-                type="button"
-                className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-blue-400/[0.10] bg-white/[0.025] text-lg text-white/80 transition hover:border-blue-400/25 hover:bg-blue-500/[0.06]"
-              >
-                <FaBell />
-
-                {upcomingSessions.length >
-                  0 && (
-                  <span
-                    className="absolute right-2 top-2 h-2 w-2 rounded-full"
-                    style={{
-                      background:
-                        COLORS.electricBlue,
-                      boxShadow:
-                        "0 0 10px rgba(0,183,255,0.9)",
-                    }}
-                  />
-                )}
-              </button>
-
-              {/* PROFILE */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  go(
-                    "/institute/website/preview/profile"
-                  )
-                }
-                className="flex items-center gap-3 border-l border-blue-400/[0.10] pl-4"
-              >
-                <img
-                  src={profileImage}
-                  alt={displayName}
-                  className="h-10 w-10 rounded-full border border-blue-400/20 object-cover"
-                />
-
-                <div className="hidden text-left sm:block">
-                  <p className="max-w-[130px] truncate text-sm font-semibold">
-                    {displayName}
-                  </p>
-
-                  <p className="text-xs text-white/40">
-                    Student
-                  </p>
-                </div>
-
-                <FaChevronRight className="hidden rotate-90 text-xs text-white/40 sm:block" />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* CONTENT */}
-
-        <main className="mx-auto w-full max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-
-          {error && (
-            <div className="mb-5 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error}
-            </div>
-          )}
-
-          {/* =================================================
-              HERO + SESSIONS
-          ================================================= */}
-
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
-
-            {/* HERO */}
-
-            <section
-              className="group relative min-h-[300px] overflow-hidden rounded-2xl border border-blue-400/[0.16]"
-              style={{
-                background:
-                  "radial-gradient(circle at 75% 40%, rgba(0,124,255,0.32), transparent 30%), radial-gradient(circle at 90% 100%, rgba(0,183,255,0.20), transparent 35%), linear-gradient(135deg, #020A14 0%, #03152B 52%, #020914 100%)",
-                boxShadow:
-                  "0 20px 60px rgba(0,0,0,0.35)",
-              }}
-            >
-              {/* GLOW */}
-
-              <div
-                className="absolute right-[-100px] top-[-100px] h-[430px] w-[430px] rounded-full blur-[100px]"
-                style={{
-                  background:
-                    "rgba(0,124,255,0.20)",
-                }}
-              />
-
-              <div
-                className="absolute bottom-[-150px] right-[50px] h-[350px] w-[500px] rounded-full blur-[100px]"
-                style={{
-                  background:
-                    "rgba(0,183,255,0.14)",
-                }}
-              />
-
-              {/* ABSTRACT RADIANT BLUE WAVES */}
-
-              <div className="pointer-events-none absolute inset-0 overflow-hidden">
-
-                <div
-                  className="absolute right-[-60px] top-[35px] h-[180px] w-[520px] rotate-[-17deg] rounded-[50%] border-[3px] opacity-60"
-                  style={{
-                    borderColor:
-                      "rgba(0,124,255,0.45)",
-                    boxShadow:
-                      "0 0 50px rgba(0,124,255,0.18)",
-                  }}
-                />
-
-                <div
-                  className="absolute right-[-30px] top-[95px] h-[180px] w-[500px] rotate-[-15deg] rounded-[50%] border-[2px] opacity-60"
-                  style={{
-                    borderColor:
-                      "rgba(0,183,255,0.50)",
-                  }}
-                />
-
-                <div
-                  className="absolute right-[30px] top-[145px] h-[140px] w-[430px] rotate-[-12deg] rounded-[50%] border-[2px] opacity-40"
-                  style={{
-                    borderColor:
-                      "rgba(30,217,255,0.50)",
-                  }}
-                />
-
-                <div
-                  className="absolute right-[22%] top-[45px] h-36 w-36 rounded-full border-[25px] border-white/[0.025]"
-                  style={{
-                    boxShadow:
-                      "0 0 90px rgba(0,124,255,0.18)",
-                  }}
-                />
-
-                <div
-                  className="absolute right-[18%] top-[75px] h-4 w-4 rounded-full"
-                  style={{
-                    background:
-                      COLORS.electricBlue,
-                    boxShadow:
-                      "0 0 25px rgba(0,183,255,1)",
-                  }}
-                />
-              </div>
-
-              {/* HERO CONTENT */}
-
-              <div className="relative z-10 flex min-h-[300px] flex-col justify-center px-6 py-8 sm:px-8 lg:px-10">
-
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-200/75">
-                  Welcome back,
-                </p>
-
-                <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-                  {firstName}
-                  <span className="ml-2">
-                    👋
-                  </span>
-                </h1>
-
-                <p className="mt-4 max-w-[570px] text-sm leading-6 text-white/65 sm:text-base">
-                  Keep learning, keep creating.
-                  Every session brings you
-                  closer to your goals.
-                </p>
-
-                <div className="mt-7 flex flex-wrap gap-3">
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      go(
-                        "/institute/website/preview/my-learning"
-                      )
-                    }
-                    className="flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5"
-                    style={{
-                      background:
-                        `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-                      boxShadow:
-                        "0 10px 35px rgba(0,124,255,0.30)",
-                    }}
-                  >
-                    Continue Learning
-                    <FaArrowRight />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      go(
-                        "/institute/website/preview/classes"
-                      )
-                    }
-                    className="rounded-xl border border-blue-400/35 bg-black/20 px-6 py-3.5 text-sm font-semibold text-white transition hover:border-blue-300/60 hover:bg-blue-500/10"
-                  >
-                    Explore Courses
-                  </button>
-                </div>
-
-                {/* QUOTE */}
-
-                <div className="absolute right-8 top-10 hidden max-w-[170px] text-right lg:block">
-                  <p className="font-serif text-lg italic leading-7 text-blue-200/75">
-                    “Discipline
-                    <br />
-                    Creates
-                    <br />
-                    Freedom”
-                  </p>
-
-                  <div
-                    className="ml-auto mt-4 h-1 w-12 rounded-full"
-                    style={{
-                      background:
-                        `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-                    }}
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* UPCOMING SESSIONS */}
-
-            <section
-              className="rounded-2xl border p-4"
-              style={{
-                borderColor:
-                  COLORS.border,
-                background:
-                  "linear-gradient(145deg, rgba(7,18,31,0.96), rgba(2,8,15,0.96))",
-                boxShadow:
-                  "0 20px 50px rgba(0,0,0,0.28)",
-              }}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold">
-                  Upcoming Live Sessions
-                </h2>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    go(
-                      "/institute/website/preview/sessions"
-                    )
-                  }
-                  className="text-xs font-semibold text-blue-400 hover:text-blue-300"
-                >
-                  View All
-                </button>
-              </div>
-
-              {dataLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(
-                    item => (
-                      <div
-                        key={item}
-                        className="h-[78px] animate-pulse rounded-xl bg-blue-500/[0.05]"
-                      />
-                    )
-                  )}
-                </div>
-              ) : upcomingSessions.length ===
-                0 ? (
-                <div className="flex min-h-[210px] flex-col items-center justify-center rounded-xl border border-dashed border-blue-400/10 text-center">
-                  <FaVideo className="mb-3 text-2xl text-blue-400/25" />
-
-                  <p className="text-sm font-semibold text-white/70">
-                    No upcoming sessions
-                  </p>
-
-                  <p className="mt-1 text-xs text-white/35">
-                    Your upcoming live classes
-                    will appear here.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {upcomingSessions.map(
-                    (
-                      session,
-                      index
-                    ) => (
-                      <LiveSessionCard
-                        key={
-                          session?.id ||
-                          session?.session_id ||
-                          index
-                        }
-                        session={
-                          session
-                        }
-                        onJoin={() =>
-                          handleJoinSession(
-                            session
-                          )
-                        }
-                      />
-                    )
-                  )}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* =================================================
-              QUICK ACTIONS
-          ================================================= */}
-
-          <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-            <QuickAction
-              icon={
-                <FaBookOpen />
-              }
-              title="My Learning"
-              subtitle="Continue Courses"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/my-learning"
-                )
-              }
-            />
-
-            <QuickAction
-              icon={
-                <FaVideo />
-              }
-              title="Live Sessions"
-              subtitle="Join Upcoming"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/sessions"
-                )
-              }
-              alternate
-            />
-
-            <QuickAction
-              icon={
-                <FaPlayCircle />
-              }
-              title="Recordings"
-              subtitle="Watch Anytime"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/recordings"
-                )
-              }
-            />
-
-            <QuickAction
-              icon={
-                <FaCalendarAlt />
-              }
-              title="My Bookings"
-              subtitle={
-                bookings.length
-                  ? `${bookings.length} Booked Classes`
-                  : "View Booked Classes"
-              }
-              onClick={() =>
-                go(
-                  "/institute/website/preview/my-bookings"
-                )
-              }
-              alternate
-            />
-
-            <QuickAction
-              icon={
-                <FaFileAlt />
-              }
-              title="Assignments"
-              subtitle="View & Submit"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/assignments"
-                )
-              }
-            />
-
-            <QuickAction
-              icon={
-                <FaClipboardCheck />
-              }
-              title="Attendance"
-              subtitle="Track Your Classes"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/attendance"
-                )
-              }
-              alternate
-            />
-
-            <QuickAction
-              icon={
-                <FaCreditCard />
-              }
-              title="Payment Details"
-              subtitle={
-                totalPayments > 0
-                  ? `₹${totalPayments.toLocaleString(
-                      "en-IN"
-                    )} Paid`
-                  : "View Transactions"
-              }
-              onClick={() =>
-                go(
-                  "/institute/website/preview/payments"
-                )
-              }
-            />
-
-            <QuickAction
-              icon={
-                <FaUser />
-              }
-              title="Profile"
-              subtitle="Manage Your Account"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/profile"
-                )
-              }
-              alternate
-            />
-
-            <QuickAction
-              icon={
-                <FaGraduationCap />
-              }
-              title="Explore Classes"
-              subtitle="Discover New Courses"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/classes"
-                )
-              }
-            />
-          </section>
-
-          {/* =================================================
-              MY LEARNING
-          ================================================= */}
-
-          <section className="mt-9">
-
-            <div className="mb-5 flex items-end justify-between">
-              <div>
-                <h2 className="text-2xl font-black tracking-tight">
-                  My Learning
-                </h2>
-
-                <p className="mt-1 text-xs text-white/40">
-                  Continue where you left off
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  go(
-                    "/institute/website/preview/my-learning"
-                  )
-                }
-                className="hidden items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300 sm:flex"
-              >
-                View All Courses
-                <FaArrowRight className="text-xs" />
-              </button>
-            </div>
-
-            {dataLoading ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {[1, 2, 3, 4].map(
-                  item => (
-                    <div
-                      key={item}
-                      className="h-[330px] animate-pulse rounded-2xl border border-blue-400/[0.06] bg-blue-500/[0.025]"
-                    />
-                  )
-                )}
-              </div>
-            ) : filteredCourses.length ===
-              0 ? (
-              <EmptyCourses
-                onBrowse={() =>
-                  go(
-                    "/institute/website/preview/classes"
-                  )
-                }
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {filteredCourses.map(
-                  (
-                    course,
-                    index
-                  ) => (
-                    <CourseCard
-                      key={
-                        course?.id ||
-                        course?.class_id ||
-                        index
-                      }
-                      course={
-                        course
-                      }
-                      onContinue={() =>
-                        go(
-                          `/institute/website/preview/my-learning/${
-                            course?.id ||
-                            course?.class_id
-                          }`
-                        )
-                      }
-                    />
-                  )
-                )}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={() =>
-                go(
-                  "/institute/website/preview/my-learning"
-                )
-              }
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-blue-400/15 bg-blue-500/[0.035] py-3 text-sm font-semibold text-blue-400 sm:hidden"
-            >
-              View All Courses
-              <FaArrowRight />
-            </button>
-          </section>
-        </main>
-      </div>
-    </div>
-  );
 };
 
-/* =========================================================
-   QUICK ACTION
-========================================================= */
 
-const QuickAction = ({
-  icon,
-  title,
-  subtitle,
-  onClick,
-  alternate = false,
-}) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex min-h-[105px] items-center gap-4 rounded-2xl border border-blue-400/[0.10] bg-[#07121F]/85 px-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/25 hover:bg-[#0A1828]"
-      style={{
-        boxShadow:
-          "0 12px 35px rgba(0,0,0,0.20)",
-      }}
-    >
-      <div
-        className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl text-xl text-white transition-transform group-hover:scale-105"
-        style={{
-          background: alternate
-            ? `linear-gradient(135deg, ${COLORS.blueDark}, ${COLORS.electricBlue})`
-            : `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.cyan})`,
-          boxShadow:
-            "0 8px 30px rgba(0,124,255,0.24)",
-        }}
-      >
-        {icon}
-      </div>
 
-      <div className="min-w-0">
-        <h3 className="text-sm font-bold text-white">
-          {title}
-        </h3>
+const getToken = async () => {
 
-        <p className="mt-1 text-xs text-white/40">
-          {subtitle}
-        </p>
-      </div>
+  const stored = getStoredToken();
 
-      <FaChevronRight className="ml-auto text-xs text-white/20 transition-transform group-hover:translate-x-1 group-hover:text-blue-400" />
-    </button>
-  );
+  if (stored) return stored;
+
+
+
+  if (auth.currentUser) {
+
+    const token = await auth.currentUser.getIdToken();
+
+    localStorage.setItem("studentToken", token);
+
+    return token;
+
+  }
+
+
+
+  return null;
+
 };
 
-/* =========================================================
-   LIVE SESSION CARD
-========================================================= */
 
-const LiveSessionCard = ({
-  session,
-  onJoin,
-}) => {
+
+const navItems = [
+
+  { label: "Dashboard", path: `${LMS_BASE}/dashboard`, icon: FaHome },
+
+  { label: "My Learning", path: `${LMS_BASE}/my-learning`, icon: FaBookOpen },
+
+  { label: "Live Sessions", path: `${LMS_BASE}/live-sessions`, icon: FaVideo },
+
+  { label: "Recordings", path: `${LMS_BASE}/recordings`, icon: FaPlayCircle },
+
+  { label: "Assignments", path: `${LMS_BASE}/assignments`, icon: FaFileAlt },
+
+  { label: "Attendance", path: `${LMS_BASE}/attendance`, icon: FaClipboardCheck },
+
+  { label: "Payment Details", path: `${LMS_BASE}/payment-details`, icon: FaCreditCard },
+
+  { label: "Profile", path: `${LMS_BASE}/profile`, icon: FaUser },
+
+];
+
+
+
+
+
+const CourseCard = ({ booking, websiteClass, onContinue }) => {
+
   const title =
-    session?.title ||
-    session?.session_title ||
-    session?.class_name ||
-    session?.class_title ||
-    "Live Session";
 
-  const image =
-    session?.image ||
-    session?.class_image ||
-    session?.thumbnail ||
-    session?.cover_image;
+    firstValue(
 
-  const dateValue =
-    session?.start_time ||
-    session?.start_at ||
-    session?.session_date ||
-    session?.date;
+      booking?.class_title,
 
-  const timeValue =
-    session?.start_time ||
-    session?.start_at ||
-    session?.date;
+      websiteClass?.title,
+
+      websiteClass?.name,
+
+      "Untitled Class"
+
+    );
+
+  const image = imageOf(booking) || imageOf(websiteClass);
+
+  const level = firstValue(
+
+    booking?.class_level,
+
+    websiteClass?.level,
+
+    "—"
+
+  );
+
+  const duration = firstValue(
+
+    booking?.class_duration,
+
+    websiteClass?.duration
+
+  );
+
+  const trainer = firstValue(
+
+    booking?.trainer_name,
+
+    websiteClass?.trainer_name,
+
+    websiteClass?.trainer?.name,
+
+    "—"
+
+  );
+
+  const progress = getProgress(booking);
+
+
 
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-blue-400/[0.07] bg-black/20 p-2.5 transition hover:border-blue-400/20 hover:bg-blue-500/[0.04]">
 
-      <div className="h-[62px] w-[76px] flex-shrink-0 overflow-hidden rounded-lg bg-blue-500/5">
-        <img
-          src={getImage(
-            image,
-            title
-          )}
-          alt={title}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          onError={event => {
-            event.currentTarget.src =
-              getImage(
-                null,
-                title
-              );
-          }}
-        />
+    <article className="lms-course-card">
+
+      <div className="lms-course-image-wrap">
+
+        {image ? (
+
+          <img src={image} alt={title} className="lms-course-image" />
+
+        ) : (
+
+          <div className="lms-course-image lms-image-fallback">
+
+            <FaBookOpen />
+
+          </div>
+
+        )}
+
+        <span className="lms-course-badge">
+
+          {progress !== null ? `${progress}%` : "Enrolled"}
+
+        </span>
+
       </div>
 
-      <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-bold">
-          {title}
-        </h3>
 
-        <div className="mt-1 flex items-center gap-2 text-[11px] text-white/40">
-          <FaCalendarAlt />
 
-          <span>
-            {formatDate(
-              dateValue
-            )}
-          </span>
+      <div className="lms-course-body">
 
-          <span>•</span>
+        <h3>{title}</h3>
 
-          <FaClock />
+
+
+        <div className="lms-course-meta">
 
           <span>
-            {formatTime(
-              timeValue
-            )}
+
+            <FaCalendarAlt />
+
+            {duration ? `${duration} ${Number(duration) === 1 ? "Day" : "Days"}` : "Class"}
+
           </span>
+
+          <span>
+
+            <FaUserTie />
+
+            {level}
+
+          </span>
+
         </div>
+
+
+
+        {trainer && (
+
+          <div className="lms-course-trainer">
+
+            <FaUserTie />
+
+            <span>{trainer}</span>
+
+          </div>
+
+        )}
+
+
+
+        <button type="button" onClick={() => onContinue(booking)}>
+
+          {progress !== null && progress > 0 ? "Continue" : "View Course"}
+
+          <FaArrowRight />
+
+        </button>
+
+      </div>
+
+    </article>
+
+  );
+
+};
+
+
+
+const UpcomingCard = ({ session, onJoin }) => {
+
+  const title = firstValue(
+
+    session?.session_title,
+
+    session?.title,
+
+    session?.class_title,
+
+    "Live Session"
+
+  );
+
+  const image = imageOf(session);
+
+  const date = firstValue(
+
+    session?.local_date,
+
+    session?.session_date,
+
+    session?.date,
+
+    session?.start_time
+
+  );
+
+  const time = firstValue(
+
+    session?.local_start_time,
+
+    session?.start_time,
+
+    session?.session_start_time
+
+  );
+
+  const joinUrl = firstValue(
+
+    session?.join_url,
+
+    session?.zoom_link,
+
+    session?.meeting_url
+
+  );
+
+
+
+  return (
+
+    <div className="lms-upcoming-row">
+
+      <div className="lms-upcoming-image">
+
+        {image ? (
+
+          <img src={image} alt={title} />
+
+        ) : (
+
+          <FaVideo />
+
+        )}
+
+      </div>
+
+      <div className="lms-upcoming-info">
+
+        <strong>{title}</strong>
+
+        <span>
+
+          <FaCalendarAlt /> {formatDate(date)} · {formatTime(time)}
+
+        </span>
+
       </div>
 
       <button
+
         type="button"
-        onClick={onJoin}
-        className="flex-shrink-0 rounded-lg px-3.5 py-2 text-xs font-bold text-white transition hover:scale-105"
-        style={{
-          background:
-            `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-          boxShadow:
-            "0 5px 18px rgba(0,124,255,0.25)",
-        }}
+
+        className="lms-join-btn"
+
+        disabled={!joinUrl}
+
+        onClick={() => joinUrl && onJoin(joinUrl)}
+
       >
+
         Join
+
       </button>
+
     </div>
+
   );
+
 };
 
-/* =========================================================
-   COURSE CARD
-========================================================= */
 
-const CourseCard = ({
-  course,
-  onContinue,
-}) => {
-  const title =
-    course?.title ||
-    course?.name ||
-    "Course";
 
-  const image =
-    course?.image ||
-    course?.class_image ||
-    course?.thumbnail ||
-    course?.cover_image;
+const WebsitePreviewDashboard = () => {
 
-  const level =
-    course?.level ||
-    "Beginner";
+  const navigate = useNavigate();
 
-  const totalLessons =
-    Number(
-      course?.totalLessons ??
-        course?.total_lessons ??
-        course?.lesson_count ??
-        course?.lessons ??
-        0
-    ) || 0;
+  const location = useLocation();
 
-  const progress =
-    Number(
-      course?.progress ??
-        course?.progress_percentage ??
-        course?.completion_percentage ??
-        0
-    ) || 0;
+  const context = useOutletContext() || {};
 
-  const status =
-    course?.status ||
-    course?.learning_status ||
-    (progress > 0
-      ? "In Progress"
-      : "Start Course");
 
-  const isInProgress =
-    progress > 0 ||
-    String(status)
-      .toLowerCase()
-      .includes("progress");
 
-  const safeProgress =
-    Math.min(
-      100,
-      Math.max(
-        0,
-        progress
+  const [website, setWebsite] = useState(() => ({
+
+    institute: context?.institute || {},
+
+    website: context?.website || {},
+
+    branding: context?.branding || {},
+
+    banners: context?.banners || [],
+
+    classes: context?.classes || context?.courses || [],
+
+    courses: context?.courses || context?.classes || [],
+
+  }));
+
+  const [student, setStudent] = useState(
+
+    context?.studentUser || getStoredStudent()
+
+  );
+
+  const [bookings, setBookings] = useState([]);
+
+  const [upcoming, setUpcoming] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [personalLoading, setPersonalLoading] = useState(true);
+
+  const [error, setError] = useState("");
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [search, setSearch] = useState("");
+
+
+
+  const instituteId = useMemo(() => {
+
+    const candidates = [
+
+      context?.instituteId,
+
+      context?.institute_id,
+
+      context?.institute?.id,
+
+      context?.website?.institute_id,
+
+      context?.website?.instituteId,
+
+      context?.websiteData?.institute?.id,
+
+      student?.institute_id,
+
+      student?.instituteId,
+
+      getStoredInstituteId(),
+
+      new URLSearchParams(location.search).get("institute_id"),
+
+    ];
+
+
+
+    for (const value of candidates) {
+
+      const id = Number(value);
+
+      if (Number.isInteger(id) && id > 0) return id;
+
+    }
+
+    return null;
+
+  }, [context, student, location.search]);
+
+
+
+  const loadWebsite = async () => {
+
+    if (!instituteId) {
+
+      setError("Institute ID is missing. Open the Website Preview from the institute panel.");
+
+      setLoading(false);
+
+      return;
+
+    }
+
+
+
+    try {
+
+      setLoading(true);
+
+      const payload = await fetchJson(
+
+        `${API}/websites/public/${instituteId}?preview=true`
+
+      );
+
+      setWebsite(normalizeWebsite(payload));
+
+      setError("");
+
+    } catch (err) {
+
+      console.error("WEBSITE LMS PUBLIC DATA ERROR:", err);
+
+      setError(err.message || "Unable to load institute website data.");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+
+  const loadStudentData = async () => {
+
+    try {
+
+      setPersonalLoading(true);
+
+      const token = await getToken();
+
+      if (!token) {
+
+        setBookings([]);
+
+        setUpcoming([]);
+
+        return;
+
+      }
+
+
+
+      /* Refresh the real student profile when the parent outlet
+
+         has not already supplied it. */
+
+      if (!student && instituteId) {
+
+        try {
+
+          const profilePayload = await fetchJson(
+
+            `${API}/students/me?institute_id=${encodeURIComponent(instituteId)}`,
+
+            token
+
+          );
+
+          const profile = responseData(profilePayload);
+
+          const nextStudent =
+
+            profile?.student ||
+
+            profile?.user ||
+
+            profile?.account ||
+
+            profile;
+
+          if (nextStudent && typeof nextStudent === "object") {
+
+            setStudent(nextStudent);
+
+            localStorage.setItem("studentUser", JSON.stringify(nextStudent));
+
+          }
+
+        } catch (profileError) {
+
+          console.warn("LMS STUDENT PROFILE REFRESH:", profileError);
+
+        }
+
+      }
+
+
+
+      const [bookingPayload, sessionPayload] = await Promise.all([
+
+        fetchJson(`${API}/bookings/my`, token),
+
+        fetchJson(`${API}/sessions/user/upcoming?days=7`, token),
+
+      ]);
+
+
+
+      const bookingList = normalizeBookings(bookingPayload);
+
+      const allUpcoming = normalizeSessions(sessionPayload);
+
+      const enrolledIds = new Set(
+
+        bookingList
+
+          .filter(isPaidConfirmed)
+
+          .map(classIdOf)
+
+          .filter((id) => Number.isInteger(id) && id > 0)
+
+      );
+
+
+
+      const studentUpcoming = allUpcoming.filter((session) =>
+
+        enrolledIds.has(classIdOf(session))
+
+      );
+
+
+
+      setBookings(bookingList);
+
+      setUpcoming(studentUpcoming);
+
+    } catch (err) {
+
+      console.error("WEBSITE LMS PERSONAL DATA ERROR:", err);
+
+      setBookings([]);
+
+      setUpcoming([]);
+
+    } finally {
+
+      setPersonalLoading(false);
+
+    }
+
+  };
+
+
+
+  useEffect(() => {
+
+    if (context?.studentUser) setStudent(context.studentUser);
+
+  }, [context?.studentUser]);
+
+
+
+  useEffect(() => {
+
+    loadWebsite();
+
+  }, [instituteId]);
+
+
+
+  useEffect(() => {
+
+    loadStudentData();
+
+  }, [student]);
+
+
+
+  const displayName = nameOf(student);
+
+  const firstName = displayName.split(" ")[0] || "Student";
+
+  const avatar = avatarOf(student);
+
+  const heroBanner = getHomeBanner(website);
+
+  const heroImage = imageOf(heroBanner);
+
+
+
+  const websiteClasses = website.classes || [];
+
+  const enrolledBookings = dedupeClassesFromBookings(bookings);
+
+
+
+  const classLookup = useMemo(() => {
+
+    const map = new Map();
+
+    websiteClasses.forEach((item) => {
+
+      const id = classIdOf(item);
+
+      if (Number.isInteger(id) && id > 0) map.set(id, item);
+
+    });
+
+    return map;
+
+  }, [websiteClasses]);
+
+
+
+  const learning = enrolledBookings
+
+    .map((booking) => ({
+
+      booking,
+
+      websiteClass: classLookup.get(classIdOf(booking)) || null,
+
+    }))
+
+    .filter(({ booking, websiteClass }) => booking || websiteClass)
+
+    .slice(0, 4);
+
+
+
+  const upcomingVisible = upcoming.slice(0, 3);
+
+
+
+  const searchMatches = useMemo(() => {
+
+    const q = search.trim().toLowerCase();
+
+    if (!q) return [];
+
+    return websiteClasses
+
+      .filter((item) =>
+
+        [item?.title, item?.name, item?.description, item?.level]
+
+          .filter(Boolean)
+
+          .join(" ")
+
+          .toLowerCase()
+
+          .includes(q)
+
       )
+
+      .slice(0, 6);
+
+  }, [search, websiteClasses]);
+
+
+
+  const go = (path) => {
+
+    setSidebarOpen(false);
+
+    navigate(path);
+
+  };
+
+
+
+  const openJoin = (url) => {
+
+    window.open(url, "\_blank", "noopener,noreferrer");
+
+  };
+
+
+
+  const continueLearning = (booking) => {
+
+    const id = classIdOf(booking);
+
+    if (id) {
+
+      navigate(`${LMS_BASE}/my-learning/course/${id}`);
+
+    } else {
+
+      navigate(`${LMS_BASE}/my-learning`);
+
+    }
+
+  };
+
+
+
+  const handleLogout = async () => {
+
+    try {
+
+      await auth.signOut();
+
+    } catch (err) {
+
+      console.error("LMS LOGOUT ERROR:", err);
+
+    }
+
+
+
+    [
+
+      "studentUser",
+
+      "studentToken",
+
+      "studentRole",
+
+      "studentLoggedIn",
+
+    ].forEach((key) => localStorage.removeItem(key));
+
+
+
+    navigate("/institute/website/preview/login", { replace: true });
+
+  };
+
+
+
+  if (loading) {
+
+    return (
+
+      <div className="lms-loading-screen">
+
+        <FaSpinner className="lms-spinner" />
+
+        <span>Loading your dashboard...</span>
+
+      </div>
+
     );
 
+  }
+
+
+
+  const branding = website.branding || {};
+
+  const primary =
+
+    branding?.primaryColor || branding?.primary_color || "#0879ff";
+
+  const instituteName =
+
+    firstValue(website?.institute?.name, "FineArts");
+
+
+
   return (
-    <div className="group overflow-hidden rounded-2xl border border-blue-400/[0.10] bg-[#07121F]/90 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/25 hover:shadow-[0_20px_50px_rgba(0,102,255,0.12)]">
 
-      {/* IMAGE */}
+    <div className="finearts-lms" style={{ "--lms-primary": primary }}>
 
-      <div className="relative h-[175px] overflow-hidden bg-[#03080F]">
+      <style>{WEBSITE_PREVIEW_DASHBOARD_STYLES}</style>
 
-        <img
-          src={getImage(
-            image,
-            title
-          )}
-          alt={title}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-          onError={event => {
-            event.currentTarget.src =
-              getImage(
-                null,
-                title
-              );
-          }}
+      <aside className={`lms-sidebar ${sidebarOpen ? "open" : ""}`}>
+
+
+
+        <nav className="lms-nav">
+
+          {navItems.map((item) => {
+
+            const Icon = item.icon;
+
+            const active = location.pathname === item.path;
+
+            return (
+
+              <button
+
+                key={item.path}
+
+                type="button"
+
+                className={`lms-nav-item ${active ? "active" : ""}`}
+
+                onClick={() => go(item.path)}
+
+              >
+
+                <Icon />
+
+                <span>{item.label}</span>
+
+              </button>
+
+            );
+
+          })}
+
+        </nav>
+
+
+
+        <button className="lms-logout" type="button" onClick={handleLogout}>
+
+          <FaSignOutAlt />
+
+          <span>Logout</span>
+
+        </button>
+
+      </aside>
+
+
+
+      {sidebarOpen && (
+
+        <button
+
+          type="button"
+
+          className="lms-sidebar-overlay"
+
+          onClick={() => setSidebarOpen(false)}
+
+          aria-label="Close menu"
+
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07121F] via-black/5 to-transparent" />
-
-        <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full border border-blue-300/15 bg-black/65 px-3 py-1 text-[11px] font-bold text-blue-100 backdrop-blur-md">
-          {isInProgress ? (
-            <>
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-              In Progress
-            </>
-          ) : (
-            level
-          )}
-        </div>
-
-        <div
-          className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full text-white opacity-0 transition group-hover:opacity-100"
-          style={{
-            background:
-              `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-            boxShadow:
-              "0 0 25px rgba(0,183,255,0.35)",
-          }}
-        >
-          <FaPlay className="ml-0.5 text-xs" />
-        </div>
-      </div>
-
-      {/* CONTENT */}
-
-      <div className="p-4">
-
-        <h3 className="min-h-[48px] text-base font-bold leading-6 text-white">
-          {title}
-        </h3>
-
-        <div className="mt-3 flex items-center gap-4 text-xs text-white/45">
-          <span className="flex items-center gap-1.5">
-            <FaCalendarAlt />
-            {totalLessons} Lessons
-          </span>
-
-          <span className="flex items-center gap-1.5">
-            <FaUser />
-            {level}
-          </span>
-        </div>
-
-        {isInProgress && (
-          <div className="mt-4">
-            <div className="mb-1.5 flex items-center justify-between text-[10px] text-white/35">
-              <span>
-                Progress
-              </span>
-
-              <span>
-                {safeProgress}%
-              </span>
-            </div>
-
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width:
-                    `${safeProgress}%`,
-                  background:
-                    `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-                  boxShadow:
-                    "0 0 12px rgba(0,183,255,0.35)",
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={onContinue}
-          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm font-bold transition hover:bg-blue-500/10"
-          style={{
-            borderColor:
-              "rgba(0,183,255,0.38)",
-            color:
-              COLORS.electricBlue,
-          }}
-        >
-          {isInProgress
-            ? "Continue"
-            : "Start Course"}
-
-          <FaArrowRight className="text-xs" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/* =========================================================
-   EMPTY COURSES
-========================================================= */
-
-const EmptyCourses = ({
-  onBrowse,
-}) => {
-  return (
-    <div className="rounded-2xl border border-dashed border-blue-400/15 bg-blue-500/[0.025] py-20 text-center">
-
-      <div
-        className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-        style={{
-          background:
-            "rgba(0,124,255,0.08)",
-          color:
-            COLORS.electricBlue,
-        }}
-      >
-        <FaBookOpen className="text-2xl" />
-      </div>
-
-      <p className="text-lg font-semibold text-white">
-        No courses yet
-      </p>
-
-      <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
-        Your enrolled courses will appear
-        here once you start learning.
-      </p>
-
-      {onBrowse && (
-        <button
-          type="button"
-          onClick={onBrowse}
-          className="mt-6 rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
-          style={{
-            background:
-              `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.electricBlue})`,
-            boxShadow:
-              "0 10px 25px rgba(0,124,255,0.22)",
-          }}
-        >
-          Browse Classes
-        </button>
       )}
+
+
+
+      <main className="lms-main">
+
+        <button
+
+          className="lms-menu-button lms-content-menu-button"
+
+          type="button"
+
+          onClick={() => setSidebarOpen(true)}
+
+          aria-label="Open navigation menu"
+
+        >
+
+          <FaBars />
+
+        </button>
+
+
+
+        <section className="lms-content">
+
+          {error && (
+
+            <div className="lms-error-banner">
+
+              <FaExclamationCircle />
+
+              <span>{error}</span>
+
+            </div>
+
+          )}
+
+
+
+          <div className="lms-dashboard-grid">
+
+            <section className="lms-hero">
+
+              <div className="lms-hero-content">
+
+                <span className="lms-eyebrow">WELCOME BACK,</span>
+
+                <h1>
+
+                  {firstName} <span>👋</span>
+
+                </h1>
+
+                <p>
+
+                  Keep learning, keep creating. Every session
+
+                  <br />
+
+                  brings you closer to your goals.
+
+                </p>
+
+                <div className="lms-hero-actions">
+
+                  <button
+
+                    type="button"
+
+                    className="lms-primary-button"
+
+                    onClick={() => go(`${LMS_BASE}/my-learning`)}
+
+                  >
+
+                    Continue Learning <FaArrowRight />
+
+                  </button>
+
+                  <button
+
+                    type="button"
+
+                    className="lms-outline-button"
+
+                    onClick={() => navigate("/institute/website/preview/classes")}
+
+                  >
+
+                    Explore Courses
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </section>
+
+
+
+            <section className="lms-upcoming-panel">
+
+              <div className="lms-panel-heading">
+
+                <h2>Upcoming Live Sessions</h2>
+
+                <button type="button" onClick={() => go(`${LMS_BASE}/live-sessions`)}>
+
+                  View All
+
+                </button>
+
+              </div>
+
+
+
+              {personalLoading ? (
+
+                <div className="lms-panel-loading">
+
+                  <FaSpinner className="lms-spinner" />
+
+                </div>
+
+              ) : upcomingVisible.length ? (
+
+                upcomingVisible.map((session) => (
+
+                  <UpcomingCard
+
+                    key={session?.session_id || session?.id}
+
+                    session={session}
+
+                    onJoin={openJoin}
+
+                  />
+
+                ))
+
+              ) : (
+
+                <div className="lms-empty-small">
+
+                  No upcoming sessions for your booked classes.
+
+                </div>
+
+              )}
+
+            </section>
+
+          </div>
+
+
+
+          <section className="lms-learning-section">
+
+            <div className="lms-section-heading">
+
+              <h2>My Learning</h2>
+
+              <button type="button" onClick={() => go(`${LMS_BASE}/my-learning`)}>
+
+                View All Courses <FaArrowRight />
+
+              </button>
+
+            </div>
+
+
+
+            {personalLoading ? (
+
+              <div className="lms-learning-loading">
+
+                <FaSpinner className="lms-spinner" />
+
+                <span>Loading your enrolled courses...</span>
+
+              </div>
+
+            ) : learning.length ? (
+
+              <div className="lms-course-grid">
+
+                {learning.map(({ booking, websiteClass }) => (
+
+                  <CourseCard
+
+                    key={booking?.id || booking?.booking_id || classIdOf(booking)}
+
+                    booking={booking}
+
+                    websiteClass={websiteClass}
+
+                    onContinue={continueLearning}
+
+                  />
+
+                ))}
+
+              </div>
+
+            ) : (
+
+              <div className="lms-empty-learning">
+
+                <div className="lms-empty-icon">
+
+                  <FaBookOpen />
+
+                </div>
+
+                <div>
+
+                  <h3>No enrolled courses yet</h3>
+
+                  <p>
+
+                    {instituteName} has published classes available for you to explore.
+
+                  </p>
+
+                </div>
+
+                <button
+
+                  type="button"
+
+                  className="lms-primary-button"
+
+                  onClick={() => navigate("/institute/website/preview/classes")}
+
+                >
+
+                  Explore Courses <FaArrowRight />
+
+                </button>
+
+              </div>
+
+            )}
+
+          </section>
+
+        </section>
+
+      </main>
+
     </div>
+
   );
+
 };
+
+
 
 export default WebsitePreviewDashboard;
