@@ -754,6 +754,44 @@ export const getPublicWebsiteData = async (
 };
 
 
+
+
+/* =========================================================
+   GET PUBLISHED WEBSITE BY SLUG
+========================================================= */
+
+export const getPublicWebsiteDataBySlug = async (slug) => {
+  const normalizedSlug = String(slug || "")
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedSlug) {
+    throw new Error("Website slug is required");
+  }
+
+  try {
+    console.log("GETTING PUBLISHED WEBSITE BY SLUG:", normalizedSlug);
+
+    const res = await API.get(
+      `/websites/public/slug/${encodeURIComponent(normalizedSlug)}`
+    );
+
+    const result = res.data?.data ?? res.data;
+
+    console.log("PUBLIC WEBSITE BY SLUG RESPONSE:", result);
+
+    return result;
+  } catch (error) {
+    console.error(
+      "GET PUBLIC WEBSITE BY SLUG ERROR:",
+      error?.response?.data || error
+    );
+
+    throw error;
+  }
+};
+
+
 /* =========================================================
    TEMPLATES
 ========================================================= */
