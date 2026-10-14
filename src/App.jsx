@@ -652,10 +652,11 @@ function App() {
                 PUBLIC WEBSITE PREVIEW
             ================================================= */}
 
-            <Route
+            {/* <Route
               path="/institute/website/preview"
               element={<PublicWebsitePreviewLayout />}
             >
+              
 
               <Route
                 index
@@ -702,7 +703,110 @@ function App() {
                 element={<WebsiteLogin />}
               />
 
-            </Route>
+            </Route> */}
+
+
+            {/* =================================================
+    INSTITUTE WEBSITE PREVIEW
+================================================= */}
+
+<Route
+  path="/institute/website/preview"
+  element={<PublicWebsitePreviewLayout />}
+>
+  <Route index element={<WebsiteHome />} />
+
+  <Route
+    path="about"
+    element={<WebsiteAbout />}
+  />
+
+  <Route
+    path="classes"
+    element={<WebsiteClasses />}
+  />
+
+  <Route
+    path="classes/:classId"
+    element={<WebsiteClassesDetail />}
+  />
+
+  <Route
+    path="trainers"
+    element={<WebsiteTrainers />}
+  />
+
+  <Route
+    path="trainers/:trainerId"
+    element={<WebsiteTrainerProfile />}
+  />
+
+  <Route
+    path="sessions"
+    element={<WebsiteSessions />}
+  />
+
+  <Route
+    path="testimonials"
+    element={<WebsiteTestimonials />}
+  />
+
+  <Route
+    path="login"
+    element={<WebsiteLogin />}
+  />
+</Route>
+
+{/* =================================================
+    PUBLIC INSTITUTE WEBSITE — SLUG URL
+================================================= */}
+
+<Route
+  path="/site/:slug"
+  element={<PublicWebsitePreviewLayout />}
+>
+  <Route index element={<WebsiteHome />} />
+
+  <Route
+    path="about"
+    element={<WebsiteAbout />}
+  />
+
+  <Route
+    path="classes"
+    element={<WebsiteClasses />}
+  />
+
+  <Route
+    path="classes/:classId"
+    element={<WebsiteClassesDetail />}
+  />
+
+  <Route
+    path="trainers"
+    element={<WebsiteTrainers />}
+  />
+
+  <Route
+    path="trainers/:trainerId"
+    element={<WebsiteTrainerProfile />}
+  />
+
+  <Route
+    path="sessions"
+    element={<WebsiteSessions />}
+  />
+
+  <Route
+    path="testimonials"
+    element={<WebsiteTestimonials />}
+  />
+
+  <Route
+    path="login"
+    element={<WebsiteLogin />}
+  />
+</Route>
 
 
           
