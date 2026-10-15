@@ -2493,8 +2493,6 @@
 
 
 
-
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -4540,7 +4538,7 @@ function AssignmentModal({
 
                   onChange={(event) => updateForm("due_date", event.target.value)}
 
-                  className="w-full px-3 py-3.5 rounded-xl bg-[#181620] border border-white/10 text-white outline-none focus:border-purple-500/70"
+                  className="w-full px-3 py-3.5 rounded-xl bg-[#181620] border border-white/10 text-white [color-scheme:dark] outline-none focus:border-purple-500/70"
 
                 />
 
@@ -4558,7 +4556,7 @@ function AssignmentModal({
 
                   onChange={(event) => updateForm("due_time", event.target.value)}
 
-                  className="w-full px-3 py-3.5 rounded-xl bg-[#181620] border border-white/10 text-white outline-none focus:border-purple-500/70"
+                  className="w-full px-3 py-3.5 rounded-xl bg-[#181620] border border-white/10 text-white [color-scheme:dark] outline-none focus:border-purple-500/70"
 
                 />
 
