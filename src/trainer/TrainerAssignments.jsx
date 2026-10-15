@@ -1,5 +1,4 @@
 
-
 // import { useCallback, useEffect, useMemo, useState } from "react";
 
 // import {
@@ -171,35 +170,20 @@
 // };
 
 // /*
-
-//   Converts datetime-local:
-
-//       2026-09-23T17:00
-
-//   into:
-
-//       2026-09-23T11:30:00.000Z
-
-//   This is important because the backend should receive
-
-//   a proper UTC ISO string.
-
+//   Converts a browser datetime-local value into a MySQL DATETIME string.
+//   MySQL DATETIME may reject ISO strings ending in "Z", such as
+//   2026-10-15T14:34:00.000Z. Keep the UTC instant but send it as
+//   YYYY-MM-DD HH:mm:ss.
 // */
-
 // const localDateTimeToUTC = (value) => {
-
 //   if (!value) return null;
 
 //   const date = new Date(value);
-
 //   if (Number.isNaN(date.getTime())) {
-
 //     return null;
-
 //   }
 
-//   return date.toISOString();
-
+//   return date.toISOString().slice(0, 19).replace("T", " ");
 // };
 
 // /*
@@ -1808,7 +1792,7 @@
 
 //             {/* error */}
 
-//             {error && (
+//             {/* {error && (
 
 //               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
 
@@ -1816,7 +1800,7 @@
 
 //               </div>
 
-//             )}
+//             )} */}
 
 //             {/* CLASS */}
 
@@ -2000,7 +1984,7 @@
 
 //                 }
 
-//                 placeholder="e.g. Basic Drawing Practice"
+//                 // placeholder="e.g. Basic Drawing Practice"
 
 //                 required
 
@@ -4304,7 +4288,7 @@ function AssignmentModal({
 
             {/* error */}
 
-            {error && (
+            {/* {error && (
 
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
 
@@ -4312,7 +4296,7 @@ function AssignmentModal({
 
               </div>
 
-            )}
+            )} */}
 
             {/* CLASS */}
 
@@ -4496,7 +4480,7 @@ function AssignmentModal({
 
                 }
 
-                placeholder="e.g. Basic Drawing Practice"
+                // placeholder="e.g. Basic Drawing Practice"
 
                 required
 
@@ -4889,33 +4873,14 @@ function DeleteConfirmationModal({
 }
 
 function FieldLabel({
-
   label,
-
   required = false,
-
 }) {
-
   return (
-
     <label className="block text-sm font-medium text-white mb-2">
-
       {label}
-
-      {required && (
-
-        <span className="text-pink-400 ml-1">
-
-          \*
-
-        </span>
-
-      )}
-
     </label>
-
   );
-
 }
 
 /* =========================================================
