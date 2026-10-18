@@ -8820,7 +8820,7 @@ export default function InstituteSessions() {
 
 
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5 justify-center">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5 w-full">
 
 
 
@@ -8928,7 +8928,7 @@ export default function InstituteSessions() {
 
 
 
-              className="w-full max-w-[205px] min-h-[105px] rounded-2xl border border-white/10 bg-[#151519] p-4 hover:border-purple-500/20 transition-colors mx-auto"
+              className="w-full min-w-0 min-h-[105px] rounded-2xl border border-white/10 bg-[#151519] p-4 hover:border-purple-500/20 transition-colors"
 
 
 
