@@ -3340,20 +3340,7 @@ export default function InstituteSessions() {
 
 
 
-          <div className="flex items-center gap-2 text-purple-300 text-xs font-semibold tracking-[0.25em] uppercase mb-2">
-
-
-
-            <CalendarClock size={15} />
-
-
-
-            Class Schedules
-
-
-
-          </div>
-
+        
 
 
           <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
