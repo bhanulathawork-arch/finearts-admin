@@ -226,11 +226,6 @@ const instituteMenuItems = [
   ===================================================== */
 
   {
-    path: "/institute/banners",
-    icon: HiOutlinePhotograph,
-    label: "Banners",
-  },
-  {
     path: "/institute/bookings",
     icon: HiOutlineCalendar,
     label: "Bookings",
@@ -245,11 +240,7 @@ const instituteMenuItems = [
     icon: HiOutlineOfficeBuilding,
     label: "Institute Profile",
   },
-  {
-    path: "/institute/batches",
-    icon: HiOutlineCollection,
-    label: "Batches",
-  },
+
   {
     path: "/institute/payments",
     icon: HiOutlineCurrencyRupee,
@@ -260,16 +251,7 @@ const instituteMenuItems = [
     icon: HiOutlineUsers,
     label: "Students",
   },
-  {
-    path: "/institute/about",
-    icon: HiOutlineInformationCircle,
-    label: "About",
-  },
-  {
-    path: "/institute/footer",
-    icon: HiOutlineDocumentText,
-    label: "Footer",
-  },
+ 
 
   /* =====================================================
      WEBSITE
@@ -279,6 +261,27 @@ const instituteMenuItems = [
     path: "/institute/website",
     icon: HiOutlineGlobeAlt,
     label: "Website",
+  },
+  
+  {
+    path: "/institute/banners",
+    icon: HiOutlinePhotograph,
+    label: "Banners",
+  },
+   {
+    path: "/institute/about",
+    icon: HiOutlineInformationCircle,
+    label: "About",
+  },
+  {
+    path: "/institute/footer",
+    icon: HiOutlineDocumentText,
+    label: "Footer",
+  },
+    {
+    path: "/institute/batches",
+    icon: HiOutlineCollection,
+    label: "Batches",
   },
 ];
 
