@@ -4,8 +4,11 @@ import toast from "react-hot-toast";
 import { Edit, Trash2, Search } from "lucide-react";
 import { FaTrash, FaTimes } from "react-icons/fa";
 
-const SUB_API = "https://finearts-backend.onrender.com/api/subcategories";
-const CAT_API = "https://finearts-backend.onrender.com/api/categories";
+// const SUB_API = "https://finearts-backend.onrender.com/api/subcategories";
+// const CAT_API = "https://finearts-backend.onrender.com/api/categories";
+
+const SUB_API = "http://localhost:5000/api/subcategories";
+const CAT_API = "http://localhost:5000/api/categories";
 
 function Subcategories() {
   const [subcategories, setSubcategories] = useState([]);
@@ -198,11 +201,18 @@ function Subcategories() {
   };
 
   // --- Helpers ---
+  // const getImage = (item) => {
+  //   if (!item.image) return null;
+  //   if (item.image.startsWith("http")) return item.image;
+  //   return `https://finearts-backend.onrender.com${item.image}`;
+  // };
+
+
   const getImage = (item) => {
-    if (!item.image) return null;
-    if (item.image.startsWith("http")) return item.image;
-    return `https://finearts-backend.onrender.com${item.image}`;
-  };
+  if (!item.image) return null;
+  if (item.image.startsWith("http")) return item.image;
+  return `http://localhost:5000${item.image}`;
+};
 
   return (
     <div className="p-0 text-white">

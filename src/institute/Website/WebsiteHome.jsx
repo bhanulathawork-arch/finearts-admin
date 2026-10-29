@@ -1,4 +1,5 @@
 
+
 // import { useEffect, useMemo, useState } from "react";
 // import { Link, useOutletContext } from "react-router-dom";
 
@@ -59,7 +60,7 @@
 //     textColor:
 //       branding?.textColor ??
 //       branding?.text_color ??
-//       "#FFFFFF",
+//       "#CBD5E1",
 
 //     iconColor:
 //       branding?.iconColor ??
@@ -99,7 +100,7 @@
 //     footerTextColor:
 //       branding?.footerTextColor ??
 //       branding?.footer_text_color ??
-//       "#FFFFFF",
+//       "#CBD5E1",
 
 //     fontHeading:
 //       branding?.fontHeading ??
@@ -840,6 +841,7 @@
 //     testimonials = [],
 //     sectionEnabled,
 //     getContent,
+//     basePath = "/institute/website/preview",
 //   } = context;
 
 
@@ -864,7 +866,7 @@
 //         "#38BDF8",
 
 //       textColor:
-//         "#FFFFFF",
+//         "#CBD5E1",
 
 //       iconColor:
 //         "#38BDF8",
@@ -908,7 +910,7 @@
 //       "#000000";
 
 //     document.body.style.color =
-//       "#FFFFFF";
+//       "#CBD5E1";
 
 //     document.body.style.margin =
 //       "0";
@@ -1329,6 +1331,7 @@
 //             setCurrentBanner
 //           }
 //           branding={branding}
+//           basePath={basePath}
 //         />
 //       )}
 
@@ -1352,6 +1355,7 @@
 //             subheading={
 //               categoriesSubheading
 //             }
+//             basePath={basePath}
 //           />
 //         )}
 
@@ -1375,6 +1379,7 @@
 //             subheading={
 //               trainersSubheading
 //             }
+//             basePath={basePath}
 //           />
 //         )}
 
@@ -1398,6 +1403,7 @@
 //             subheading={
 //               popularClassesSubheading
 //             }
+//             basePath={basePath}
 //           />
 //         )}
 
@@ -1438,6 +1444,7 @@
 //   currentBanner,
 //   setCurrentBanner,
 //   branding,
+//   basePath = "/institute/website/preview",
 // }) {
 
 //   /* -------------------------------------------------------
@@ -1536,7 +1543,7 @@
 //               className="mt-5 max-w-xl text-sm leading-7 sm:text-base"
 //               style={{
 //                 color:
-//                   "#FFFFFF",
+//                   "#CBD5E1",
 //               }}
 //             >
 //               Learn from expert trainers,
@@ -1548,7 +1555,7 @@
 //             <div className="mt-8 flex flex-wrap gap-3">
 
 //               <Link
-//                 to="/institute/website/preview/classes"
+//                 to={`${basePath}/classes`}
 //                 className="rounded-full px-7 py-3 text-sm font-bold shadow-lg transition hover:-translate-y-1"
 //                 style={{
 //                   background:
@@ -1565,11 +1572,11 @@
 //               </Link>
 
 //               <Link
-//                 to="/institute/website/preview/trainers"
+//                 to={`${basePath}/trainers`}
 //                 className="rounded-full border px-7 py-3 text-sm font-bold transition hover:bg-sky-400/10"
 //                 style={{
 //                   color:
-//                     "#FFFFFF",
+//                     "#E0F2FE",
 //                   borderColor:
 //                     "rgba(56,189,248,0.6)",
 //                 }}
@@ -1882,6 +1889,7 @@
 //   branding,
 //   heading,
 //   subheading,
+//   basePath = "/institute/website/preview",
 // }) {
 //   return (
 //     <section
@@ -1940,7 +1948,7 @@
 //                       id ||
 //                       index
 //                     }
-//                     to="/institute/website/preview/classes"
+//                     to={`${basePath}/classes`}
 //                     className="group overflow-hidden border transition duration-300 hover:-translate-y-1 hover:border-sky-400"
 //                     style={
 //                       cardStyle(
@@ -2009,7 +2017,7 @@
 //         </div>
 
 //         <ViewMoreButton
-//           to="/institute/website/preview/classes"
+//           to={`${basePath}/classes`}
 //           label="View More Categories"
 //           branding={
 //             branding
@@ -2031,6 +2039,7 @@
 //   branding,
 //   heading,
 //   subheading,
+//   basePath = "/institute/website/preview",
 // }) {
 //   return (
 //     <section
@@ -2077,6 +2086,7 @@
 //                   branding={
 //                     branding
 //                   }
+//                   basePath={basePath}
 //                 />
 //               )
 //             )}
@@ -2084,7 +2094,7 @@
 //         </div>
 
 //         <ViewMoreButton
-//           to="/institute/website/preview/trainers"
+//           to={`${basePath}/trainers`}
 //           label="View More Trainers"
 //           branding={
 //             branding
@@ -2104,6 +2114,7 @@
 // function TrainerCard({
 //   trainer,
 //   branding,
+//   basePath = "/institute/website/preview",
 // }) {
 //   const id =
 //     trainer?.id;
@@ -2161,9 +2172,7 @@
 //     >
 
 //       <Link
-//         to={`/institute/website/preview/trainers/${
-//           id || ""
-//         }`}
+//         to={`${basePath}/trainers/${id || ""}`}
 //       >
 
 //         <div className="h-48 overflow-hidden bg-black">
@@ -2235,7 +2244,7 @@
 //               {totalReviews}
 //             </p>
 
-//             <p className="text-[11px] text-white">
+//             <p className="text-[11px] text-slate-400">
 //               Reviews
 //             </p>
 //           </div>
@@ -2245,7 +2254,7 @@
 //               {totalStudents.toLocaleString()}
 //             </p>
 
-//             <p className="text-[11px] text-white">
+//             <p className="text-[11px] text-slate-400">
 //               Students
 //             </p>
 //           </div>
@@ -2268,6 +2277,7 @@
 //   branding,
 //   heading,
 //   subheading,
+//   basePath = "/institute/website/preview",
 // }) {
 //   return (
 //     <section
@@ -2312,6 +2322,7 @@
 //                   branding={
 //                     branding
 //                   }
+//                   basePath={basePath}
 //                 />
 //               )
 //             )}
@@ -2319,7 +2330,7 @@
 //         </div>
 
 //         <ViewMoreButton
-//           to="/institute/website/preview/classes"
+//           to={`${basePath}/classes`}
 //           label="View More Classes"
 //           branding={
 //             branding
@@ -2343,12 +2354,12 @@
 //       </span>
 
 //       <div className="min-w-0">
-//         <p className="text-[9px] uppercase tracking-wide text-white0">
+//         <p className="text-[9px] uppercase tracking-wide text-slate-500">
 //           {label}
 //         </p>
 
 //         <p
-//           className="truncate text-[10px] font-semibold text-white"
+//           className="truncate text-[10px] font-semibold text-slate-200"
 //           title={String(value ?? "")}
 //         >
 //           {value}
@@ -2603,7 +2614,7 @@
 // //               : "Free"}
 // //           </span>
 
-// //           <span className="text-[11px] text-white">
+// //           <span className="text-[11px] text-slate-400">
 // //             {students ?? 0}{" "}
 // //             Students
 // //           </span>
@@ -2653,7 +2664,7 @@
 // //                 className="text-yellow-400"
 // //               />
 
-// //               <span className="text-[11px] font-semibold text-white">
+// //               <span className="text-[11px] font-semibold text-slate-200">
 // //                 {trainerRating >
 // //                 0
 // //                   ? trainerRating.toFixed(
@@ -2711,6 +2722,7 @@
 // function ClassCard({
 //   item,
 //   branding,
+//   basePath = "/institute/website/preview",
 // }) {
 //   const id = item?.id;
 
@@ -2846,9 +2858,7 @@
 //       ================================================= */}
 
 //       <Link
-//         to={`/institute/website/preview/classes/${
-//           id || ""
-//         }`}
+//         to={`${basePath}/classes/${id || ""}`}
 //       >
 //         <div className="relative h-36 overflow-hidden bg-black">
 
@@ -3061,7 +3071,7 @@
 //         >
 
 //           <div>
-//             <p className="text-[9px] uppercase tracking-wide text-white0">
+//             <p className="text-[9px] uppercase tracking-wide text-slate-500">
 //               Price
 //             </p>
 
@@ -3083,7 +3093,7 @@
 //           </div>
 
 //           <div className="text-right">
-//             <p className="text-[9px] uppercase tracking-wide text-white0">
+//             <p className="text-[9px] uppercase tracking-wide text-slate-500">
 //               Students
 //             </p>
 
@@ -3173,7 +3183,7 @@
 //                 className="
 //                   text-[10px]
 //                   font-semibold
-//                   text-white
+//                   text-slate-300
 //                 "
 //               >
 //                 {trainerRating > 0
@@ -3193,9 +3203,7 @@
 //         <div className="mt-3 grid grid-cols-2 gap-2">
 
 //           <Link
-//             to={`/institute/website/preview/classes/${
-//               id || ""
-//             }`}
+//             to={`${basePath}/classes/${id || ""}`}
 //             className="
 //               rounded-lg
 //               px-3
@@ -3216,9 +3224,7 @@
 //           </Link>
 
 //           <Link
-//             to={`/institute/website/preview/classes/${
-//               id || ""
-//             }`}
+//             to={`${basePath}/classes/${id || ""}`}
 //             className="
 //               rounded-lg
 //               border
@@ -3256,7 +3262,7 @@
 //   return (
 //     <div className="flex items-center justify-between gap-2">
 
-//       <span className="flex items-center gap-1.5 text-white0">
+//       <span className="flex items-center gap-1.5 text-slate-500">
 
 //         <span
 //           style={{
@@ -3271,7 +3277,7 @@
 
 //       </span>
 
-//       <span className="truncate text-right font-semibold text-white">
+//       <span className="truncate text-right font-semibold text-slate-200">
 //         {value ||
 //           "Not specified"}
 //       </span>
@@ -3580,7 +3586,7 @@
 //             )
 //           )}
 
-//           <span className="ml-1 text-[11px] font-semibold text-white">
+//           <span className="ml-1 text-[11px] font-semibold text-slate-300">
 //             {rating.toFixed(
 //               1
 //             )}
@@ -3589,7 +3595,7 @@
 //         </div>
 
 
-//         <p className="mt-3 min-h-[72px] text-xs leading-6 text-white">
+//         <p className="mt-3 min-h-[72px] text-xs leading-6 text-slate-300">
 //           "{text}"
 //         </p>
 
@@ -3598,6 +3604,8 @@
 //     </article>
 //   );
 // }
+
+
 
 
 
@@ -6321,6 +6329,41 @@ function CompactInfo({
 //     </article>
 //   );
 // }
+const formatAvailableDays = (days) => {
+  const list = Array.isArray(days)
+    ? days
+    : typeof days === "string"
+      ? days.split(/[,;|]/)
+      : [];
+
+  return list
+    .map((day) => String(day).trim().slice(0, 3).toUpperCase())
+    .filter(Boolean)
+    .join(", ");
+};
+
+const formatStartDate = (date) => {
+  if (!date) return "Not specified";
+
+  // Keep the original calendar date and avoid timezone shifts.
+  const match = String(date).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return String(date);
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  return `${day}-${month}-${parsed.getFullYear()}`;
+};
+
+const formatStartTime = (time) => {
+  if (!time) return "Not specified";
+  const match = String(time).match(/^(\d{1,2}):(\d{2})/);
+  if (match) return `${match[1].padStart(2, "0")}:${match[2]}`;
+  return String(time);
+};
+
 function ClassCard({
   item,
   branding,
@@ -6495,63 +6538,6 @@ function ClassCard({
             </div>
           )}
 
-          {/* LEVEL — LEFT */}
-
-          {level && (
-            <span
-              className="
-                absolute
-                left-3
-                top-3
-                rounded-full
-                px-2.5
-                py-1
-                text-[10px]
-                font-bold
-                backdrop-blur
-              "
-              style={{
-                background:
-                  "rgba(2,6,23,0.85)",
-                color: "#7DD3FC",
-                border:
-                  "1px solid rgba(56,189,248,0.35)",
-              }}
-            >
-              {level}
-            </span>
-          )}
-
-          {/* CLASS TYPE — RIGHT */}
-
-          <span
-            className="
-              absolute
-              right-3
-              top-3
-              rounded-full
-              px-2.5
-              py-1
-              text-[10px]
-              font-bold
-              backdrop-blur
-            "
-            style={{
-              background:
-                "rgba(2,6,23,0.85)",
-              color:
-                classType === "LIVE"
-                  ? "#86EFAC"
-                  : "#C4B5FD",
-              border:
-                classType === "LIVE"
-                  ? "1px solid rgba(134,239,172,0.35)"
-                  : "1px solid rgba(196,181,253,0.35)",
-            }}
-          >
-            {classType}
-          </span>
-
         </div>
       </Link>
 
@@ -6562,20 +6548,30 @@ function ClassCard({
 
       <div className="px-4 py-3">
 
-        {/* CLASS NAME */}
+        {/* CLASS NAME + CLASS TYPE */}
 
-        <h3
-          className="
-            truncate
-            text-base
-            font-bold
-            leading-5
-            text-white
-          "
-          title={title}
-        >
-          {title}
-        </h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3
+            className="min-w-0 flex-1 truncate text-base font-bold leading-5 text-white"
+            title={title}
+          >
+            {title}
+          </h3>
+
+          <span
+            className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold"
+            style={{
+              background: "rgba(2,6,23,0.85)",
+              color: classType === "LIVE" ? "#86EFAC" : "#C4B5FD",
+              border:
+                classType === "LIVE"
+                  ? "1px solid rgba(134,239,172,0.35)"
+                  : "1px solid rgba(196,181,253,0.35)",
+            }}
+          >
+            {classType}
+          </span>
+        </div>
 
         {/* SUBCATEGORY */}
 
@@ -6623,11 +6619,7 @@ function ClassCard({
           <CompactInfo
             icon={<CalendarDays size={13} />}
             label="Days"
-            value={
-              availableDays.length
-                ? availableDays.join(", ")
-                : "Not specified"
-            }
+            value={formatAvailableDays(availableDays) || "Not specified"}
           />
 
           {/* START TIME */}
@@ -6635,10 +6627,7 @@ function ClassCard({
           <CompactInfo
             icon={<Clock3 size={13} />}
             label="Start Time"
-            value={
-              startTime ||
-              "Not specified"
-            }
+            value={formatStartTime(startTime)}
           />
 
           {/* START DATE */}
@@ -6646,10 +6635,7 @@ function ClassCard({
           <CompactInfo
             icon={<CalendarDays size={13} />}
             label="Start Date"
-            value={
-              startDate ||
-              "Not specified"
-            }
+            value={formatStartDate(startDate)}
           />
 
         </div>

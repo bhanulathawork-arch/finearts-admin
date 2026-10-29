@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   getFooter,
@@ -78,16 +79,16 @@ const InstituteFooter = () => {
 
   if (loading) {
     return (
-      <div className="p-6 text-white">
+      <div className="w-full min-w-0 text-white">
         Loading footer settings...
       </div>
     );
   }
 
   return (
-    <div className="p-6 text-white">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">
+    <div className="w-full min-w-0 text-white">
+      <div className="mb-5">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
           Footer
         </h1>
 
@@ -98,13 +99,9 @@ const InstituteFooter = () => {
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-8"
-      >
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* DESCRIPTION */}
-
-        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-6">
+        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-5 sm:p-6">
           <h2 className="mb-2 text-xl font-semibold">
             Footer Description
           </h2>
@@ -120,13 +117,12 @@ const InstituteFooter = () => {
             onChange={handleChange}
             rows={5}
             placeholder="Enter footer description..."
-            className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+            className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
           />
         </div>
 
         {/* FOLLOW US */}
-
-        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-6">
+        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-5 sm:p-6">
           <h2 className="mb-2 text-xl font-semibold">
             Follow Us
           </h2>
@@ -136,58 +132,55 @@ const InstituteFooter = () => {
           </p>
 
           <div className="space-y-5">
-
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="facebook_url" className="mb-2 block text-sm font-medium text-gray-300">
                 Facebook URL
               </label>
-
               <input
+                id="facebook_url"
                 type="url"
                 name="facebook_url"
                 value={formData.facebook_url}
                 onChange={handleChange}
                 placeholder="https://facebook.com/..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="instagram_url" className="mb-2 block text-sm font-medium text-gray-300">
                 Instagram URL
               </label>
-
               <input
+                id="instagram_url"
                 type="url"
                 name="instagram_url"
                 value={formData.instagram_url}
                 onChange={handleChange}
                 placeholder="https://instagram.com/..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="youtube_url" className="mb-2 block text-sm font-medium text-gray-300">
                 YouTube URL
               </label>
-
               <input
+                id="youtube_url"
                 type="url"
                 name="youtube_url"
                 value={formData.youtube_url}
                 onChange={handleChange}
                 placeholder="https://youtube.com/..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
-
           </div>
         </div>
 
         {/* CONTACT */}
-
-        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-6">
+        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-5 sm:p-6">
           <h2 className="mb-2 text-xl font-semibold">
             Contact Us
           </h2>
@@ -198,58 +191,55 @@ const InstituteFooter = () => {
           </p>
 
           <div className="space-y-5">
-
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="address" className="mb-2 block text-sm font-medium text-gray-300">
                 Address
               </label>
-
               <textarea
+                id="address"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 rows={3}
                 placeholder="Enter institute address..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="phone" className="mb-2 block text-sm font-medium text-gray-300">
                 Phone
               </label>
-
               <input
+                id="phone"
                 type="text"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="Enter phone number..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 block">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-300">
                 Email
               </label>
-
               <input
+                id="email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter email address..."
-                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none"
+                className="w-full rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-white outline-none transition-colors focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               />
             </div>
-
           </div>
         </div>
 
         {/* QUICK LINKS */}
-
-        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-6">
+        <div className="rounded-2xl border border-gray-800 bg-[#17171c] p-5 sm:p-6">
           <h2 className="mb-2 text-xl font-semibold">
             Quick Links
           </h2>
@@ -259,15 +249,8 @@ const InstituteFooter = () => {
             edited from the dashboard.
           </p>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {[
-              "Home",
-              "About",
-              "Classes",
-              "Sessions",
-              "Trainers",
-              "Testimonials",
-            ].map((item) => (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {["Home", "About", "Classes", "Sessions", "Trainers", "Testimonials"].map((item) => (
               <div
                 key={item}
                 className="rounded-xl border border-gray-700 bg-[#0f0f14] px-4 py-3 text-gray-300"
@@ -279,16 +262,13 @@ const InstituteFooter = () => {
         </div>
 
         {/* SAVE */}
-
-        <div className="flex justify-end">
+        <div className="flex justify-end pb-1">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white disabled:opacity-50"
+            className="rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {saving
-              ? "Saving..."
-              : "Save Changes"}
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>

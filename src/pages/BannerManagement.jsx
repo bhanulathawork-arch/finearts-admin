@@ -51,12 +51,19 @@ const BannerManagement = () => {
     { value: "INSTITUTE", label: "Institute Banner" },
   ];
 
-  const getImageUrl = (item) => {
-    const img = item?.image;
-    if (!img) return "";
-    if (img.startsWith("http")) return img;
-    return `https://finearts-backend.onrender.com${img}`;
-  };
+  // const getImageUrl = (item) => {
+  //   const img = item?.image;
+  //   if (!img) return "";
+  //   if (img.startsWith("http")) return img;
+  //   return `https://finearts-backend.onrender.com${img}`;
+  // };
+
+const getImageUrl = (item) => {
+  const img = item?.image;
+  if (!img) return "";
+  if (img.startsWith("http")) return img;
+  return `http://localhost:5000${img}`;
+};
 
   // --- Filtered Banners ---
   const filteredBanners = banners.filter((item) => {

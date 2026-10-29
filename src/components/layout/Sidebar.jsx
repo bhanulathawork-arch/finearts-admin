@@ -116,11 +116,7 @@ const adminMenuItems = [
     icon: HiOutlineCalendar,
     label: "Bookings",
   },
-  // {
-  //   path: "/admin/lms",
-  //   icon: HiOutlineAcademicCap,
-  //   label: "LMS",
-  // },
+
   {
     path: "/admin/live",
     icon: HiOutlineAcademicCap,
@@ -142,6 +138,11 @@ const adminMenuItems = [
     label: "Assignments",
   },
   {
+  path: "/certificates",
+  icon: HiOutlineDocumentText,
+  label: "Certificates",
+},
+  {
     path: "/students",
     icon: HiOutlineUsers,
     label: "Students",
@@ -150,6 +151,11 @@ const adminMenuItems = [
     path: "/testimonials",
     icon: HiOutlineChatAlt,
     label: "Testimonials",
+  },
+   {
+    path: "/admin/website-domains",
+    icon: HiOutlineGlobeAlt,
+    label: "Website Domains",
   },
 ];
 
@@ -209,6 +215,11 @@ const instituteMenuItems = [
     label: "Recordings",
   },
   
+  {
+  path: "/institute/certificates",
+  icon: HiOutlineDocumentText,
+  label: "Certificates",
+},
 
   /* =====================================================
      INSTITUTE MANAGEMENT
@@ -311,6 +322,12 @@ const trainerMenuItems = [
     icon: HiOutlineAcademicCap,
     label: "Recordings",
   },
+
+  {
+  path: "/trainer/certificates",
+  icon: HiOutlineDocumentText,
+  label: "Certificates",
+},
   {
     path: "/trainer/bookings",
     icon: HiOutlineCalendar,

@@ -377,27 +377,27 @@ export default function InstituteBanners() {
   ========================================================= */
 
   return (
-    <div className="p-8 text-white">
+    <div className="w-full min-w-0 text-white">
 
       {/* =====================================================
           HEADER
       ===================================================== */}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="mb-6 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
 
         <div>
-          <h1 className="text-4xl font-bold text-purple-400">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
             Institute Banners
           </h1>
 
-          <p className="text-white mt-2">
+          <p className="mt-2 text-sm text-white sm:text-base">
             Manage your website banners
           </p>
         </div>
 
         <button
           onClick={handleCreate}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+          className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-6 font-bold text-white transition-opacity hover:opacity-90"
         >
           + Add Banner
         </button>
@@ -424,7 +424,7 @@ export default function InstituteBanners() {
             onChange={(event) =>
               setSearchQuery(event.target.value)
             }
-            className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
+            className="h-12 w-full rounded-xl border border-white/10 bg-[#151519] py-3.5 pl-12 pr-10 text-sm text-white outline-none transition-colors placeholder:text-white/50 focus:border-purple-500/60"
           />
 
           {searchQuery && (
@@ -446,7 +446,7 @@ export default function InstituteBanners() {
           IMPORTANT: NO CARD / GRID VIEW HERE
       ===================================================== */}
 
-      <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#151519]">
 
         <div className="overflow-x-auto">
 

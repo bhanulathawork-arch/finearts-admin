@@ -4,7 +4,8 @@ import toast from "react-hot-toast";
 import { Edit, Trash2, Search } from "lucide-react";
 import { FaTrash, FaTimes } from "react-icons/fa";
 
-const API_URL = "https://finearts-backend.onrender.com/api/categories";
+// const API_URL = "https://finearts-backend.onrender.com/api/categories";
+const API_URL = "http://localhost:5000/api/categories";
 
 function Categories() {
   const [categories, setCategories] = useState([]);
@@ -45,12 +46,21 @@ function Categories() {
     );
   });
 
+  // const getImageUrl = (item) => {
+  //   const img = item?.image || item?.image_url;
+  //   if (!img) return "";
+  //   if (img.startsWith("http")) return img;
+  //   return `https://finearts-backend.onrender.com${img}`;
+  // };
+
   const getImageUrl = (item) => {
-    const img = item?.image || item?.image_url;
-    if (!img) return "";
-    if (img.startsWith("http")) return img;
-    return `https://finearts-backend.onrender.com${img}`;
-  };
+  const img = item?.image || item?.image_url;
+
+  if (!img) return "";
+  if (img.startsWith("http")) return img;
+
+  return `http://localhost:5000${img}`;
+};
 
   const fetchCategories = async () => {
     try {

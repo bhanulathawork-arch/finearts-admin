@@ -1,8 +1,10 @@
-// src/services/dashboardService.js
+
 
 import axios from "axios";
 
 const API_URL = "https://finearts-backend.onrender.com/api/dashboard";
+
+// const API_URL = "http://localhost:5000/api/dashboard";
 
 /* ─────────────────────────────────────────────
    GET ADMIN TOKEN

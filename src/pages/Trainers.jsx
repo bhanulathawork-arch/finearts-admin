@@ -174,7 +174,8 @@ export default function Trainers() {
 
     }
 
-    return `https://finearts-backend.onrender.com${img}`;
+    // return `https://finearts-backend.onrender.com${img}`;
+    return `http://localhost:5000${img}`;
 
   };
 

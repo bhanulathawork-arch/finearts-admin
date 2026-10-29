@@ -72,7 +72,7 @@ export default function InstituteLayout() {
           className={
             isWebsitePreview
               ? "flex-1 overflow-y-auto overflow-x-hidden p-0 m-0 bg-white"
-              : "flex-1 overflow-y-auto p-6 bg-background-dark"
+              : "flex-1 overflow-y-auto overflow-x-hidden px-6 pt-4 pb-6 bg-background-dark"
           }
         >
           <Outlet />

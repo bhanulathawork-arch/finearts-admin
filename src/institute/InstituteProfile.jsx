@@ -662,7 +662,7 @@ export default function InstituteProfile() {
 
   if (!profile) {
     return (
-      <div className="p-8">
+      <div className="w-full min-w-0">
         <div className="
           rounded-2xl
           border
@@ -688,10 +688,10 @@ export default function InstituteProfile() {
   return (
     <div className="
       min-h-full
+      w-full
+      min-w-0
       bg-[#08080c]
       text-white
-      p-5
-      md:p-8
     ">
 
       {/* =====================================================
@@ -736,8 +736,14 @@ export default function InstituteProfile() {
             <h1 className="
               text-3xl
               md:text-4xl
-              font-bold
+              font-extrabold
               tracking-tight
+              bg-gradient-to-r
+              from-purple-400
+              via-fuchsia-400
+              to-pink-500
+              bg-clip-text
+              text-transparent
             ">
               Institute Profile
             </h1>
@@ -801,6 +807,7 @@ export default function InstituteProfile() {
 
           <div className="
             flex
+            flex-wrap
             items-center
             gap-3
           ">
@@ -915,9 +922,9 @@ export default function InstituteProfile() {
 
         <div className="
           relative
-          p-6
-          md:p-8
-          lg:p-10
+          p-4
+          sm:p-6
+          lg:p-8
         ">
 
           <div className="
@@ -932,12 +939,11 @@ export default function InstituteProfile() {
                 INSTITUTE IMAGE
             ================================================= */}
 
-            <div className="shrink-0">
+            <div className="w-full shrink-0 lg:w-[280px]">
 
               <div className="
                 relative
                 w-full
-                lg:w-[280px]
               ">
 
                 <div className="
@@ -1381,7 +1387,8 @@ export default function InstituteProfile() {
           border
           border-white/[0.08]
           bg-[#141419]
-          p-6
+          p-4
+          sm:p-6
           md:p-7
         ">
 
@@ -1530,7 +1537,8 @@ export default function InstituteProfile() {
           border
           border-white/[0.08]
           bg-[#141419]
-          p-6
+          p-4
+          sm:p-6
           md:p-7
         ">
 
@@ -1597,7 +1605,8 @@ export default function InstituteProfile() {
         border
         border-white/[0.08]
         bg-[#141419]
-        p-6
+        p-4
+        sm:p-6
         md:p-7
       ">
 

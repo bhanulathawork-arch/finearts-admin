@@ -23,9 +23,9 @@ import API from "../services/api";
 ========================================================= */
 
 
-const BACKEND_URL =
-  "https://finearts-backend.onrender.com";
-
+// const BACKEND_URL =
+//   "https://finearts-backend.onrender.com";
+const BACKEND_URL = "http://localhost:5000";
 
 const DAYS_LIST = [
   { label: "Monday", value: "MONDAY" },

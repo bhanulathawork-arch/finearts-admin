@@ -448,7 +448,9 @@ export default function TrainerCreateProfile() {
       ----------------------------------------- */
 
       const res = await axios.post(
-        "https://finearts-backend.onrender.com/api/trainers/complete-profile",
+        // "https://finearts-backend.onrender.com/api/trainers/complete-profile",
+
+        "http://localhost:5000/api/trainers/complete-profile",
         fd,
         {
           headers: {

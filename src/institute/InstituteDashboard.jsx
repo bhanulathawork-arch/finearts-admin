@@ -241,9 +241,10 @@ export default function InstituteDashboard() {
       ===================================================== */}
 
       <div>
-        <h1 className="text-3xl font-bold gradient-text">
-          Dashboard
-        </h1>
+                <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
+
+  Dashboard
+</h1>
 
         <p className="text-white mt-1">
           Welcome back{" "}

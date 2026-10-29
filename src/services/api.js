@@ -1,6 +1,5 @@
 
 import axios from "axios";
-
 import {
   getAuth,
   signOut,
@@ -10,116 +9,41 @@ import {
 /* =========================================================
    API BASE URL
 ========================================================= */
+// const API_BASE_URL = (
+//   import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+// ).replace(/\/+$/, "");
 
-/* API BASE URL */
+// const API = axios.create({
+//   baseURL: API_BASE_URL,
+//   timeout: 120000,
+//   headers: { "Content-Type": "application/json" },
+// });
+
+
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   "https://finearts-backend.onrender.com/api"
 ).replace(/\/+$/, "");
 
-/* AXIOS INSTANCE */
 const API = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
-
 /* =========================================================
-   FIREBASE TOKEN CONTROL
+   PATH / ROUTE HELPERS
 ========================================================= */
+const getPath = () =>
+  typeof window === "undefined" ? "/" : window.location.pathname || "/";
 
-let firebaseTokenPromise = null;
-
-let firebaseAuthReadyPromise = null;
-
-/*
- * Prevent repeated Firebase refresh attempts when Firebase
- * itself is temporarily returning quota/network errors.
- */
-
-let lastFirebaseTokenFailureAt = 0;
-
-const FIREBASE_TOKEN_FAILURE_COOLDOWN = 30000;
-
-/* =========================================================
-   FIREBASE AUTH READY
-========================================================= */
-
-/*
- * Firebase can temporarily have:
- *
- *     auth.currentUser === null
- *
- * while Firebase Auth is still restoring the previous
- * login session.
- *
- * We wait for onAuthStateChanged() before deciding that
- * there is no authenticated Firebase user.
- */
-
-const waitForFirebaseAuth = () => {
-  const auth = getAuth();
-
-  /*
-   * If Firebase already knows the user, continue immediately.
-   */
-
-  if (auth.currentUser) {
-    return Promise.resolve(auth.currentUser);
-  }
-
-  /*
-   * Only create one listener promise.
-   */
-
-  if (!firebaseAuthReadyPromise) {
-    firebaseAuthReadyPromise = new Promise((resolve) => {
-      let unsubscribe = null;
-
-      unsubscribe = onAuthStateChanged(
-        auth,
-        (user) => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
-
-          resolve(user);
-        }
-      );
-    });
-  }
-
-  return firebaseAuthReadyPromise;
-};
-
-/* =========================================================
-   PATH HELPERS
-========================================================= */
-
-const getPath = () => {
-  if (typeof window === "undefined") {
-    return "/";
-  }
-
-  return window.location.pathname || "/";
-};
-
-const getRequestUrl = (config = {}) => {
-  return String(config.url || "")
+const getRequestUrl = (config = {}) =>
+  String(config.url || "")
     .split("?")[0]
     .replace(/\/+$/, "")
     .toLowerCase();
-};
-
-/* =========================================================
-   PAGE TYPES
-========================================================= */
 
 const isAdminPage = () => {
   const path = getPath();
-
   return (
     path === "/admin-login" ||
     path === "/admin" ||
@@ -131,16 +55,11 @@ const isAdminPage = () => {
 
 const isInstituteRoute = () => {
   const path = getPath();
-
-  return (
-    path === "/institute" ||
-    path.startsWith("/institute/")
-  );
+  return path === "/institute" || path.startsWith("/institute/");
 };
 
 const isWebsitePreviewRoute = () => {
   const path = getPath();
-
   return (
     path === "/institute/website/preview" ||
     path.startsWith("/institute/website/preview/")
@@ -149,240 +68,60 @@ const isWebsitePreviewRoute = () => {
 
 const isTrainerPage = () => {
   const path = getPath();
-
-  return (
-    path === "/trainer-login" ||
-    path === "/trainer" ||
-    path.startsWith("/trainer/")
-  );
+  return path === "/trainer-login" || path === "/trainer" || path.startsWith("/trainer/");
 };
-
-/* =========================================================
-   PUBLIC WEBSITE API
-========================================================= */
 
 const isPublicWebsiteApiRoute = (config = {}) => {
   const url = getRequestUrl(config);
-
-  return (
-    url === "/websites/public" ||
-    url.startsWith("/websites/public/")
-  );
+  return url === "/websites/public" || url.startsWith("/websites/public/");
 };
-
-/* =========================================================
-   ADMIN LOGIN REQUEST
-========================================================= */
 
 const isAdminLoginRequest = (config = {}) => {
   const url = getRequestUrl(config);
-
-  return (
-    url === "/admin-auth/login" ||
-    url === "/admin/login" ||
-    url === "/admin/signin" ||
-    url === "/auth/admin/login" ||
-    url === "/auth/admin/signin"
-  );
+  return [
+    "/admin-auth/login",
+    "/admin/login",
+    "/admin/signin",
+    "/auth/admin/login",
+    "/auth/admin/signin",
+  ].includes(url);
 };
-
-/* =========================================================
-   FIREBASE LOGIN REQUESTS
-========================================================= */
 
 const isFirebaseLoginRequest = (config = {}) => {
   const url = getRequestUrl(config);
-
-  return (
-    url === "/institutes/login" ||
-    url === "/trainers/login" ||
-    url === "/students/login"
-  );
-};
-
-/* =========================================================
-   FIREBASE API ROUTES
-========================================================= */
-
-const isFirebaseApiRoute = (config = {}) => {
-  const url = getRequestUrl(config);
-
-  /* -------------------------------------------------------
-     PUBLIC WEBSITE MUST NEVER USE FIREBASE
-  ------------------------------------------------------- */
-
-  if (isPublicWebsiteApiRoute(config)) {
-    return false;
-  }
-
-  /* -------------------------------------------------------
-     FIREBASE LOGIN
-  ------------------------------------------------------- */
-
-  if (isFirebaseLoginRequest(config)) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     EXPLICIT FIREBASE ROUTES
-  ------------------------------------------------------- */
-
-  const firebaseExactRoutes = [
-    "/trainers/institute",
-    "/testimonials/institute",
-  ];
-
-  const firebasePrefixes = [
-    "/trainers/institute/",
-    "/testimonials/institute/",
-  ];
-
-  if (
-    firebaseExactRoutes.includes(url) ||
-    firebasePrefixes.some((prefix) =>
-      url.startsWith(prefix)
-    )
-  ) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     INSTITUTE APPLICATION
-  ------------------------------------------------------- */
-
-  if (isInstituteRoute()) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     TRAINER APPLICATION
-  ------------------------------------------------------- */
-
-  if (isTrainerPage()) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     USER / STUDENT APPLICATION
-  ------------------------------------------------------- */
-
-  if (
-    url === "/users" ||
-    url.startsWith("/users/") ||
-    url === "/students" ||
-    url.startsWith("/students/")
-  ) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     LMS TRAINER / USER / STUDENT
-  ------------------------------------------------------- */
-
-  if (
-    url.startsWith("/lms/trainer/") ||
-    url.startsWith("/lms/users/") ||
-    url.startsWith("/lms/user/") ||
-    url.startsWith("/lms/students/")
-  ) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     ATTENDANCE
-  ------------------------------------------------------- */
-
-  if (url.startsWith("/attendance/")) {
-    return true;
-  }
-
-  /* -------------------------------------------------------
-     RECORDINGS
-  ------------------------------------------------------- */
-
-  if (url.startsWith("/recordings/")) {
-    return true;
-  }
-
-  return false;
+  return ["/institutes/login", "/trainers/login", "/students/login"].includes(url);
 };
 
 /* =========================================================
    ADMIN API ROUTES
+   IMPORTANT: check certificate admin routes before Firebase routes.
 ========================================================= */
-
 const isAdminApiRoute = (config = {}) => {
   const url = getRequestUrl(config);
 
-  /* -------------------------------------------------------
-     PUBLIC WEBSITE IS NOT ADMIN
-  ------------------------------------------------------- */
-
-  if (isPublicWebsiteApiRoute(config)) {
+  if (isPublicWebsiteApiRoute(config) || isAdminLoginRequest(config) || isFirebaseLoginRequest(config)) {
     return false;
   }
 
-  /* -------------------------------------------------------
-     ADMIN LOGIN IS PUBLIC
-  ------------------------------------------------------- */
-
-  if (isAdminLoginRequest(config)) {
-    return false;
-  }
-
-  /* -------------------------------------------------------
-     FIREBASE LOGIN IS NOT ADMIN
-  ------------------------------------------------------- */
-
-  if (isFirebaseLoginRequest(config)) {
-    return false;
-  }
-
-  /* -------------------------------------------------------
-     USERS ADMIN APIs
-  ------------------------------------------------------- */
-
-  if (
-    url === "/users/admin" ||
-    url.startsWith("/users/admin/")
-  ) {
+  if (url === "/certificates/admin" || url.startsWith("/certificates/admin/")) {
     return true;
   }
 
-  /* -------------------------------------------------------
-     USER STATUS
-  ------------------------------------------------------- */
-
-  if (
-    /^\/users\/\d+\/status$/.test(url)
-  ) {
+  if (url === "/users/admin" || url.startsWith("/users/admin/")) {
     return true;
   }
 
-  /* -------------------------------------------------------
-     FIREBASE ROUTES ARE NOT ADMIN
-  ------------------------------------------------------- */
-
-  if (isFirebaseApiRoute(config)) {
-    return false;
-  }
-
-  /* -------------------------------------------------------
-     EXPLICIT ADMIN ROUTES
-  ------------------------------------------------------- */
-
-  if (
-    url === "/admin" ||
-    url.startsWith("/admin/")
-  ) {
+  if (/^\/users\/\d+\/status$/.test(url)) {
     return true;
   }
 
-  /* -------------------------------------------------------
-     ADMIN API PREFIXES
-  ------------------------------------------------------- */
+  if (url === "/admin" || url.startsWith("/admin/")) {
+    return true;
+  }
 
-  const adminApiPrefixes = [
+  // These API prefixes are used by the admin panel. Firebase-owned routes
+  // are excluded below to avoid sending the admin JWT to Firebase endpoints.
+  const adminPrefixes = [
     "/dashboard",
     "/categories",
     "/subcategories",
@@ -397,941 +136,291 @@ const isAdminApiRoute = (config = {}) => {
     "/lms",
     "/attendance",
     "/assignments",
+    "/websites/admin",
     "/recordings",
   ];
 
-  const matchesAdminPrefix =
-    adminApiPrefixes.some((prefix) => {
-      return (
-        url === prefix ||
-        url.startsWith(`${prefix}/`)
-      );
-    });
+  const matchesAdminPrefix = adminPrefixes.some(
+    (prefix) => url === prefix || url.startsWith(`${prefix}/`)
+  );
 
-  /* -------------------------------------------------------
-     SAFETY
+  if (!matchesAdminPrefix) return false;
+  if (isInstituteRoute() || isTrainerPage()) return false;
 
-     Institute and Trainer application routes should never
-     accidentally use Admin authentication.
-  ------------------------------------------------------- */
-
+  // Known Firebase-specific API paths should not be treated as admin APIs.
   if (
-    isInstituteRoute() ||
-    isTrainerPage()
+    url === "/trainers/institute" ||
+    url.startsWith("/trainers/institute/") ||
+    url === "/testimonials/institute" ||
+    url.startsWith("/testimonials/institute/")
   ) {
     return false;
   }
 
-  return matchesAdminPrefix;
+  return true;
 };
 
 /* =========================================================
-   STORED FIREBASE TOKEN
+   FIREBASE API ROUTES
 ========================================================= */
+const isFirebaseApiRoute = (config = {}) => {
+  const url = getRequestUrl(config);
+
+  if (isPublicWebsiteApiRoute(config) || isAdminLoginRequest(config)) return false;
+  if (isAdminApiRoute(config)) return false;
+  if (isFirebaseLoginRequest(config)) return true;
+
+  const exactRoutes = ["/trainers/institute", "/testimonials/institute"];
+  const prefixes = [
+    "/trainers/institute/",
+    "/testimonials/institute/",
+    "/users/",
+    "/students/",
+    "/lms/trainer/",
+    "/lms/users/",
+    "/lms/user/",
+    "/lms/students/",
+    "/attendance/",
+    "/recordings/",
+    "/certificates/",
+  ];
+
+  if (exactRoutes.includes(url)) return true;
+  if (prefixes.some((prefix) => url.startsWith(prefix))) return true;
+  if (url === "/users" || url === "/students") return true;
+
+  if (isInstituteRoute() || isTrainerPage()) return true;
+  return false;
+};
+
+/* =========================================================
+   FIREBASE TOKEN HELPERS
+========================================================= */
+let firebaseTokenPromise = null;
+let firebaseAuthReadyPromise = null;
+let lastFirebaseTokenFailureAt = 0;
+const FIREBASE_TOKEN_FAILURE_COOLDOWN = 30000;
+
+const waitForFirebaseAuth = () => {
+  const auth = getAuth();
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+
+  if (!firebaseAuthReadyPromise) {
+    firebaseAuthReadyPromise = new Promise((resolve) => {
+      let unsubscribe;
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (unsubscribe) unsubscribe();
+        resolve(user);
+        firebaseAuthReadyPromise = null;
+      });
+    });
+  }
+  return firebaseAuthReadyPromise;
+};
 
 const getStoredFirebaseToken = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  /* -------------------------------------------------------
-     STUDENT TOKEN
-  ------------------------------------------------------- */
-
-  const studentToken =
-    localStorage.getItem("studentToken");
-
-  if (
-    studentToken &&
-    studentToken !== "undefined" &&
-    studentToken !== "null" &&
-    studentToken.trim()
-  ) {
-    return studentToken.trim();
-  }
-
-  /* -------------------------------------------------------
-     GENERIC TOKEN
-  ------------------------------------------------------- */
-
-  const storedToken =
-    localStorage.getItem("token");
-
-  if (
-    storedToken &&
-    storedToken !== "undefined" &&
-    storedToken !== "null" &&
-    storedToken.trim()
-  ) {
-    return storedToken.trim();
-  }
-
-  return null;
+  if (typeof window === "undefined") return null;
+  const candidates = [
+    localStorage.getItem("studentToken"),
+    localStorage.getItem("token"),
+  ];
+  return candidates.find(
+    (value) => value && value !== "undefined" && value !== "null" && value.trim()
+  )?.trim() || null;
 };
-
-/* =========================================================
-   SAVE FIREBASE TOKEN
-========================================================= */
 
 const saveFirebaseToken = (token) => {
-  if (
-    typeof window === "undefined" ||
-    !token
-  ) {
-    return;
-  }
-
-  localStorage.setItem(
-    "token",
-    token
-  );
-
-  /*
-   * Keep studentToken synchronized when the student
-   * or preview flow is active.
-   */
-
-  if (
-    isWebsitePreviewRoute() ||
-    localStorage.getItem("studentToken")
-  ) {
-    localStorage.setItem(
-      "studentToken",
-      token
-    );
+  if (typeof window === "undefined" || !token) return;
+  localStorage.setItem("token", token);
+  if (isWebsitePreviewRoute() || localStorage.getItem("studentToken")) {
+    localStorage.setItem("studentToken", token);
   }
 };
 
-/* =========================================================
-   GET FIREBASE TOKEN
-========================================================= */
-
-/*
- * IMPORTANT:
- *
- * Normal API requests:
- *
- *     Firebase Auth ready
- *             ↓
- *     Firebase ID token
- *             ↓
- *     API request
- *
- * We first wait for Firebase initialization.
- *
- * Stored token is still used as a fallback.
- */
-
-const getFirebaseToken = async ({
-  forceRefresh = false,
-} = {}) => {
+const getFirebaseToken = async ({ forceRefresh = false } = {}) => {
   const auth = getAuth();
-
-  /* -------------------------------------------------------
-     1. WAIT FOR FIREBASE AUTH INITIALIZATION
-  ------------------------------------------------------- */
-
   let user = auth.currentUser;
-
-  if (!user) {
-    user = await waitForFirebaseAuth();
-  }
-
-  /* -------------------------------------------------------
-     2. USE CURRENT FIREBASE USER
-  ------------------------------------------------------- */
+  if (!user) user = await waitForFirebaseAuth();
 
   if (user) {
     try {
-      /*
-       * Share one Firebase token request between multiple
-       * simultaneous API calls.
-       */
-
-      if (
-        !forceRefresh &&
-        firebaseTokenPromise
-      ) {
-        return await firebaseTokenPromise;
+      if (!forceRefresh && firebaseTokenPromise) return await firebaseTokenPromise;
+      if (!forceRefresh && Date.now() - lastFirebaseTokenFailureAt < FIREBASE_TOKEN_FAILURE_COOLDOWN) {
+        return getStoredFirebaseToken();
       }
 
-      firebaseTokenPromise =
-        user.getIdToken(forceRefresh);
-
-      const token =
-        await firebaseTokenPromise;
-
+      firebaseTokenPromise = user.getIdToken(forceRefresh);
+      const token = await firebaseTokenPromise;
       firebaseTokenPromise = null;
-
       lastFirebaseTokenFailureAt = 0;
-
-      if (!token) {
-        return null;
-      }
-
-      saveFirebaseToken(token);
-
-      console.log(
-        "Firebase Token: FIREBASE TOKEN GENERATED"
-      );
-
-      return token;
-
+      if (token) saveFirebaseToken(token);
+      return token || null;
     } catch (error) {
       firebaseTokenPromise = null;
-
-      lastFirebaseTokenFailureAt =
-        Date.now();
-
-      console.error(
-        "Firebase token retrieval failed:",
-        error
-      );
+      lastFirebaseTokenFailureAt = Date.now();
+      console.error("Firebase token retrieval failed:", error?.message || error);
     }
   }
-
-  /* -------------------------------------------------------
-     3. FALLBACK TO EXISTING STORED TOKEN
-  ------------------------------------------------------- */
-
-  const fallbackToken =
-    getStoredFirebaseToken();
-
-  if (fallbackToken) {
-    console.warn(
-      "Firebase: Using stored token as fallback"
-    );
-
-    return fallbackToken;
-  }
-
-  console.warn(
-    "Firebase: NO AUTHENTICATED USER/TOKEN"
-  );
-
-  return null;
+  return getStoredFirebaseToken();
 };
 
 /* =========================================================
-   GET ADMIN TOKEN
+   ADMIN TOKEN HELPER
 ========================================================= */
-
 const getAdminToken = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
+  if (typeof window === "undefined") return null;
+  const keys = ["adminToken", "admin_token", "adminAccessToken", "admin_access_token", "adminAuthToken", "admin_auth_token"];
 
-  const possibleKeys = [
-    "adminToken",
-    "admin_token",
-    "adminAccessToken",
-    "admin_access_token",
-    "adminAuthToken",
-    "admin_auth_token",
-  ];
-
-  /* -------------------------------------------------------
-     LOCAL STORAGE
-  ------------------------------------------------------- */
-
-  for (const key of possibleKeys) {
-    const value =
-      localStorage.getItem(key);
-
-    if (
-      value &&
-      typeof value === "string" &&
-      value !== "undefined" &&
-      value !== "null" &&
-      value.trim()
-    ) {
-      return value.trim();
+  for (const storage of [localStorage, sessionStorage]) {
+    for (const key of keys) {
+      const value = storage.getItem(key);
+      if (value && value !== "undefined" && value !== "null" && value.trim()) {
+        return value.trim();
+      }
     }
   }
 
-  /* -------------------------------------------------------
-     SESSION STORAGE
-  ------------------------------------------------------- */
-
-  for (const key of possibleKeys) {
-    const value =
-      sessionStorage.getItem(key);
-
-    if (
-      value &&
-      typeof value === "string" &&
-      value !== "undefined" &&
-      value !== "null" &&
-      value.trim()
-    ) {
-      return value.trim();
-    }
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+  if (String(role).toUpperCase() === "ADMIN") {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (token && token !== "undefined" && token !== "null" && token.trim()) return token.trim();
   }
-
-  /* -------------------------------------------------------
-     ADMIN USER FALLBACK
-  ------------------------------------------------------- */
-
-  const adminUserKeys = [
-    "adminUser",
-    "admin_user",
-    "admin",
-    "adminProfile",
-    "admin_profile",
-  ];
-
-  const hasAdminUser =
-    adminUserKeys.some((key) => {
-      const localValue =
-        localStorage.getItem(key);
-
-      const sessionValue =
-        sessionStorage.getItem(key);
-
-      return (
-        !!localValue ||
-        !!sessionValue
-      );
-    });
-
-  if (hasAdminUser) {
-    const genericToken =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token");
-
-    if (
-      genericToken &&
-      genericToken !== "undefined" &&
-      genericToken !== "null" &&
-      genericToken.trim()
-    ) {
-      return genericToken.trim();
-    }
-  }
-
   return null;
 };
 
 /* =========================================================
    REQUEST INTERCEPTOR
 ========================================================= */
-
 API.interceptors.request.use(
   async (config) => {
-    config.headers =
-      config.headers || {};
+    config.headers = config.headers || {};
 
-    const method =
-      config.method?.toUpperCase() ||
-      "GET";
+    // Let Axios set the multipart boundary for FormData uploads.
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+      delete config.headers["content-type"];
+    }
 
-    const url =
-      config.url || "";
+    const method = (config.method || "GET").toUpperCase();
+    const url = config.url || "";
 
-    /* =====================================================
-       1. ADMIN LOGIN
-    ===================================================== */
-
+    // Admin login is public and must not inherit an old Authorization header.
     if (isAdminLoginRequest(config)) {
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "ADMIN LOGIN REQUEST"
-      );
-
-      console.log(
-        "Page:",
-        getPath()
-      );
-
-      console.log(
-        "Request:",
-        method,
-        url
-      );
-
-      console.log(
-        "Authentication:",
-        "NO ADMIN TOKEN REQUIRED"
-      );
-
-      console.log(
-        "================================="
-      );
-
       delete config.headers.Authorization;
       delete config.headers.authorization;
-
       return config;
     }
 
-    /* =====================================================
-       2. FIREBASE LOGIN
-    ===================================================== */
-
+    // Firebase login routes may use their own supplied authorization, otherwise
+    // the login endpoint itself is handled without attaching an admin token.
     if (isFirebaseLoginRequest(config)) {
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "FIREBASE LOGIN REQUEST"
-      );
-
-      console.log(
-        "Page:",
-        getPath()
-      );
-
-      console.log(
-        "Request:",
-        method,
-        url
-      );
-
-      const existingAuthorization =
-        config.headers.Authorization ||
-        config.headers.authorization;
-
-      if (existingAuthorization) {
-        console.log(
-          "Firebase Authorization:",
-          "PROVIDED"
-        );
-
-        return config;
+      if (!config.headers.Authorization && !config.headers.authorization) {
+        const token = await getFirebaseToken();
+        if (token) config.headers.Authorization = `Bearer ${token}`;
       }
-
-      const firebaseToken =
-        await getFirebaseToken();
-
-      console.log(
-        "Firebase Token:",
-        firebaseToken
-          ? "FOUND"
-          : "NOT FOUND"
-      );
-
-      if (!firebaseToken) {
-        return Promise.reject(
-          new Error(
-            "Firebase authentication token not found"
-          )
-        );
-      }
-
-      config.headers.Authorization =
-        `Bearer ${firebaseToken}`;
-
       return config;
     }
-
-    /* =====================================================
-       3. PUBLIC WEBSITE API
-
-       /footer and /websites/public do NOT need Firebase.
-    ===================================================== */
 
     if (isPublicWebsiteApiRoute(config)) {
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "PUBLIC WEBSITE API REQUEST"
-      );
-
-      console.log(
-        "Page:",
-        getPath()
-      );
-
-      console.log(
-        "Request:",
-        method,
-        url
-      );
-
-      console.log(
-        "Authentication:",
-        "NOT REQUIRED"
-      );
-
-      console.log(
-        "Website Preview:",
-        isWebsitePreviewRoute()
-          ? "YES"
-          : "NO"
-      );
-
-      console.log(
-        "================================="
-      );
-
       delete config.headers.Authorization;
       delete config.headers.authorization;
-
       return config;
     }
 
-    /* =====================================================
-       4. ADMIN PROTECTED API
-    ===================================================== */
-
+    // This branch must come before Firebase routing, especially for
+    // /certificates/admin/* endpoints.
     if (isAdminApiRoute(config)) {
-      const adminToken =
-        getAdminToken();
-
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "ADMIN API REQUEST"
-      );
-
-      console.log(
-        "Page:",
-        getPath()
-      );
-
-      console.log(
-        "Request:",
-        method,
-        url
-      );
-
-      console.log(
-        "Admin Token:",
-        adminToken
-          ? "FOUND"
-          : "NOT FOUND"
-      );
-
-      console.log(
-        "================================="
-      );
-
+      const adminToken = getAdminToken();
       if (!adminToken) {
-        return Promise.reject(
-          new Error(
-            "Admin token missing. Please login again."
-          )
-        );
+        console.error(`Admin token missing for ${method} ${url}. Log in again.`);
+        return Promise.reject(new Error("Admin token missing. Please log in again."));
       }
-
-      config.headers.Authorization =
-        `Bearer ${adminToken}`;
-
+      config.headers.Authorization = `Bearer ${adminToken}`;
       return config;
     }
-
-    /* =====================================================
-       5. FIREBASE PROTECTED API
-    ===================================================== */
 
     if (isFirebaseApiRoute(config)) {
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "FIREBASE PROTECTED API REQUEST"
-      );
-
-      console.log(
-        "Page:",
-        getPath()
-      );
-
-      console.log(
-        "Request:",
-        method,
-        url
-      );
-
-      console.log(
-        "Authentication:",
-        "FIREBASE"
-      );
-
-      const token =
-        await getFirebaseToken();
-
-      console.log(
-        "Firebase Token:",
-        token
-          ? "FOUND"
-          : "NOT FOUND"
-      );
-
-      console.log(
-        "================================="
-      );
-
+      const token = await getFirebaseToken();
       if (!token) {
-        return Promise.reject(
-          new Error(
-            "Firebase user not authenticated"
-          )
-        );
+        return Promise.reject(new Error("Firebase user not authenticated. Please log in again."));
       }
-
-      config.headers.Authorization =
-        `Bearer ${token}`;
-
+      config.headers.Authorization = `Bearer ${token}`;
       return config;
     }
 
-    /* =====================================================
-       6. PUBLIC API
-    ===================================================== */
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "PUBLIC API REQUEST"
-    );
-
-    console.log(
-      "Page:",
-      getPath()
-    );
-
-    console.log(
-      "Request:",
-      method,
-      url
-    );
-
-    console.log(
-      "Authentication:",
-      "NOT REQUIRED"
-    );
-
-    console.log(
-      "================================="
-    );
-
+    // Public endpoints should not accidentally receive a stale token.
     delete config.headers.Authorization;
     delete config.headers.authorization;
-
     return config;
   },
-
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 /* =========================================================
    RESPONSE INTERCEPTOR
 ========================================================= */
-
 API.interceptors.response.use(
-  (response) => {
-    console.log(
-      "API RESPONSE:",
-      response.status,
-      response.config?.url
-    );
-
-    return response;
-  },
-
+  (response) => response,
   async (error) => {
-    const originalRequest =
-      error.config;
+    const originalRequest = error.config;
+    if (!originalRequest) return Promise.reject(error);
 
-    console.error(
-      "API ERROR:",
-      error.response?.status ||
-        "NO RESPONSE",
-      originalRequest?.url,
-      error.message
-    );
-
-    if (!originalRequest) {
+    if (isAdminLoginRequest(originalRequest) || isFirebaseLoginRequest(originalRequest) || isPublicWebsiteApiRoute(originalRequest)) {
       return Promise.reject(error);
     }
 
-    /* =====================================================
-       LOGIN FAILURE
-    ===================================================== */
-
-    if (
-      isAdminLoginRequest(
-        originalRequest
-      ) ||
-      isFirebaseLoginRequest(
-        originalRequest
-      )
-    ) {
-      console.error(
-        "LOGIN REQUEST FAILED"
-      );
-
-      console.error(
-        "Response:",
-        error.response?.data
-      );
-
+    if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
-
-    /* =====================================================
-       PUBLIC WEBSITE FAILURE
-
-       Never attempt Firebase refresh for these requests.
-    ===================================================== */
-
-    if (
-      isPublicWebsiteApiRoute(
-        originalRequest
-      )
-    ) {
-      console.error(
-        "PUBLIC WEBSITE API FAILED"
-      );
-
-      console.error(
-        "Response:",
-        error.response?.data
-      );
-
-      return Promise.reject(error);
-    }
-
-    /* =====================================================
-       ONLY RETRY 401 ONCE
-    ===================================================== */
-
-    if (
-      error.response?.status !== 401 ||
-      originalRequest._retry
-    ) {
-      return Promise.reject(error);
-    }
-
     originalRequest._retry = true;
 
-    /* =====================================================
-       ADMIN 401
-    ===================================================== */
-
-    if (
-      isAdminApiRoute(
-        originalRequest
-      )
-    ) {
-      console.error(
-        "ADMIN SESSION INVALID OR EXPIRED"
-      );
-
-      console.error(
-        "Response:",
-        error.response?.data
-      );
-
-      /* ---------------------------------------------------
-         CLEAR ADMIN SESSION ONLY
-      --------------------------------------------------- */
-
-      const adminKeys = [
-        "adminToken",
-        "admin_token",
-        "adminAccessToken",
-        "admin_access_token",
-        "adminAuthToken",
-        "admin_auth_token",
-        "adminUser",
-        "admin_user",
-      ];
-
-      for (const key of adminKeys) {
+    if (isAdminApiRoute(originalRequest)) {
+      // Admin JWTs are issued by your backend; Firebase refresh cannot repair them.
+      // Keep the stored token for diagnosis and require a fresh admin login.
+      console.error("Admin API returned 401:", originalRequest.url, error.response?.data);
+      for (const key of ["adminToken", "admin_token", "adminAccessToken", "admin_access_token", "adminAuthToken", "admin_auth_token"]) {
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
       }
-
-      /*
-       * DO NOT REMOVE FIREBASE TOKEN
-       */
-
-      if (isAdminPage()) {
-        window.location.replace(
-          "/admin-login"
-        );
-      }
-
+      if (isAdminPage()) window.location.replace("/admin-login");
       return Promise.reject(error);
     }
 
-    /* =====================================================
-       FIREBASE 401
-    ===================================================== */
-
-    if (
-      isFirebaseApiRoute(
-        originalRequest
-      )
-    ) {
+    if (isFirebaseApiRoute(originalRequest)) {
       try {
-        const auth =
-          getAuth();
+        const auth = getAuth();
+        let user = auth.currentUser;
+        if (!user) user = await waitForFirebaseAuth();
+        if (!user) return Promise.reject(error);
 
-        /*
-         * Wait for Firebase Auth to finish initializing
-         * before deciding that the user has disappeared.
-         */
+        const freshToken = await getFirebaseToken({ forceRefresh: true });
+        if (!freshToken) throw new Error("Fresh Firebase token not generated");
 
-        let user =
-          auth.currentUser;
-
-        if (!user) {
-          user =
-            await waitForFirebaseAuth();
-        }
-
-        if (!user) {
-          console.error(
-            "Firebase user no longer exists"
-          );
-
-          return Promise.reject(error);
-        }
-
-        /*
-         * A REAL 401 occurred.
-         *
-         * This is the normal situation where Firebase
-         * is force-refreshed.
-         */
-
-        const freshToken =
-          await getFirebaseToken({
-            forceRefresh: true,
-          });
-
-        if (!freshToken) {
-          throw new Error(
-            "Fresh Firebase token not generated"
-          );
-        }
-
-        /* -------------------------------------------------
-           SAVE FIREBASE TOKEN
-        ------------------------------------------------- */
-
-        saveFirebaseToken(
-          freshToken
-        );
-
-        /* -------------------------------------------------
-           RETRY REQUEST
-        ------------------------------------------------- */
-
-        originalRequest.headers =
-          originalRequest.headers ||
-          {};
-
-        originalRequest.headers.Authorization =
-          `Bearer ${freshToken}`;
-
-        console.log(
-          "Retrying Firebase request with refreshed token"
-        );
-
-        return API(
-          originalRequest
-        );
-
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${freshToken}`;
+        return API(originalRequest);
       } catch (refreshError) {
-        console.error(
-          "Firebase token refresh failed:",
-          refreshError
-        );
-
-        /* -------------------------------------------------
-           FIREBASE SIGN OUT
-        ------------------------------------------------- */
-
+        console.error("Firebase token refresh failed:", refreshError?.message || refreshError);
         try {
-          await signOut(
-            getAuth()
-          );
+          await signOut(getAuth());
         } catch (signOutError) {
-          console.error(
-            "Firebase signOut failed:",
-            signOutError
-          );
+          console.error("Firebase signOut failed:", signOutError?.message || signOutError);
         }
 
-        /* -------------------------------------------------
-           CLEAR FIREBASE SESSION
-        ------------------------------------------------- */
+        for (const key of ["token", "studentToken", "studentUser", "studentProfile", "studentRole"]) {
+          localStorage.removeItem(key);
+        }
 
-        localStorage.removeItem(
-          "token"
-        );
-
-        localStorage.removeItem(
-          "studentToken"
-        );
-
-        localStorage.removeItem(
-          "studentUser"
-        );
-
-        localStorage.removeItem(
-          "studentProfile"
-        );
-
-        localStorage.removeItem(
-          "studentRole"
-        );
-
-        /*
-         * DO NOT CLEAR ADMIN TOKEN
-         */
-
-        /* -------------------------------------------------
-           REDIRECT
-        ------------------------------------------------- */
-
-        if (
-          isWebsitePreviewRoute()
-        ) {
-          window.location.replace(
-            "/institute/website/preview"
-          );
-
-        } else if (
-          isTrainerPage()
-        ) {
-          window.location.replace(
-            "/trainer-login"
-          );
-
-        } else if (
-          isInstituteRoute()
-        ) {
-          window.location.replace(
-            "/institute-login"
-          );
-
+        if (isWebsitePreviewRoute()) {
+          window.location.replace("/institute/website/preview");
+        } else if (isTrainerPage()) {
+          window.location.replace("/trainer-login");
+        } else if (isInstituteRoute()) {
+          window.location.replace("/institute-login");
         } else {
-          window.location.replace(
-            "/institute/login"
-          );
+          window.location.replace("/institute/login");
         }
-
-        return Promise.reject(
-          refreshError
-        );
+        return Promise.reject(refreshError);
       }
     }
 
@@ -1340,18 +429,8 @@ API.interceptors.response.use(
 );
 
 /* =========================================================
-   COMPATIBILITY EXPORT
+   EXPORTS
 ========================================================= */
-
 const api = API;
-
-/* =========================================================
-   EXPORT
-========================================================= */
-
-export {
-  API,
-  api,
-};
-
+export { API, api };
 export default API;

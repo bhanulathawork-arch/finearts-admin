@@ -55,7 +55,8 @@ export default function RejectedInstitutesAdmin() {
 
 
 
-    return `https://finearts-backend.onrender.com${img}`;
+    // return `https://finearts-backend.onrender.com${img}`;
+    return `http://localhost:5000${img}`;
 
   };
 
@@ -154,7 +155,8 @@ export default function RejectedInstitutesAdmin() {
 
       const res = await axios.get(
 
-        "https://finearts-backend.onrender.com/api/institutes/admin/rejected",
+        // "https://finearts-backend.onrender.com/api/institutes/admin/rejected",
+        "http://localhost:5000/api/institutes/admin/rejected",
 
         {
 
@@ -248,7 +250,9 @@ export default function RejectedInstitutesAdmin() {
 
       await axios.delete(
 
-        `https://finearts-backend.onrender.com/api/institutes/${instituteToDelete.id}`,
+        // `https://finearts-backend.onrender.com/api/institutes/${instituteToDelete.id}`,
+
+        `http://localhost:5000/api/institutes/${instituteToDelete.id}`,
 
         {
 

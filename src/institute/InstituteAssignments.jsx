@@ -1,4 +1,5 @@
 
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 
@@ -2020,37 +2021,13 @@ const saveAssignment = async (event) => {
 
 
 
-          <div className="flex items-center gap-3">
-
-
-
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-
-
-
-              <ClipboardList size={22} />
-
-
-
-            </div>
-
-
-
-
-
-
+          <div>
 
             <div>
 
-
-
-              <h1 className="text-3xl font-bold">
-
-
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
 
                 Assignments
-
-
 
               </h1>
 

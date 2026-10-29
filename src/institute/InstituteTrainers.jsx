@@ -1,4 +1,4 @@
-
+ 
 import { useEffect, useRef, useState } from "react";
 
 import toast from "react-hot-toast";
@@ -88,6 +88,7 @@ export default function InstituteTrainers() {
   const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({ ...emptyForm });
+
   const profileImageInputRef = useRef(null);
 
   const token =
@@ -105,20 +106,13 @@ export default function InstituteTrainers() {
   // ---------------------------------------------------------
 
   const validateEmail = (email) => {
-
-    const value = String(email || "").trim();
-
-    if (!value) return "Email is required";
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
-
-      return "Please enter a valid email address";
-
-    }
-
-    return "";
-
-  };
+  const value = String(email || "").trim();
+  if (!value) return "Email is required";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
+    return "Please enter a valid email address";
+  }
+  return "";
+};
 
   const validatePhone = (phone) => {
 
@@ -141,20 +135,13 @@ export default function InstituteTrainers() {
   };
 
   const validateLanguages = (languages) => {
-
-    const value = String(languages ?? "").trim();
-
-    if (!value) return "";
-
-    if (!/^[\p{L}\p{M}\s,.'-]+$/u.test(value)) {
-
-      return "Languages must contain letters only (commas, spaces and hyphens are allowed)";
-
-    }
-
-    return "";
-
-  };
+  const value = String(languages ?? "").trim();
+  if (!value) return "";
+  if (!/^[\p{L}\p{M}\s,.'-]+$/u.test(value)) {
+    return "Languages must contain letters only (commas, spaces and hyphens are allowed)";
+  }
+  return "";
+};
 
   const validateNonNegativeInteger = (value, label) => {
 
@@ -169,24 +156,17 @@ export default function InstituteTrainers() {
   };
 
   const validateRating = (value) => {
-
-    const text = String(value ?? "").trim();
-
-    if (!text) return "";
-
-    if (!/^\d+(\.\d{1,2})?$/.test(text)) {
-
-      return "Rating must be a number between 0 and 5";
-
-    }
-
-    const number = Number(text);
-
-    if (number < 0 || number > 5) return "Rating must be between 0 and 5";
-
-    return "";
-
-  };
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (!/^\d+(\.\d{1,2})?$/.test(text)) {
+    return "Rating must be a number between 0 and 5";
+  }
+  const number = Number(text);
+  if (!Number.isFinite(number) || number < 0 || number > 5) {
+    return "Rating must be a number between 0 and 5";
+  }
+  return "";
+};
 
   const validateUniqueContactDetails = () => {
 
@@ -316,9 +296,9 @@ export default function InstituteTrainers() {
 
     if (!img) return "";
 
-    if (img.startsWith("http://") || img.startsWith("https://")) return img;
+    if (img.startsWith("http\://") || img.startsWith("https\://")) return img;
 
-    return `https://finearts-backend.onrender.com${img}`;
+    return `https\://finearts-backend.onrender.com${img}`;
 
   };
 
@@ -483,25 +463,41 @@ export default function InstituteTrainers() {
       const instituteCategoryIds = extractInstituteCategoryIds(profile);
 
       const getCategoryId = (item) =>
+
         item?.category_id ?? item?.categoryId ?? item?.category?.id;
+
       const getItemId = (item) => item?.id ?? item?.category_id ?? item?.subcategory_id;
 
       // If the institute profile does not define category restrictions, show all categories.
+
       const allowedCategories =
+
         instituteCategoryIds.length > 0
+
           ? categoryData.filter((category) =>
+
               instituteCategoryIds.includes(Number(getItemId(category)))
+
             )
+
           : categoryData;
 
       const allowedSubcategories = subcategoryData.filter((subcategory) => {
+
         const parentCategoryId = getCategoryId(subcategory);
+
         return (
+
           parentCategoryId != null &&
+
           allowedCategories.some(
+
             (category) => String(getItemId(category)) === String(parentCategoryId)
+
           )
+
         );
+
       });
 
       setCategories(allowedCategories);
@@ -571,14 +567,21 @@ export default function InstituteTrainers() {
   const resolveCategoryId = (trainer) => {
 
     const specialization = Array.isArray(trainer?.specializations)
+
       ? trainer.specializations[0]
+
       : null;
 
     const directId =
+
       trainer?.category_id ??
+
       trainer?.categoryId ??
+
       trainer?.category?.id ??
+
       trainer?.category?.category_id ??
+
       specialization?.category_id;
 
     if (directId !== undefined && directId !== null && String(directId).trim()) {
@@ -596,9 +599,13 @@ export default function InstituteTrainers() {
     const categoryName = getSavedName(
 
       trainer?.category_name ??
+
       trainer?.category?.name ??
+
       trainer?.categories ??
+
       trainer?.category ??
+
       specialization?.category_name
 
     ).toLowerCase();
@@ -620,14 +627,21 @@ export default function InstituteTrainers() {
   const resolveSubcategoryId = (trainer, categoryId) => {
 
     const specialization = Array.isArray(trainer?.specializations)
+
       ? trainer.specializations[0]
+
       : null;
 
     const directId =
+
       trainer?.subcategory_id ??
+
       trainer?.subcategoryId ??
+
       trainer?.subcategory?.id ??
+
       trainer?.subcategory?.subcategory_id ??
+
       specialization?.subcategory_id;
 
     if (directId !== undefined && directId !== null && String(directId).trim()) {
@@ -649,9 +663,13 @@ export default function InstituteTrainers() {
     const subcategoryName = getSavedName(
 
       trainer?.subcategory_name ??
+
       trainer?.subcategory?.name ??
+
       trainer?.subcategories ??
+
       trainer?.subcategory ??
+
       specialization?.subcategory_name
 
     ).toLowerCase();
@@ -921,14 +939,21 @@ export default function InstituteTrainers() {
       const formDataToSend = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
+
         if (key === "remove_profile_image") {
+
           if (value === true) formDataToSend.append(key, "true");
+
           return;
+
         }
 
         if (value !== null && value !== undefined && value !== "") {
+
           formDataToSend.append(key, value);
+
         }
+
       });
 
       if (editingTrainer) {
@@ -1008,19 +1033,26 @@ export default function InstituteTrainers() {
   });
 
   const currentSubcategories = subcategories.filter((subcategory) =>
+
     String(
+
       subcategory.category_id ??
+
       subcategory.categoryId ??
+
       subcategory.category?.id ??
+
       ""
+
     ) === String(formData.category_id)
+
   );
 
   const tableColumns = 15;
 
   return (
 
-    <div className="min-h-screen p-6 md:p-8 text-white">
+    <div className="min-h-full w-full min-w-0 text-white">
 
       {/* PAGE HEADER */}
 
@@ -1028,7 +1060,7 @@ export default function InstituteTrainers() {
 
         <div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-purple-400">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
 
             Institute Trainers
 
@@ -1311,20 +1343,35 @@ export default function InstituteTrainers() {
                     </td>
 
                     <td className="whitespace-nowrap px-4 py-3.5 text-white">
+
                       {Array.isArray(trainer.specializations) && trainer.specializations.length > 0
+
                         ? trainer.specializations
+
                             .map((item) => item.category_name || item.category?.name)
+
                             .filter(Boolean)
+
                             .join(", ") || "-"
+
                         : trainer.categories || trainer.category_name || "-"}
+
                     </td>
+
                     <td className="whitespace-nowrap px-4 py-3.5 text-white">
+
                       {Array.isArray(trainer.specializations) && trainer.specializations.length > 0
+
                         ? trainer.specializations
+
                             .map((item) => item.subcategory_name || item.subcategory?.name)
+
                             .filter(Boolean)
+
                             .join(", ") || "-"
+
                         : trainer.subcategories || trainer.subcategory_name || "-"}
+
                     </td>
 
                     <td className="whitespace-nowrap px-4 py-3.5 font-semibold">
@@ -1667,13 +1714,7 @@ export default function InstituteTrainers() {
 
                     onChange={(event) => {
 
-                      const cleanedValue = event.target.value.replace(
-
-                        /[^\p{L}\p{M}\s,'-]/gu,
-
-                        ""
-
-                      );
+                      const cleanedValue = event.target.value.replace(/[^\p{L}\p{M}\s,'-]/gu, "");
 
                       updateField("languages", cleanedValue);
 
@@ -1768,69 +1809,127 @@ export default function InstituteTrainers() {
                     <label className={labelClass}>Profile Image</label>
 
                     {editingTrainer?.profile_image && !formData.remove_profile_image && !formData.profile_image && (
+
                       <div className="mb-3 flex items-center gap-3">
+
                         <img
+
                           src={getImageUrl(editingTrainer.profile_image)}
+
                           alt="Current trainer profile"
+
                           className="h-20 w-20 rounded-xl border border-[#333] object-cover"
+
                           onError={(event) => {
+
                             event.currentTarget.style.display = "none";
+
                           }}
+
                         />
+
                         <div className="flex flex-col gap-2">
+
                           <p className="text-xs text-gray-400">Current profile image</p>
+
                           <button
+
                             type="button"
+
                             onClick={() => updateField("remove_profile_image", true)}
+
                             className="inline-flex items-center gap-2 self-start rounded-lg border border-red-500/40 px-3 py-2 text-xs font-semibold text-red-300 transition-colors hover:bg-red-500/10"
+
                           >
+
                             <Trash2 size={14} /> Remove current image
+
                           </button>
+
                         </div>
+
                       </div>
+
                     )}
 
                     {formData.remove_profile_image && (
+
                       <div className="mb-3 flex items-center justify-between rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+
                         <span className="text-xs text-yellow-200">Current image will be removed when you save.</span>
+
                         <button
+
                           type="button"
+
                           onClick={() => updateField("remove_profile_image", false)}
+
                           className="text-xs font-semibold text-white underline"
+
                         >
+
                           Undo
+
                         </button>
+
                       </div>
+
                     )}
 
                     <input
+
                       ref={profileImageInputRef}
+
                       type="file"
+
                       accept="image/jpeg,image/png,image/webp,image/jpg"
+
                       onChange={(event) => {
+
                         const file = event.target.files?.[0] || null;
+
                         updateField("profile_image", file);
+
                         if (file) updateField("remove_profile_image", false);
+
                       }}
+
                       className={inputClass}
+
                     />
 
                     {formData.profile_image && (
+
                       <div className="mt-2 flex items-center justify-between rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
+
                         <span className="max-w-[75%] truncate text-xs text-purple-200">
+
                           Selected: {formData.profile_image.name}
+
                         </span>
+
                         <button
+
                           type="button"
+
                           onClick={() => {
+
                             updateField("profile_image", null);
+
                             if (profileImageInputRef.current) profileImageInputRef.current.value = "";
+
                           }}
+
                           className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/10"
+
                         >
+
                           <FaTimes size={12} /> Remove selection
+
                         </button>
+
                       </div>
+
                     )}
 
                     {editingTrainer && (

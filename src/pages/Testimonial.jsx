@@ -190,7 +190,8 @@ const Testimonials = () => {
       return file;
     }
 
-    return `https://finearts-backend.onrender.com${file}`;
+    // return `https://finearts-backend.onrender.com${file}`;
+    return `http://localhost:5000${file}`;
   };
 
   /* =======================================================

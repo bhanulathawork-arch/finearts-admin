@@ -23,6 +23,7 @@
 
 // import WebsiteNavbar from "./WebsiteNavbar";
 // import WebsiteFooter from "./WebsiteFooter";
+import { getInstituteSubdomain } from "../../utils/instituteSubdomain";
 
 
 // /* =========================================================
@@ -3515,7 +3516,6 @@ import {
   Outlet,
   useLocation,
   useNavigate,
-  useParams,
 } from "react-router-dom";
 
 import {
@@ -3525,7 +3525,7 @@ import {
 
 import {
   getPublicWebsiteData,
-  getPublicWebsiteDataBySlug,
+  getPublicWebsiteDataBySubdomain,
   setPreviewInstituteId,
 } from "../../services/websiteService";
 
@@ -4787,23 +4787,11 @@ const WebsitePreview = () => {
   const navigate =
     useNavigate();
 
-  const { slug: routeSlug } =
-    useParams();
-
-  // A /site/:slug route is a real public website.
-  // Preview routes continue using institute ID and preview=true.
-  const isPublicSite =
-    location.pathname.startsWith("/site/");
-
-  const publicSlug =
-    isPublicSite
-      ? String(routeSlug || "").trim()
-      : ""; 
-
-  const publicBasePath =
-    isPublicSite && publicSlug
-      ? `/site/${publicSlug}`
-      : "/institute/website/preview";
+  // Public websites are resolved by hostname, not /site/:slug paths.
+  const publicSubdomain = getInstituteSubdomain();
+  const isPublicSite = Boolean(publicSubdomain);
+  const publicSiteIdentifier = publicSubdomain;
+  const publicBasePath = isPublicSite ? "" : "/institute/website/preview";
 
   const auth =
     useMemo(
@@ -5087,14 +5075,14 @@ const loadWebsite = useCallback(
       // ========================================================
 
       if (isPublicSite) {
-        if (!publicSlug) {
-          throw new Error("Website slug is missing from the URL.");
+        if (!publicSubdomain) {
+          throw new Error("Institute subdomain could not be resolved from the hostname.");
         }
 
-        console.log("Loading published website by slug:", publicSlug);
+        console.log("Loading published website by subdomain:", publicSubdomain);
 
         const response =
-          await getPublicWebsiteDataBySlug(publicSlug);
+          await getPublicWebsiteDataBySubdomain(publicSubdomain);
 
         if (cancelledCheck()) {
           return;
@@ -5119,7 +5107,7 @@ const loadWebsite = useCallback(
           ...normalized,
           instituteId: String(finalInstituteId),
           institute_id: finalInstituteId,
-          slug: publicSlug,
+          subdomain: publicSubdomain,
         });
 
         setInstituteId(String(finalInstituteId));
@@ -5337,7 +5325,7 @@ const loadWebsite = useCallback(
     resolveInstituteId,
     normalizeWebsiteResponse,
     isPublicSite,
-    publicSlug,
+    publicSiteIdentifier,
   ]
 );
 console.log("========== PREVIEW ID DEBUG ==========");
@@ -6017,7 +6005,7 @@ console.log(
         const currentInstituteId =
           resolveInstituteId();
 
-        if (isPublicSite && !publicSlug) {
+        if (isPublicSite && !publicSiteIdentifier) {
           return;
         }
 
@@ -6027,7 +6015,7 @@ console.log(
 
         try {
           const response = isPublicSite
-            ? await getPublicWebsiteDataBySlug(publicSlug)
+            ? await getPublicWebsiteDataBySubdomain(publicSubdomain)
             : await getPublicWebsiteData(currentInstituteId, true);
 
 
@@ -6099,7 +6087,7 @@ console.log(
   }, [
     resolveInstituteId,
     isPublicSite,
-    publicSlug,
+    publicSiteIdentifier,
   ]);
 
 
@@ -6661,7 +6649,7 @@ console.log(
 
         isPublicSite,
 
-        slug: publicSlug,
+        subdomain: publicSubdomain,
 
         basePath: publicBasePath,
       }),
@@ -6690,7 +6678,7 @@ console.log(
         sectionEnabled,
         getContent,
         isPublicSite,
-        publicSlug,
+        publicSiteIdentifier,
         publicBasePath,
       ]
     );

@@ -139,7 +139,8 @@ export default function PendingTrainersAdmin() {
 
       const res = await axios.get(
 
-        "https://finearts-backend.onrender.com/api/admin/trainers/pending",
+//         "https://finearts-backend.onrender.com/api/admin/trainers/pending",
+"http://localhost:5000/api/admin/trainers/pending",
 
         {
 

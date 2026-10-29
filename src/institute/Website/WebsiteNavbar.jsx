@@ -39,6 +39,7 @@
 
 
 // import API from "../../services/api";
+import { getInstituteSubdomain } from "../../utils/instituteSubdomain";
 
 
 
@@ -114,7 +115,7 @@
 
 
 
-//   const homePath = previewBase;
+//   const homePath = previewBase || "/";
 
 
 
@@ -3531,12 +3532,10 @@ useState(false);
    ROUTES — PREVIEW AND PUBLIC WEBSITE
 ======================================================= */
 
-const isPublicSite = location.pathname.startsWith("/site/");
-const publicSlug = isPublicSite ? location.pathname.split("/")[2] : null;
-const previewBase = isPublicSite
-  ? `/site/${publicSlug}`
-  : "/institute/website/preview";
-const homePath = previewBase;
+const publicSubdomain = getInstituteSubdomain();
+const isPublicSite = Boolean(publicSubdomain);
+const previewBase = isPublicSite ? "" : "/institute/website/preview";
+const homePath = previewBase || "/";
 const aboutPath = `${previewBase}/about`;
 const classesPath = `${previewBase}/classes`;
 const trainersPath = `${previewBase}/trainers`;

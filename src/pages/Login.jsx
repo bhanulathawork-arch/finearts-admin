@@ -1,71 +1,232 @@
 
 
+// import { useState } from "react";
+// import { adminLogin } from "../services/auth.service";
+
+// function Login() {
+//   const [loading, setLoading] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     email: "",
+//     password: "",
+//   });
+
+//   const handleChange = (e) => {
+//     setFormData((prev) => ({
+//       ...prev,
+//       [e.target.name]: e.target.value,
+//     }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       setLoading(true);
+
+//       const res = await adminLogin(formData);
+
+//       console.log("FULL ADMIN LOGIN RESPONSE:", res);
+
+//       const token =
+//         res?.token ||
+//         res?.data?.token ||
+//         res?.data?.data?.token;
+
+//       if (!token) {
+//         console.error("ADMIN TOKEN NOT RECEIVED:", res);
+//         alert("Token not received from server");
+//         return;
+//       }
+
+//       // Remove old/conflicting authentication values
+//       localStorage.removeItem("token");
+
+//       // Store ADMIN authentication separately
+//       localStorage.setItem("adminToken", token);
+//       localStorage.setItem("role", "ADMIN");
+
+//       console.log(
+//         "ADMIN TOKEN SAVED:",
+//         localStorage.getItem("adminToken")
+//       );
+
+//       console.log(
+//         "ADMIN ROLE:",
+//         localStorage.getItem("role")
+//       );
+
+//       window.location.href = "/dashboard";
+//     } catch (err) {
+//       console.error(
+//         "ADMIN LOGIN ERROR:",
+//         err?.response?.data || err.message
+//       );
+
+//       alert(
+//         err?.response?.data?.message ||
+//         "Login Failed"
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-background-dark px-4">
+//       <div className="w-full max-w-md glass-effect rounded-3xl p-8 border border-white/10 shadow-2xl">
+
+//         <div className="flex flex-col items-center mb-8">
+//           <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center mb-4">
+//             <span className="text-white text-3xl font-bold">
+//               DP
+//             </span>
+//           </div>
+
+//           <h1 className="text-3xl font-bold gradient-text">
+//             Admin Login
+//           </h1>
+
+//           <p className="text-gray-400 text-sm mt-2">
+//             Welcome back to Dance Platform
+//           </p>
+//         </div>
+
+//         <form
+//           onSubmit={handleSubmit}
+//           className="space-y-5"
+//         >
+//           <div>
+//             <label className="block text-sm text-gray-300 mb-2">
+//               Email
+//             </label>
+
+//             <input
+//               type="email"
+//               name="email"
+//               value={formData.email}
+//               onChange={handleChange}
+//               placeholder="Enter your email"
+//               required
+//               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white outline-none"
+//             />
+//           </div>
+
+//           <div>
+//             <label className="block text-sm text-gray-300 mb-2">
+//               Password
+//             </label>
+
+//             <input
+//               type="password"
+//               name="password"
+//               value={formData.password}
+//               onChange={handleChange}
+//               placeholder="Enter your password"
+//               required
+//               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white outline-none"
+//             />
+//           </div>
+
+//           <button
+//             type="submit"
+//             disabled={loading}
+//             className="w-full py-3 rounded-xl gradient-bg text-white font-semibold disabled:opacity-50"
+//           >
+//             {loading ? "Logging in..." : "Login"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Login;
+
+
+
+
 import { useState } from "react";
 import { adminLogin } from "../services/auth.service";
 
 function Login() {
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     try {
       setLoading(true);
 
       const res = await adminLogin(formData);
 
-      console.log("FULL ADMIN LOGIN RESPONSE:", res);
+      // Axios responses usually contain the API payload in res.data.
+      const payload = res?.data ?? res;
 
       const token =
-        res?.token ||
-        res?.data?.token ||
-        res?.data?.data?.token;
+        payload?.token ??
+        payload?.data?.token ??
+        payload?.data?.data?.token;
 
-      if (!token) {
-        console.error("ADMIN TOKEN NOT RECEIVED:", res);
-        alert("Token not received from server");
+      if (typeof token !== "string" || !token.trim()) {
+        console.error(
+          "Admin login response did not contain a token.",
+          {
+            status: res?.status,
+            responseKeys: Object.keys(payload || {}),
+          }
+        );
+
+        alert(
+          "Admin token was not returned by the server. " +
+          "Please check the admin login API response."
+        );
         return;
       }
 
-      // Remove old/conflicting authentication values
-      localStorage.removeItem("token");
-
-      // Store ADMIN authentication separately
-      localStorage.setItem("adminToken", token);
+      // Store the admin JWT separately from Firebase/user tokens.
+      localStorage.setItem("adminToken", token.trim());
       localStorage.setItem("role", "ADMIN");
 
-      console.log(
-        "ADMIN TOKEN SAVED:",
-        localStorage.getItem("adminToken")
-      );
+      // Remove stale generic authentication values.
+      localStorage.removeItem("token");
 
-      console.log(
-        "ADMIN ROLE:",
-        localStorage.getItem("role")
-      );
+      // Confirm storage without logging the secret token.
+      console.log("Admin login successful:", {
+        adminTokenSaved: Boolean(
+          localStorage.getItem("adminToken")
+        ),
+        role: localStorage.getItem("role"),
+      });
 
-      window.location.href = "/dashboard";
+      window.location.assign("/dashboard");
     } catch (err) {
-      console.error(
-        "ADMIN LOGIN ERROR:",
-        err?.response?.data || err.message
-      );
+      console.error("ADMIN LOGIN ERROR:", {
+        status: err?.response?.status,
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Login failed",
+      });
 
       alert(
         err?.response?.data?.message ||
-        "Login Failed"
+        "Login failed. Please check your credentials and try again."
       );
     } finally {
       setLoading(false);
@@ -75,7 +236,6 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-dark px-4">
       <div className="w-full max-w-md glass-effect rounded-3xl p-8 border border-white/10 shadow-2xl">
-
         <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center mb-4">
             <span className="text-white text-3xl font-bold">
@@ -92,38 +252,47 @@ function Login() {
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-gray-300 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm text-gray-300 mb-2"
+            >
               Email
             </label>
 
             <input
+              id="email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
+              autoComplete="username"
               required
+              disabled={loading}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-300 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm text-gray-300 mb-2"
+            >
               Password
             </label>
 
             <input
+              id="password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
+              autoComplete="current-password"
               required
+              disabled={loading}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white outline-none"
             />
           </div>

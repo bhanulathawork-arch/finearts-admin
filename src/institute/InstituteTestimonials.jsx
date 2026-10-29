@@ -1096,7 +1096,7 @@ const InstituteTestimonials = () => {
 
       style={{
 
-        padding: "40px 70px",
+        padding: "0",
 
         minHeight: "100vh",
 
@@ -1128,7 +1128,7 @@ const InstituteTestimonials = () => {
 
           alignItems: "center",
 
-          marginBottom: "30px",
+          marginBottom: "16px",
 
         }}
 
@@ -1140,7 +1140,7 @@ const InstituteTestimonials = () => {
 
 
 
-          <h1
+          {/* <h1
 
             style={{
 
@@ -1164,8 +1164,14 @@ const InstituteTestimonials = () => {
 
             Testimonials
 
-          </h1>
+          </h1> */}
 
+
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent md:text-4xl">
+
+            Testimonials
+
+          </h1>
 
 
           <p
@@ -1200,11 +1206,23 @@ const InstituteTestimonials = () => {
 
           style={{
 
+            display: "inline-flex",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            gap: "8px",
+
+            whiteSpace: "nowrap",
+
+            flexShrink: 0,
+
             border: "none",
 
             borderRadius: "14px",
 
-            padding: "17px 28px",
+            padding: "17px 24px",
 
             color: "#fff",
 
@@ -1222,23 +1240,9 @@ const InstituteTestimonials = () => {
 
         >
 
-          <Plus
+          <Plus size={20} strokeWidth={2.5} />
 
-            size={20}
-
-            style={{
-
-              verticalAlign: "middle",
-
-              marginRight: "7px",
-
-            }}
-
-          />
-
-
-
-          Add Testimonial
+          <span>Add Testimonial</span>
 
         </button>
 
@@ -1274,9 +1278,9 @@ const InstituteTestimonials = () => {
 
           borderRadius: "14px",
 
-          padding: "16px 20px",
+          padding: "10px 14px",
 
-          marginBottom: "30px",
+          marginBottom: "14px",
 
         }}
 
@@ -1330,51 +1334,7 @@ const InstituteTestimonials = () => {
 
       </div>
 
-
-
-
-
-      {/* ===================================================
-
-          COUNT
-
-      =================================================== */}
-
-
-
-      <div
-
-        style={{
-
-          marginBottom: "20px",
-
-          color: "#9ca3af",
-
-          fontSize: "16px",
-
-        }}
-
-      >
-
-        {filteredTestimonials.length}{" "}
-
-        testimonial
-
-        {filteredTestimonials.length !== 1
-
-          ? "s"
-
-          : ""}{" "}
-
-        found
-
-      </div>
-
-
-
-
-
-      {/* ===================================================
+{/* ===================================================
 
           TABLE
 
@@ -2222,7 +2182,7 @@ const InstituteTestimonials = () => {
 
             justifyContent: "center",
 
-            padding: "20px",
+            padding: "12px 14px",
 
           }}
 
@@ -3088,7 +3048,7 @@ const thStyle = {
 
 const tdStyle = {
 
-  padding: "18px 20px",
+  padding: "12px 14px",
 
   fontSize: "15px",
 

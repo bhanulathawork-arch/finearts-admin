@@ -1,3 +1,4 @@
+
 import React, {
   useEffect,
   useState,
@@ -838,12 +839,11 @@ const InstituteAbout = () => {
 
           <div>
 
-            <div className="page-badge">
-              WEBSITE CONTENT
-            </div>
+           
 
 
-            <h1>
+                      <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
+
               About Page
             </h1>
 
@@ -1572,17 +1572,19 @@ const InstituteAbout = () => {
 const styles = `
 
   .institute-about-page {
-    min-height: 100vh;
-    padding: 40px;
-    background: #0b0b0f;
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    padding: 0;
+    background: transparent;
     color: #ffffff;
     box-sizing: border-box;
   }
 
 
   .about-header {
-    max-width: 1200px;
-    margin: 0 auto 28px;
+    width: 100%;
+    margin: 0 0 24px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -1679,8 +1681,9 @@ const styles = `
 
   .success-message,
   .error-message {
-    max-width: 1200px;
-    margin: 0 auto 22px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 20px;
     padding: 14px 18px;
     border-radius: 12px;
     display: flex;
@@ -1725,8 +1728,10 @@ const styles = `
 
 
   .about-editor-section {
-    max-width: 1200px;
-    margin: 0 auto 24px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0 0 20px;
     padding: 28px;
     background: #15151b;
     border: 1px solid #272732;
@@ -2013,8 +2018,9 @@ const styles = `
 
 
   .about-save-bottom {
-    max-width: 1200px;
-    margin: 30px auto 0;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 24px 0 0;
     padding: 20px 24px;
     background: #15151b;
     border: 1px solid #2c2c36;
@@ -2093,7 +2099,7 @@ const styles = `
   @media (max-width: 900px) {
 
     .institute-about-page {
-      padding: 24px 18px;
+      padding: 0;
     }
 
 
@@ -2129,7 +2135,7 @@ const styles = `
   @media (max-width: 600px) {
 
     .institute-about-page {
-      padding: 18px 12px;
+      padding: 0;
     }
 
 

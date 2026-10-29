@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import { Toaster } from "react-hot-toast";
+import { isInstituteSubdomainHost } from "./utils/instituteSubdomain";
 import { SidebarProvider } from "./context/SidebarContext";
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -48,8 +49,10 @@ import AdminAttendance from "./pages/AdminAttendance";
 import AdminLMS from "./pages/AdminLMS";
 import AdminRecordings  from "./pages/AdminRecordings";
 import AdminLive  from "./pages/AdminLive";
+import AdminCertificates from "./pages/AdminCertificates";
 
 import WebsiteTemplates from "./pages/websiteTemplates/WebsiteTemplates";
+import AdminWebsiteDomains from "./pages/AdminWebsiteDomains";
 import CreateWebsiteTemplate from "./pages/websiteTemplates/CreateWebsiteTemplate";
 import EditWebsiteTemplate from "./pages/websiteTemplates/EditWebsiteTemplate";
 
@@ -74,7 +77,7 @@ import AttendanceInstitute from "./institute/InstituteAttendance";
 import LMSInstitute from "./institute/InstituteLMS";
 import RecordingsInstitute from "./institute/InstituteRecordings";
 import LiveInstitute from "./institute/InstituteLive";
-
+import CertificatesInstitute from "./institute/InstituteCertificates";
 /* =========================================================
    INSTITUTE STUDENTS
 ========================================================= */
@@ -152,7 +155,7 @@ import TrainerAssignments from "./trainer/TrainerAssignments";
 import TrainerRecordings from "./trainer/TrainerRecordings";
 import TrainerLive from "./trainer/TrainerLive";
 import TrainerLMS from "./trainer/TrainerLMS";
-
+import TrainerCertificates from "./trainer/TrainerCertificates";
 
 
 
@@ -486,8 +489,26 @@ function App() {
 
             <Route
               path="/"
-              element={<LoginMenu />}
-            />
+              element={
+                isInstituteSubdomainHost()
+                  ? <PublicWebsitePreviewLayout />
+                  : <LoginMenu />
+              }
+            >
+              {isInstituteSubdomainHost() && (
+                <>
+                  <Route index element={<WebsiteHome />} />
+                  <Route path="about" element={<WebsiteAbout />} />
+                  <Route path="classes" element={<WebsiteClasses />} />
+                  <Route path="classes/:classId" element={<WebsiteClassesDetail />} />
+                  <Route path="trainers" element={<WebsiteTrainers />} />
+                  <Route path="trainers/:trainerId" element={<WebsiteTrainerProfile />} />
+                  <Route path="sessions" element={<WebsiteSessions />} />
+                  <Route path="testimonials" element={<WebsiteTestimonials />} />
+                  <Route path="login" element={<WebsiteLogin />} />
+                </>
+              )}
+            </Route>
 
 
             {/* =================================================
@@ -619,7 +640,10 @@ function App() {
                 path="/admin/live"
                 element={<AdminLive />}
               />
-
+             <Route  
+                path="/certificates"
+                element={<AdminCertificates />}
+              />
               <Route
                 path="/testimonials"
                 element={<Testimonials />}
@@ -628,6 +652,11 @@ function App() {
               <Route
                 path="/banners"
                 element={<BannerManagement />}
+              />
+
+                <Route
+                path="/admin/website-domains"
+                element={<AdminWebsiteDomains />}
               />
 
               <Route
@@ -757,56 +786,7 @@ function App() {
   />
 </Route>
 
-{/* =================================================
-    PUBLIC INSTITUTE WEBSITE — SLUG URL
-================================================= */}
-
-<Route
-  path="/site/:slug"
-  element={<PublicWebsitePreviewLayout />}
->
-  <Route index element={<WebsiteHome />} />
-
-  <Route
-    path="about"
-    element={<WebsiteAbout />}
-  />
-
-  <Route
-    path="classes"
-    element={<WebsiteClasses />}
-  />
-
-  <Route
-    path="classes/:classId"
-    element={<WebsiteClassesDetail />}
-  />
-
-  <Route
-    path="trainers"
-    element={<WebsiteTrainers />}
-  />
-
-  <Route
-    path="trainers/:trainerId"
-    element={<WebsiteTrainerProfile />}
-  />
-
-  <Route
-    path="sessions"
-    element={<WebsiteSessions />}
-  />
-
-  <Route
-    path="testimonials"
-    element={<WebsiteTestimonials />}
-  />
-
-  <Route
-    path="login"
-    element={<WebsiteLogin />}
-  />
-</Route>
+{/* Public institute websites are resolved from the hostname above. */}
 
 
           
@@ -986,7 +966,10 @@ function App() {
                   path="Live"
                   element={<LiveInstitute />}
                 />
-
+              <Route
+                  path="Certificates"
+                  element={<CertificatesInstitute />}
+                />
                 {/* STUDENTS */}
 
                 <Route
@@ -1187,6 +1170,10 @@ function App() {
 <Route
   path="recordings"
   element={<TrainerRecordings />}
+/>
+<Route
+  path="certificates"
+  element={<TrainerCertificates />}
 />
 
               </Route>

@@ -1,3 +1,5 @@
+
+
 import { useEffect, useMemo, useState } from "react";
 
 import { getAuth } from "firebase/auth";
@@ -775,9 +777,9 @@ export default function InstituteRecordings() {
 
   return (
 
-    <div className="min-h-screen bg-[#07070b] px-5 py-7 text-white sm:px-7 lg:px-8">
+    <div className="w-full bg-[#07070b] p-0 text-white">
 
-      <div className="mx-auto max-w-[1450px]">
+      <div className="mx-0 w-full max-w-none">
 
 
 
@@ -789,13 +791,13 @@ export default function InstituteRecordings() {
 
 
 
-        <div className="mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
 
 
           <div>
 
-            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
 
               Recording Classes
 
@@ -859,7 +861,7 @@ export default function InstituteRecordings() {
 
 
 
-        <div className="mb-7 bg-transparent p-0">
+        <div className="mb-5 bg-transparent p-0">
 
           <div className="relative">
 
@@ -1011,7 +1013,7 @@ export default function InstituteRecordings() {
 
           filteredClasses.length > 0 && (
 
-            <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
 
 
 

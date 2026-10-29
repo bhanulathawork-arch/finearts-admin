@@ -62,7 +62,9 @@ export default function RejectedTrainersAdmin() {
       setLoading(true);
 
       const res = await axios.get(
-        "https://finearts-backend.onrender.com/api/trainers/admin/rejected",
+        // "https://finearts-backend.onrender.com/api/trainers/admin/rejected",
+
+        "http://localhost:5000/api/trainers/admin/rejected",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -113,7 +115,9 @@ export default function RejectedTrainersAdmin() {
       setDeleteLoading(true);
 
       await axios.delete(
-        `https://finearts-backend.onrender.com/api/trainers/admin/${trainerToDelete.id}`,
+        // `https://finearts-backend.onrender.com/api/trainers/admin/${trainerToDelete.id}`,
+
+        `http://localhost:5000/api/trainers/admin/${trainerToDelete.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

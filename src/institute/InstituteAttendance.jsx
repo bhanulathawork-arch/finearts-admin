@@ -3217,7 +3217,8 @@ export default function InstituteAttendance() {
 
 
 
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+                  <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
+
 
 
 

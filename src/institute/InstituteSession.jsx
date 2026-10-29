@@ -1,5 +1,4 @@
 
-
 import React from "react";
 
 import { useEffect, useMemo, useState } from "react";
@@ -75,6 +74,10 @@ const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://finearts-backend.onrender.com/api";
 
+
+// const API_URL =
+//   import.meta.env.VITE_API_URL ||
+//   "http://localhost:5000/api";
 
 
 const TIME_OPTIONS = Array.from({ length: 96 }, (_, index) => {
@@ -3324,7 +3327,7 @@ export default function InstituteSessions() {
 
 
 
-    <div className="min-h-full p-4 sm:p-6 lg:p-8 text-white">
+    <div className="min-h-full w-full min-w-0 text-white">
 
 
 
@@ -3332,7 +3335,7 @@ export default function InstituteSessions() {
 
 
 
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 mb-7">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
 
 
@@ -3343,7 +3346,7 @@ export default function InstituteSessions() {
         
 
 
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-300 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
 
 
 
@@ -3355,7 +3358,7 @@ export default function InstituteSessions() {
 
 
 
-          <p className="text-gray-400 mt-2">
+          <p className="mt-2 text-sm md:text-base text-white">
 
 
 
@@ -3395,7 +3398,7 @@ export default function InstituteSessions() {
 
 
 
-          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 hover:brightness-110 transition-all flex items-center justify-center gap-2"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-bold shadow-lg shadow-purple-500/20 transition-opacity hover:opacity-90"
 
 
 
@@ -3595,7 +3598,7 @@ export default function InstituteSessions() {
 
 
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
 
 
 

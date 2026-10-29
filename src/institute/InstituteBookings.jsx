@@ -1,4 +1,4 @@
-
+     
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -641,15 +641,15 @@ export default function InstituteBookings() {
   ======================================================= */
 
   return (
-    <div className="p-8 text-white">
+    <div className="w-full min-w-0 text-white">
 
       {/* =================================================
           HEADER
       ================================================= */}
 
-      <div className="mb-6">
+      <div className="mb-5">
 
-        <h1 className="text-4xl font-bold text-purple-400">
+            <h1 className="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 bg-clip-text text-4xl font-extrabold text-transparent sm:text-4xl">
           Institute Bookings
         </h1>
 
