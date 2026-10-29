@@ -161,8 +161,8 @@ export default function PendingInstitutesAdmin() {
 
       const res = await axios.get(
 
-        // "https://finearts-backend.onrender.com/api/institutes/admin/pending",
-        "http://localhost:5000/api/institutes/admin/pending",
+        "https://finearts-backend.onrender.com/api/institutes/admin/pending",
+        // "http://localhost:5000/api/institutes/admin/pending",
 
         {
 
@@ -400,9 +400,9 @@ export default function PendingInstitutesAdmin() {
 
         await axios.delete(
 
-          // `https://finearts-backend.onrender.com/api/institutes/${instituteToAction.id}`,
+          `https://finearts-backend.onrender.com/api/institutes/${instituteToAction.id}`,
 
-          `http://localhost:5000/api/institutes/${instituteToAction.id}`,
+          // `http://localhost:5000/api/institutes/${instituteToAction.id}`,
 
           {
 
