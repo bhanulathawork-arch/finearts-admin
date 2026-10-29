@@ -1,5 +1,8 @@
 
+
 // import { useEffect, useState } from "react";
+// import { onAuthStateChanged } from "firebase/auth";
+// import { auth } from "../config/firebase";
 // import toast from "react-hot-toast";
 // import {
 //   getProfile,
@@ -22,6 +25,31 @@
 //   MapPinned,
 //   Image as ImageIcon,
 // } from "lucide-react";
+
+
+// /* =========================================================
+//    GET CURRENT INSTITUTE USER'S FIREBASE ID TOKEN
+//    Wait for Firebase to restore the login session if needed.
+// ========================================================= */
+
+// const getInstituteFirebaseToken = async () => {
+//   let user = auth.currentUser;
+
+//   if (!user) {
+//     user = await new Promise((resolve) => {
+//       const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//         unsubscribe();
+//         resolve(currentUser);
+//       });
+//     });
+//   }
+
+//   if (!user) {
+//     throw new Error("Institute session expired. Please login again.");
+//   }
+
+//   return user.getIdToken(true);
+// };
 
 // /* =========================================================
 //    TIME FORMATTER
@@ -185,14 +213,7 @@
 //     try {
 //       setLoading(true);
 
-//       const token = localStorage.getItem("token");
-
-//       if (!token) {
-//         toast.error("Authentication token missing");
-//         setLoading(false);
-//         return;
-//       }
-
+//       const token = await getInstituteFirebaseToken();
 //       const response = await getProfile(token);
 
 //       /*
@@ -394,15 +415,9 @@
 //     try {
 //       setSaving(true);
 
-//       const token =
-//         localStorage.getItem("token");
-
-//       if (!token) {
-//         toast.error(
-//           "Authentication token missing"
-//         );
-//         return;
-//       }
+//       // Institute Panel must use the signed-in institute user's
+//       // Firebase ID token, not an admin/application JWT.
+//       const token = await getInstituteFirebaseToken();
 
 //       /* =====================================================
 //          VALIDATION
@@ -2031,6 +2046,8 @@
 
 
 
+
+
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../config/firebase";
@@ -2166,6 +2183,134 @@ const normalizeTimeForInput = (time) => {
   }
 
   return value;
+};
+
+/* =========================================================
+   INSTITUTE PROFILE VALIDATION
+========================================================= */
+
+const validateInstituteProfile = (formData, files = {}) => {
+  const {
+    name,
+    email,
+    phone_number,
+    address,
+    city,
+    state,
+    pincode,
+    open_time,
+    close_time,
+    timezone,
+    description,
+  } = formData;
+
+  const cleanName = String(name || "").trim();
+  const cleanEmail = String(email || "").trim();
+  const cleanPhone = String(phone_number || "").trim();
+  const cleanAddress = String(address || "").trim();
+  const cleanCity = String(city || "").trim();
+  const cleanState = String(state || "").trim();
+  const cleanPincode = String(pincode || "").trim();
+  const cleanTimezone = String(timezone || "Asia/Kolkata").trim();
+  const cleanDescription = String(description || "").trim();
+
+  if (!cleanName) return "Institute name is required.";
+  if (cleanName.length < 2 || cleanName.length > 100) {
+    return "Institute name must be between 2 and 100 characters.";
+  }
+  if (!/^[\\p{L}\\p{N}][\\p{L}\\p{N} .,&'()/-]*$/u.test(cleanName)) {
+    return "Institute name contains invalid characters.";
+  }
+
+  if (!cleanEmail) return "Email address is required.";
+  if (cleanEmail.length > 254 ||
+      !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(cleanEmail)) {
+    return "Enter a valid email address.";
+  }
+
+  if (!cleanPhone) return "Phone number is required.";
+  const normalizedPhone = cleanPhone.replace(/[\\s()-]/g, "");
+  if (!/^(?:\\+91)?[6-9]\\d{9}$/.test(normalizedPhone)) {
+    return "Enter a valid 10-digit Indian mobile number, optionally starting with +91.";
+  }
+
+  if (!cleanAddress) return "Institute address is required.";
+  if (cleanAddress.length < 5 || cleanAddress.length > 250) {
+    return "Address must be between 5 and 250 characters.";
+  }
+  if (/[<>]/.test(cleanAddress)) {
+    return "Address cannot contain < or > characters.";
+  }
+
+  if (!cleanCity) return "City is required.";
+  if (cleanCity.length < 2 || cleanCity.length > 80 ||
+      !/^[\\p{L}\\p{M} .'-]+$/u.test(cleanCity)) {
+    return "Enter a valid city name (2–80 characters).";
+  }
+
+  if (!cleanState) return "State is required.";
+  if (cleanState.length < 2 || cleanState.length > 80 ||
+      !/^[\\p{L}\\p{M} .'-]+$/u.test(cleanState)) {
+    return "Enter a valid state name (2–80 characters).";
+  }
+
+  if (!cleanPincode) return "Pincode is required.";
+  if (!/^[1-9]\\d{5}$/.test(cleanPincode)) {
+    return "Enter a valid 6-digit Indian pincode.";
+  }
+
+  if (!open_time) return "Institute opening time is required.";
+  if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(open_time)) {
+    return "Enter a valid opening time.";
+  }
+
+  if (!close_time) return "Institute closing time is required.";
+  if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(close_time)) {
+    return "Enter a valid closing time.";
+  }
+  if (close_time <= open_time) {
+    return "Closing time must be later than opening time.";
+  }
+
+  if (cleanTimezone.length > 100) {
+    return "Timezone must be 100 characters or fewer.";
+  }
+  try {
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: cleanTimezone || "Asia/Kolkata",
+    }).format(new Date());
+  } catch {
+    return "Enter a valid timezone, for example Asia/Kolkata.";
+  }
+
+  if (cleanDescription.length > 2000) {
+    return "Institute description cannot exceed 2,000 characters.";
+  }
+  if (/[<>]/.test(cleanDescription)) {
+    return "Description cannot contain < or > characters.";
+  }
+
+  const validateImage = (file, label) => {
+    if (!file) return null;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxBytes = 5 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      return `${label} must be a JPG, PNG, or WEBP image.`;
+    }
+    if (file.size > maxBytes) {
+      return `${label} must be 5 MB or smaller.`;
+    }
+    if (file.size === 0) {
+      return `${label} file is empty.`;
+    }
+    return null;
+  };
+
+  return (
+    validateImage(files.image, "Institute image") ||
+    validateImage(files.logo, "Institute logo")
+  );
 };
 
 /* =========================================================
@@ -2451,23 +2596,16 @@ export default function InstituteProfile() {
       const token = await getInstituteFirebaseToken();
 
       /* =====================================================
-         VALIDATION
+         VALIDATE EVERY PROFILE FIELD BEFORE SENDING
       ===================================================== */
 
-      if (!formData.name.trim()) {
-        toast.error(
-          "Institute name is required"
-        );
-        return;
-      }
+      const validationError = validateInstituteProfile(
+        formData,
+        { image, logo }
+      );
 
-      if (!formData.email.trim()) {
-        toast.error("Email is required");
-        return;
-      }
-
-      if (!formData.phone_number.trim()) {
-        toast.error("Phone number is required");
+      if (validationError) {
+        toast.error(validationError);
         return;
       }
 
@@ -3101,7 +3239,7 @@ export default function InstituteProfile() {
 
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
                       onChange={(e) =>
                         setImage(
@@ -3329,7 +3467,7 @@ export default function InstituteProfile() {
 
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
                       onChange={(e) =>
                         setLogo(
