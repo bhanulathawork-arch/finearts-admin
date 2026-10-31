@@ -1,4 +1,621 @@
 
+// import { useEffect, useState } from "react";
+// import toast from "react-hot-toast";
+// import { Edit, Trash2, Search } from "lucide-react";
+// import { FaTrash, FaTimes } from "react-icons/fa";
+
+// // const SUB_API = "https://finearts-backend.onrender.com/api/subcategories";
+// // const CAT_API = "https://finearts-backend.onrender.com/api/categories";
+
+// const SUB_API = "http://localhost:5000/api/subcategories";
+// const CAT_API = "http://localhost:5000/api/categories";
+
+// function Subcategories() {
+//   const [subcategories, setSubcategories] = useState([]);
+//   const [categories, setCategories] = useState([]);
+
+//   // Search State
+//   const [searchQuery, setSearchQuery] = useState("");
+
+//   // Add Modal States
+//   const [showModal, setShowModal] = useState(false);
+//   const [categoryId, setCategoryId] = useState("");
+//   const [name, setName] = useState("");
+//   const [description, setDescription] = useState("");
+//   const [imageFile, setImageFile] = useState(null);
+//   const [preview, setPreview] = useState("");
+
+//   // Delete Modal States
+//   const [showDeleteModal, setShowDeleteModal] = useState(false);
+//   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+
+//   // Edit Modal States
+//   const [showEditModal, setShowEditModal] = useState(false);
+//   const [editForm, setEditForm] = useState({
+//     id: "",
+//     category_id: "",
+//     name: "",
+//     description: "",
+//   });
+//   const [editImageFile, setEditImageFile] = useState(null);
+//   const [editPreview, setEditPreview] = useState("");
+
+//   const token = localStorage.getItem("adminToken");
+
+//   // --- Filtered subcategories based on search ---
+//   const filteredSubcategories = subcategories.filter((sub) => {
+//     const query = searchQuery.toLowerCase();
+//     return (
+//       sub.name?.toLowerCase().includes(query) ||
+//       sub.description?.toLowerCase().includes(query) ||
+//       sub.category_name?.toLowerCase().includes(query) ||
+//       String(sub.id).includes(query) ||
+//       String(sub.category_id).includes(query)
+//     );
+//   });
+
+//   const fetchData = async () => {
+//     try {
+//       const subRes = await fetch(SUB_API);
+//       const subData = await subRes.json();
+//       setSubcategories(subData.data || []);
+
+//       const catRes = await fetch(CAT_API);
+//       const catData = await catRes.json();
+//       setCategories(catData.data || []);
+//     } catch {
+//       toast.error("Failed to fetch data");
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchData();
+//   }, []);
+
+//   // --- Add Logic ---
+//   const handleImageChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       setImageFile(file);
+//       setPreview(URL.createObjectURL(file));
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     const formData = new FormData();
+//     formData.append("category_id", categoryId);
+//     formData.append("name", name);
+//     formData.append("description", description);
+//     if (imageFile) formData.append("image", imageFile);
+
+//     try {
+//       const res = await fetch(SUB_API, {
+//         method: "POST",
+//         headers: { Authorization: `Bearer ${token}` },
+//         body: formData,
+//       });
+
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         toast.error(data.message || "Failed to add subcategory");
+//         return;
+//       }
+
+//       toast.success("Subcategory added successfully");
+//       setShowModal(false);
+//       setCategoryId("");
+//       setName("");
+//       setDescription("");
+//       setImageFile(null);
+//       setPreview("");
+//       fetchData();
+//     } catch {
+//       toast.error("An error occurred");
+//     }
+//   };
+
+//   // --- Edit Logic ---
+//   const handleEdit = (sub) => {
+//     setEditForm({
+//       id: sub.id,
+//       category_id: sub.category_id,
+//       name: sub.name || "",
+//       description: sub.description || "",
+//     });
+//     setEditImageFile(null);
+//     setEditPreview(getImage(sub));
+//     setShowEditModal(true);
+//   };
+
+//   const handleEditImageChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       setEditImageFile(file);
+//       setEditPreview(URL.createObjectURL(file));
+//     }
+//   };
+
+//   const handleUpdate = async (e) => {
+//     e.preventDefault();
+
+//     const formData = new FormData();
+//     formData.append("category_id", editForm.category_id);
+//     formData.append("name", editForm.name);
+//     formData.append("description", editForm.description);
+//     if (editImageFile) formData.append("image", editImageFile);
+
+//     try {
+//       const res = await fetch(`${SUB_API}/${editForm.id}`, {
+//         method: "PUT",
+//         headers: { Authorization: `Bearer ${token}` },
+//         body: formData,
+//       });
+
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         toast.error(data.message || "Failed to update subcategory");
+//         return;
+//       }
+
+//       toast.success("Subcategory updated successfully");
+//       setShowEditModal(false);
+//       fetchData();
+//     } catch {
+//       toast.error("An error occurred");
+//     }
+//   };
+
+//   // --- Delete Logic ---
+//   const handleDelete = (sub) => {
+//     setSelectedSubcategory(sub);
+//     setShowDeleteModal(true);
+//   };
+
+//   const confirmDelete = async () => {
+//     if (!selectedSubcategory) return;
+
+//     try {
+//       const res = await fetch(`${SUB_API}/${selectedSubcategory.id}`, {
+//         method: "DELETE",
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         toast.error(data.message || "Delete failed");
+//         return;
+//       }
+
+//       toast.success("Subcategory deleted successfully");
+//       setShowDeleteModal(false);
+//       setSelectedSubcategory(null);
+//       fetchData();
+//     } catch {
+//       toast.error("An error occurred");
+//     }
+//   };
+
+//   // --- Helpers ---
+//   // const getImage = (item) => {
+//   //   if (!item.image) return null;
+//   //   if (item.image.startsWith("http")) return item.image;
+//   //   return `https://finearts-backend.onrender.com${item.image}`;
+//   // };
+
+
+//   const getImage = (item) => {
+//   if (!item.image) return null;
+//   if (item.image.startsWith("http")) return item.image;
+//   return `http://localhost:5000${item.image}`;
+// };
+
+//   return (
+//     <div className="p-0 text-white">
+//       {/* Header */}
+//      {/* Header */}
+// <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+//   <div>
+//     <h1 className="text-4xl font-bold text-purple-400">
+//       Subcategories
+//     </h1>
+
+//     <p className="text-white mt-2">
+//       Manage your subcategories
+//     </p>
+//   </div>
+
+//   <button
+//     onClick={() => setShowModal(true)}
+//     className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold text-white hover:opacity-90 transition-opacity"
+//   >
+//     + Add Subcategory
+//   </button>
+// </div>
+
+//       {/* Full-width Search Bar */}
+//       {/* Full-width Search Bar */}
+// <div className="mb-4">
+//   <div className="relative w-full">
+//     <Search
+//       className="absolute left-4 top-1/2 -translate-y-1/2 text-white pointer-events-none"
+//       size={18}
+//     />
+
+//     <input
+//       type="text"
+//       placeholder="Search subcategories..."
+//       value={searchQuery}
+//       onChange={(e) => setSearchQuery(e.target.value)}
+//       className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-[#151519] border border-[#2c2c35] text-white placeholder-white focus:outline-none focus:border-purple-500/60 transition-colors text-sm"
+//     />
+
+//     {searchQuery && (
+//       <button
+//         onClick={() => setSearchQuery("")}
+//         className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-white transition-colors"
+//       >
+//         <FaTimes size={14} />
+//       </button>
+//     )}
+//   </div>
+// </div>
+
+//       {/* Table */}
+//       <div className="bg-[#151519] border border-[#2c2c35] rounded-2xl overflow-hidden">
+//         <table className="w-full">
+//           <thead className="bg-[#202027] text-white">
+//             <tr>
+//               <th className="p-4 text-left">ID</th>
+//               <th className="p-4 text-left">Image</th>
+//               <th className="p-4 text-left">Name</th>
+//               <th className="p-4 text-left">Category</th>
+//               <th className="p-4 text-left">Description</th>
+//               <th className="p-4 text-left">Actions</th>
+//             </tr>
+//           </thead>
+
+//           <tbody>
+//             {filteredSubcategories.length === 0 ? (
+//               <tr>
+//                 <td colSpan={6} className="p-12 text-center">
+//                   <div className="flex flex-col items-center gap-3">
+//                     <Search size={40} className="text-white" />
+//                     <p className="text-gray-500 text-lg">
+//                       {searchQuery
+//                         ? "No subcategories found matching your search"
+//                         : "No subcategories available"}
+//                     </p>
+//                     {searchQuery && (
+//                       <button
+//                         onClick={() => setSearchQuery("")}
+//                         className="text-purple-400 hover:text-purple-300 text-sm mt-1 transition-colors"
+//                       >
+//                         Clear search
+//                       </button>
+//                     )}
+//                   </div>
+//                 </td>
+//               </tr>
+//             ) : (
+//               filteredSubcategories.map((sub) => (
+//                 <tr
+//                   key={sub.id}
+//                   className="border-t border-[#2c2c35] hover:bg-[#1a1a20] transition-colors"
+//                 >
+//                   <td className="p-4 text-white">{sub.id}</td>
+
+//                   <td className="p-4">
+//                     {getImage(sub) ? (
+//                       <img
+//                         src={getImage(sub)}
+//                         alt={sub.name}
+//                         className="w-12 h-12 rounded-xl object-cover border border-[#333]"
+//                         onError={(e) => {
+//                           e.currentTarget.style.display = "none";
+//                         }}
+//                       />
+//                     ) : (
+//                       <div className="w-12 h-12 bg-[#26262b] rounded-xl flex items-center justify-center text-white text-xs">
+//                         No Img
+//                       </div>
+//                     )}
+//                   </td>
+
+//                   <td className="p-4 font-medium">{sub.name}</td>
+//                   <td className="p-4 text-white">
+//                     {sub.category_name || sub.category_id}
+//                   </td>
+//                   <td className="p-4 text-white max-w-[200px] truncate">
+//                     {sub.description || "-"}
+//                   </td>
+
+//                   <td className="p-4">
+//                     <div className="flex items-center gap-3">
+//                       <button
+//                         onClick={() => handleEdit(sub)}
+//                         className="p-2 rounded-lg hover:bg-[#2a2a35] transition-colors group"
+//                         title="Edit"
+//                       >
+//                         <Edit
+//                           size={16}
+//                           className="text-white group-hover:text-white transition-colors"
+//                         />
+//                       </button>
+
+//                       <button
+//                         onClick={() => handleDelete(sub)}
+//                         className="p-2 rounded-lg hover:bg-red-500/10 transition-colors group"
+//                         title="Delete"
+//                       >
+//                         <Trash2
+//                           size={16}
+//                           className="text-red-500/70 group-hover:text-red-400 transition-colors"
+//                         />
+//                       </button>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ))
+//             )}
+//           </tbody>
+//         </table>
+//       </div>
+
+//       {/* ==================== Add Subcategory Modal ==================== */}
+//       {showModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+//           <div className="w-full max-w-[600px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+//             {/* Header */}
+//             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
+//               <h2 className="text-2xl font-bold text-white">
+//                 Add Subcategory
+//               </h2>
+//               <button
+//                 onClick={() => setShowModal(false)}
+//                 className="text-gray-400 hover:text-white transition-colors"
+//               >
+//                 <FaTimes size={20} />
+//               </button>
+//             </div>
+
+//             {/* Scrollable Body */}
+//             <div className="overflow-y-auto max-h-[75vh] p-6">
+//               <form onSubmit={handleSubmit}>
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Category
+//                 </label>
+//                 <select
+//                   value={categoryId}
+//                   onChange={(e) => setCategoryId(e.target.value)}
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                   required
+//                 >
+//                   <option value="">Select Category</option>
+//                   {categories.map((cat) => (
+//                     <option key={cat.id} value={cat.id}>
+//                       {cat.name}
+//                     </option>
+//                   ))}
+//                 </select>
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Subcategory Name
+//                 </label>
+//                 <input
+//                   value={name}
+//                   onChange={(e) => setName(e.target.value)}
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                   placeholder="Enter subcategory name"
+//                   required
+//                 />
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Description
+//                 </label>
+//                 <input
+//                   value={description}
+//                   onChange={(e) => setDescription(e.target.value)}
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                   placeholder="Enter description (optional)"
+//                 />
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Upload Image
+//                 </label>
+//                 <input
+//                   type="file"
+//                   accept="image/*"
+//                   onChange={handleImageChange}
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+//                 />
+
+//                 {preview && (
+//                   <img
+//                     src={preview}
+//                     alt="preview"
+//                     className="w-full h-56 object-cover rounded-xl mb-6 border border-[#333]"
+//                   />
+//                 )}
+
+//                 <div className="flex justify-end gap-3 mt-2">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowModal(false)}
+//                     className="px-5 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-[#2b2638] transition-colors"
+//                   >
+//                     Cancel
+//                   </button>
+//                   <button
+//                     type="submit"
+//                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+//                   >
+//                     Add Subcategory
+//                   </button>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ==================== Edit Subcategory Modal ==================== */}
+//       {showEditModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+//           <div className="w-full max-w-[600px] max-h-[90vh] bg-[#211c30] rounded-2xl overflow-hidden shadow-2xl">
+//             {/* Header */}
+//             <div className="flex justify-between items-center p-6 border-b border-[#3a3448]">
+//               <h2 className="text-2xl font-bold text-white">
+//                 Edit Subcategory
+//               </h2>
+//               <button
+//                 onClick={() => setShowEditModal(false)}
+//                 className="text-gray-400 hover:text-white transition-colors"
+//               >
+//                 <FaTimes size={20} />
+//               </button>
+//             </div>
+
+//             {/* Scrollable Body */}
+//             <div className="overflow-y-auto max-h-[75vh] p-6">
+//               <form onSubmit={handleUpdate}>
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Category
+//                 </label>
+//                 <select
+//                   value={editForm.category_id}
+//                   onChange={(e) =>
+//                     setEditForm({ ...editForm, category_id: e.target.value })
+//                   }
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                   required
+//                 >
+//                   <option value="">Select Category</option>
+//                   {categories.map((cat) => (
+//                     <option key={cat.id} value={cat.id}>
+//                       {cat.name}
+//                     </option>
+//                   ))}
+//                 </select>
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Subcategory Name
+//                 </label>
+//                 <input
+//                   value={editForm.name}
+//                   onChange={(e) =>
+//                     setEditForm({ ...editForm, name: e.target.value })
+//                   }
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                   required
+//                 />
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Description
+//                 </label>
+//                 <input
+//                   value={editForm.description}
+//                   onChange={(e) =>
+//                     setEditForm({ ...editForm, description: e.target.value })
+//                   }
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors"
+//                 />
+
+//                 <label className="block mb-2 text-sm text-gray-400">
+//                   Upload Image
+//                 </label>
+//                 <input
+//                   type="file"
+//                   accept="image/*"
+//                   onChange={handleEditImageChange}
+//                   className="w-full mt-2 mb-6 p-3 rounded-xl bg-[#2b2638] text-white border border-transparent focus:outline-none focus:border-purple-500/50 transition-colors file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-300 hover:file:bg-purple-500/30"
+//                 />
+
+//                 {editPreview && (
+//                   <img
+//                     src={editPreview}
+//                     alt="preview"
+//                     className="w-full h-56 object-cover rounded-xl mb-6 border border-[#333]"
+//                   />
+//                 )}
+
+//                 <div className="flex justify-end gap-3 mt-2">
+//                   <button
+//                     type="button"
+//                     onClick={() => setShowEditModal(false)}
+//                     className="px-5 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-[#2b2638] transition-colors"
+//                   >
+//                     Cancel
+//                   </button>
+//                   <button
+//                     type="submit"
+//                     className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 font-bold hover:opacity-90 transition-opacity"
+//                   >
+//                     Update Subcategory
+//                   </button>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ==================== Delete Confirmation Modal ==================== */}
+//       {showDeleteModal && (
+//         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
+//           <div className="w-full max-w-[400px] bg-[#1e1b2e] border border-[#2e2a42] rounded-2xl shadow-2xl overflow-hidden">
+//             <div className="p-8 flex flex-col items-center">
+//               {/* Trash Icon */}
+//               <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mb-5">
+//                 <FaTrash className="text-red-400 text-lg" />
+//               </div>
+
+//               {/* Title */}
+//               <h2 className="text-xl font-bold text-white mb-3 text-center">
+//                 Delete Subcategory
+//               </h2>
+
+//               {/* Description */}
+//               <p className="text-gray-400 text-center text-sm leading-relaxed mb-8">
+//                 Are you sure you want to delete this subcategory?
+//               </p>
+
+//               {/* Buttons */}
+//               <div className="flex gap-3 w-full">
+//                 <button
+//                   onClick={() => {
+//                     setShowDeleteModal(false);
+//                     setSelectedSubcategory(null);
+//                   }}
+//                   className="flex-1 px-5 py-3 rounded-xl border border-[#3a3650] text-gray-300 hover:bg-[#2a2640] transition-colors font-medium text-sm"
+//                 >
+//                   Cancel
+//                 </button>
+
+//                 <button
+//                   onClick={confirmDelete}
+//                   className="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold hover:opacity-90 transition-opacity text-sm"
+//                 >
+//                   Delete
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default Subcategories;
+
+
+
+
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Edit, Trash2, Search } from "lucide-react";
@@ -9,6 +626,8 @@ import { FaTrash, FaTimes } from "react-icons/fa";
 
 const SUB_API = "http://localhost:5000/api/subcategories";
 const CAT_API = "http://localhost:5000/api/categories";
+const ADMIN_SUB_LIST_URL = `${SUB_API}/admin/all`;
+const ADMIN_CAT_LIST_URL = `${CAT_API}/admin/all`;
 
 function Subcategories() {
   const [subcategories, setSubcategories] = useState([]);
@@ -56,15 +675,50 @@ function Subcategories() {
 
   const fetchData = async () => {
     try {
-      const subRes = await fetch(SUB_API);
-      const subData = await subRes.json();
+      if (!token) {
+        toast.error("Please login as admin first");
+        return;
+      }
+      const headers = { Authorization: `Bearer ${token}` };
+      const [subRes, catRes] = await Promise.all([
+        fetch(ADMIN_SUB_LIST_URL, { headers }),
+        fetch(ADMIN_CAT_LIST_URL, { headers }),
+      ]);
+      const [subData, catData] = await Promise.all([subRes.json(), catRes.json()]);
+      if (!subRes.ok) throw new Error(subData.message || "Failed to fetch subcategories");
+      if (!catRes.ok) throw new Error(catData.message || "Failed to fetch categories");
       setSubcategories(subData.data || []);
-
-      const catRes = await fetch(CAT_API);
-      const catData = await catRes.json();
       setCategories(catData.data || []);
-    } catch {
-      toast.error("Failed to fetch data");
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch data");
+    }
+  };
+
+  const isActive = (item) => item?.is_active === true || Number(item?.is_active) === 1;
+
+  const handleToggleStatus = async (subcategory) => {
+    if (!token) {
+      toast.error("Please login as admin first");
+      return;
+    }
+    const nextStatus = !isActive(subcategory);
+    try {
+      const res = await fetch(`${SUB_API}/${subcategory.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ is_active: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update subcategory status");
+      setSubcategories((current) => current.map((item) =>
+        item.id === subcategory.id ? { ...item, is_active: nextStatus ? 1 : 0 } : item
+      ));
+      toast.success(`Subcategory ${nextStatus ? "activated" : "deactivated"} successfully`);
+    } catch (error) {
+      toast.error(error.message || "Failed to update subcategory status");
     }
   };
 
@@ -275,6 +929,7 @@ function Subcategories() {
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Category</th>
               <th className="p-4 text-left">Description</th>
+              <th className="p-4 text-left">Status</th>
               <th className="p-4 text-left">Actions</th>
             </tr>
           </thead>
@@ -282,7 +937,7 @@ function Subcategories() {
           <tbody>
             {filteredSubcategories.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-12 text-center">
+                <td colSpan={7} className="p-12 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Search size={40} className="text-white" />
                     <p className="text-gray-500 text-lg">
@@ -332,6 +987,21 @@ function Subcategories() {
                   </td>
                   <td className="p-4 text-white max-w-[200px] truncate">
                     {sub.description || "-"}
+                  </td>
+
+                  <td className="p-4">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleStatus(sub)}
+                      aria-pressed={isActive(sub)}
+                      title={isActive(sub) ? "Deactivate subcategory" : "Activate subcategory"}
+                      className={`relative inline-flex h-5 w-8 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-[#151519] ${isActive(sub) ? "bg-emerald-500" : "bg-gray-600"}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${isActive(sub) ? "translate-x-4" : "translate-x-1"}`} />
+                    </button>
+                    <span className={`ml-2 text-xs font-semibold ${isActive(sub) ? "text-emerald-400" : "text-gray-400"}`}>
+                      {isActive(sub) ? "Active" : "Inactive"}
+                    </span>
                   </td>
 
                   <td className="p-4">
@@ -396,7 +1066,7 @@ function Subcategories() {
                   required
                 >
                   <option value="">Select Category</option>
-                  {categories.map((cat) => (
+                  {categories.filter((cat) => isActive(cat)).map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
@@ -495,9 +1165,9 @@ function Subcategories() {
                   required
                 >
                   <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
+                  {categories.filter((cat) => isActive(cat) || String(cat.id) === String(editForm.category_id)).map((cat) => (
+                    <option key={cat.id} value={cat.id} disabled={!isActive(cat)}>
+                      {cat.name}{!isActive(cat) ? " (Inactive)" : ""}
                     </option>
                   ))}
                 </select>

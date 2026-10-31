@@ -1,3443 +1,2736 @@
 
-
 // import React, {
 
-//   useCallback,
+// useCallback,
 
-//   useEffect,
+// useEffect,
 
-//   useMemo,
+// useMemo,
 
-//   useState,
+// useState,
 
 // } from "react";
 
-
-
 // import {
 
-//   Link,
+// Link,
 
-//   useLocation,
+// useLocation,
 
-//   useNavigate,
+// useNavigate,
 
 // } from "react-router-dom";
 
-
-
 // import {
 
-//   getAuth,
+// getAuth,
 
-//   onAuthStateChanged,
+// onAuthStateChanged,
 
-//   signOut,
+// signOut,
 
 // } from "firebase/auth";
 
-
-
 // import API from "../../services/api";
-import { getInstituteSubdomain } from "../../utils/instituteSubdomain";
-
-
 
 // /* =========================================================
 
-//    WEBSITE NAVBAR
+// WEBSITE NAVBAR
 
-//    BLACK + RADIANT BLUE THEME
+// BLACK + RADIANT BLUE THEME
 
-// ========================================================= */
-
-
+// \========================================================= */
 
 // const WebsiteNavbar = ({
 
-//   website = {},
+// website = {},
 
-//   institute = {},
+// institute = {},
 
-//   branding = {},
+// branding = {},
 
-//   instituteName: propInstituteName,
+// instituteName: propInstituteName,
 
-//   logo: propLogo,
+// logo: propLogo,
 
 // }) => {
 
-//   const navigate = useNavigate();
+// const navigate = useNavigate();
 
-//   const location = useLocation();
+// const location = useLocation();
 
+// /* =======================================================
 
+// STATE
 
-//   /* =======================================================
+// ======================================================= */
 
-//      STATE
+// const [student, setStudent] = useState(null);
 
-//   ======================================================= */
+// const [studentLoggedIn, setStudentLoggedIn] =
 
+// useState(false);
 
+// const [loadingStudent, setLoadingStudent] =
 
-//   const [student, setStudent] = useState(null);
+// useState(false);
 
-//   const [studentLoggedIn, setStudentLoggedIn] =
+// const [loggingOut, setLoggingOut] =
 
-//     useState(false);
+// useState(false);
 
-//   const [loadingStudent, setLoadingStudent] =
+// const [mobileMenuOpen, setMobileMenuOpen] =
 
-//     useState(false);
+// useState(false);
 
-//   const [loggingOut, setLoggingOut] =
+// /* =======================================================
+//    ROUTES — PREVIEW AND PUBLIC WEBSITE
+// ======================================================= */
 
-//     useState(false);
+// const publicSubdomain = getInstituteSubdomain();
+// const isPublicSite = Boolean(publicSubdomain);
+// const previewBase = isPublicSite ? "" : "/institute/website/preview";
+// const homePath = previewBase || "/";
+// const aboutPath = `${previewBase}/about`;
+// const classesPath = `${previewBase}/classes`;
+// const trainersPath = `${previewBase}/trainers`;
+// const testimonialsPath = `${previewBase}/testimonials`;
+// const loginPath = `${previewBase}/login`;
+// const studentDashboardPath = `${previewBase}/dashboard`;
 
-//   const [mobileMenuOpen, setMobileMenuOpen] =
+// /* =======================================================
 
-//     useState(false);
+// INSTITUTE ID
 
+// ======================================================= */
 
+// const getInstituteId = useCallback(() => {
 
-//   /* =======================================================
+// const candidates = [
 
-//      ROUTES
+// institute?.id,
 
-//   ======================================================= */
+// institute?.institute_id,
 
+// institute?.instituteId,
 
+// website?.institute_id,
 
-//   const previewBase =
+// website?.instituteId,
 
-//     "/institute/website/preview";
+// website?.institute?.id,
 
+// website?.institute?.institute_id,
 
+// localStorage.getItem(
 
-//   const homePath = previewBase || "/";
+// "studentInstituteId"
 
+// ),
 
+// ];
 
-//   const aboutPath =
+// for (const value of candidates) {
 
-//     `${previewBase}/about`;
+// if (
 
+// value !== undefined &&
 
+// value !== null &&
 
-//   const classesPath =
+// String(value).trim() !== ""
 
-//     `${previewBase}/classes`;
+// ) {
 
+// const numericValue = Number(value);
 
+// if (
 
-//   const trainersPath =
+// Number.isFinite(numericValue)
 
-//     `${previewBase}/trainers`;
+// ) {
 
+// return numericValue;
 
+// }
 
-//   const testimonialsPath =
+// }
 
-//     `${previewBase}/testimonials`;
+// }
 
+// /* -----------------------------------------------------
 
+// STORED INSTITUTE OBJECT
 
-//   const loginPath =
+// ----------------------------------------------------- */
 
-//     `${previewBase}/login`;
+// try {
 
+// const storedInstitute =
 
+// localStorage.getItem(
 
-//   const studentDashboardPath =
+// "institute"
 
-//     `${previewBase}/dashboard`;
+// );
 
+// if (storedInstitute) {
 
+// const parsed =
 
-//   /* =======================================================
+// JSON.parse(storedInstitute);
 
-//      INSTITUTE ID
+// const storedId =
 
-//   ======================================================= */
+// parsed?.id ??
 
+// parsed?.institute_id ??
 
+// parsed?.instituteId;
 
-//   const getInstituteId = useCallback(() => {
+// if (
 
-//     const candidates = [
+// storedId !== undefined &&
 
-//       institute?.id,
+// storedId !== null &&
 
-//       institute?.institute_id,
+// String(storedId).trim() !== ""
 
-//       institute?.instituteId,
+// ) {
 
+// const numericValue =
 
+// Number(storedId);
 
-//       website?.institute_id,
+// if (
 
-//       website?.instituteId,
+// Number.isFinite(
 
+// numericValue
 
+// )
 
-//       website?.institute?.id,
+// ) {
 
-//       website?.institute?.institute_id,
+// return numericValue;
 
+// }
 
+// }
 
-//       localStorage.getItem(
+// }
 
-//         "studentInstituteId"
+// } catch (error) {
 
-//       ),
+// console.warn(
 
-//     ];
+// "Could not read institute from localStorage:",
 
+// error
 
+// );
 
-//     for (const value of candidates) {
+// }
 
-//       if (
+// return null;
 
-//         value !== undefined &&
+// }, [
 
-//         value !== null &&
+// institute,
 
-//         String(value).trim() !== ""
+// website,
 
-//       ) {
+// ]);
 
-//         const numericValue = Number(value);
+// /* =======================================================
 
+// READ STUDENT SESSION
 
+// ======================================================= */
 
-//         if (
+// const readStudentSession =
 
-//           Number.isFinite(numericValue)
+// useCallback(() => {
 
-//         ) {
+// const studentRole =
 
-//           return numericValue;
+// String(
 
-//         }
+// localStorage.getItem(
 
-//       }
+// "studentRole"
 
-//     }
+// ) || ""
 
+// )
 
+// .trim()
 
-//     /* -----------------------------------------------------
+// .toUpperCase();
 
-//        STORED INSTITUTE OBJECT
+// const loggedValue =
 
-//     ----------------------------------------------------- */
+// String(
 
+// localStorage.getItem(
 
+// "studentLoggedIn"
 
-//     try {
+// ) || ""
 
-//       const storedInstitute =
+// )
 
-//         localStorage.getItem(
+// .trim()
 
-//           "institute"
+// .toLowerCase();
 
-//         );
+// const isLogged =
 
+// loggedValue === "true" ||
 
+// loggedValue === "1";
 
-//       if (storedInstitute) {
+// const studentProfile =
 
-//         const parsed =
+// localStorage.getItem(
 
-//           JSON.parse(storedInstitute);
+// "studentProfile"
 
+// );
 
+// const active =
 
-//         const storedId =
+// studentRole === "STUDENT" &&
 
-//           parsed?.id ??
+// isLogged;
 
-//           parsed?.institute_id ??
+// setStudentLoggedIn(active);
 
-//           parsed?.instituteId;
+// if (!active) {
 
+// setStudent(null);
 
+// return false;
 
-//         if (
+// }
 
-//           storedId !== undefined &&
+// /* ---------------------------------------------------
 
-//           storedId !== null &&
+// LOAD CACHED STUDENT PROFILE
 
-//           String(storedId).trim() !== ""
+// --------------------------------------------------- */
 
-//         ) {
+// if (studentProfile) {
 
-//           const numericValue =
+// try {
 
-//             Number(storedId);
+// const parsed =
 
+// JSON.parse(
 
+// studentProfile
 
-//           if (
+// );
 
-//             Number.isFinite(
+// if (parsed) {
 
-//               numericValue
+// setStudent(parsed);
 
-//             )
+// }
 
-//           ) {
+// } catch (error) {
 
-//             return numericValue;
+// console.warn(
 
-//           }
+// "Invalid studentProfile:",
 
-//         }
+// error
 
-//       }
+// );
 
-//     } catch (error) {
+// localStorage.removeItem(
 
-//       console.warn(
+// "studentProfile"
 
-//         "Could not read institute from localStorage:",
+// );
 
-//         error
+// }
 
-//       );
+// }
 
-//     }
+// return true;
 
+// }, []);
 
+// /* =======================================================
 
-//     return null;
+// CLEAR STUDENT SESSION
 
-//   }, [
+// ======================================================= */
 
-//     institute,
+// const clearStudentSession =
 
-//     website,
+// useCallback(() => {
 
-//   ]);
+// localStorage.removeItem(
 
+// "studentToken"
 
+// );
 
-//   /* =======================================================
+// localStorage.removeItem(
 
-//      READ STUDENT SESSION
+// "studentUser"
 
-//   ======================================================= */
+// );
 
+// localStorage.removeItem(
 
+// "studentRole"
 
-//   const readStudentSession =
+// );
 
-//     useCallback(() => {
+// localStorage.removeItem(
 
-//       const studentRole =
+// "studentLoggedIn"
 
-//         String(
+// );
 
-//           localStorage.getItem(
+// localStorage.removeItem(
 
-//             "studentRole"
+// "isStudentLoggedIn"
 
-//           ) || ""
+// );
 
-//         )
+// localStorage.removeItem(
 
-//           .trim()
+// "studentProfile"
 
-//           .toUpperCase();
+// );
 
+// localStorage.removeItem(
 
+// "studentInstituteId"
 
-//       const loggedValue =
+// );
 
-//         String(
+// setStudent(null);
 
-//           localStorage.getItem(
+// setStudentLoggedIn(false);
 
-//             "studentLoggedIn"
+// }, []);
 
-//           ) || ""
+// /* =======================================================
 
-//         )
+// LOAD STUDENT PROFILE
 
-//           .trim()
+// ======================================================= */
 
-//           .toLowerCase();
+// const loadStudent = useCallback(
 
+// async (firebaseUser = null) => {
 
+// const active =
 
-//       const isLogged =
+// readStudentSession();
 
-//         loggedValue === "true" ||
+// if (!active) {
 
-//         loggedValue === "1";
+// setLoadingStudent(false);
 
+// return;
 
+// }
 
-//       const studentProfile =
+// try {
 
-//         localStorage.getItem(
+// setLoadingStudent(true);
 
-//           "studentProfile"
+// const auth = getAuth();
 
-//         );
+// const currentUser =
 
+// firebaseUser ||
 
+// auth.currentUser;
 
-//       const active =
+// /*
 
-//         studentRole === "STUDENT" &&
+// * Firebase may not be ready immediately.
 
-//         isLogged;
+// * Keep cached student session.
 
+// */
 
+// if (!currentUser) {
 
-//       setStudentLoggedIn(active);
+// console.warn(
 
+// "Student session exists but Firebase user is not ready."
 
+// );
 
-//       if (!active) {
+// setLoadingStudent(false);
 
-//         setStudent(null);
+// return;
 
-//         return false;
+// }
 
-//       }
+// /* -----------------------------------------------
 
+// INSTITUTE
 
+// ------------------------------------------------ */
 
-//       /* ---------------------------------------------------
+// const instituteId =
 
-//          LOAD CACHED STUDENT PROFILE
+// getInstituteId();
 
-//       --------------------------------------------------- */
+// if (!instituteId) {
 
+// console.warn(
 
+// "Student institute ID missing."
 
-//       if (studentProfile) {
+// );
 
-//         try {
+// setLoadingStudent(false);
 
-//           const parsed =
+// return;
 
-//             JSON.parse(
+// }
 
-//               studentProfile
+// /* -----------------------------------------------
 
-//             );
+// FRESH FIREBASE TOKEN
 
+// ------------------------------------------------ */
 
+// try {
 
-//           if (parsed) {
+// const token =
 
-//             setStudent(parsed);
+// await currentUser.getIdToken(
 
-//           }
+// true
 
-//         } catch (error) {
+// );
 
-//           console.warn(
+// if (token) {
 
-//             "Invalid studentProfile:",
+// localStorage.setItem(
 
-//             error
+// "studentToken",
 
-//           );
+// token
 
+// );
 
+// localStorage.setItem(
 
-//           localStorage.removeItem(
+// "token",
 
-//             "studentProfile"
+// token
 
-//           );
+// );
 
-//         }
+// }
 
-//       }
+// } catch (tokenError) {
 
+// console.warn(
 
+// "Could not refresh Firebase token:",
 
-//       return true;
+// tokenError
 
-//     }, []);
+// );
 
+// }
 
+// const stillActive =
 
-//   /* =======================================================
+// readStudentSession();
 
-//      CLEAR STUDENT SESSION
+// if (!stillActive) {
 
-//   ======================================================= */
+// setLoadingStudent(false);
 
+// return;
 
+// }
 
-//   const clearStudentSession =
+// /* -----------------------------------------------
 
-//     useCallback(() => {
+// GET STUDENT PROFILE
 
-//       localStorage.removeItem(
+// ------------------------------------------------ */
 
-//         "studentToken"
+// try {
 
-//       );
+// const response =
 
+// await API.get(
 
+// "/students/me",
 
-//       localStorage.removeItem(
+// {
 
-//         "studentUser"
+// params: {
 
-//       );
+// institute_id:
 
+// instituteId,
 
+// },
 
-//       localStorage.removeItem(
+// }
 
-//         "studentRole"
+// );
 
-//       );
+// const profile =
 
+// response?.data?.data ||
 
+// response?.data?.student ||
 
-//       localStorage.removeItem(
+// null;
 
-//         "studentLoggedIn"
+// if (profile) {
 
-//       );
+// setStudent(profile);
 
+// localStorage.setItem(
 
+// "studentProfile",
 
-//       localStorage.removeItem(
+// JSON.stringify(profile)
 
-//         "isStudentLoggedIn"
+// );
 
-//       );
+// localStorage.setItem(
 
+// "studentRole",
 
+// "STUDENT"
 
-//       localStorage.removeItem(
+// );
 
-//         "studentProfile"
+// localStorage.setItem(
 
-//       );
+// "studentLoggedIn",
 
+// "true"
 
+// );
 
-//       localStorage.removeItem(
+// localStorage.setItem(
 
-//         "studentInstituteId"
+// "studentInstituteId",
 
-//       );
+// String(instituteId)
 
+// );
 
+// setStudentLoggedIn(true);
 
-//       setStudent(null);
+// }
 
-//       setStudentLoggedIn(false);
+// } catch (error) {
 
-//     }, []);
+// console.error(
 
+// "STUDENT PROFILE FETCH ERROR:",
 
+// error?.response?.status,
 
-//   /* =======================================================
+// error?.response?.data ||
 
-//      LOAD STUDENT PROFILE
+// error
 
-//   ======================================================= */
+// );
 
+// /*
 
+// * Do not automatically logout.
 
-//   const loadStudent = useCallback(
+// * Cached student session remains valid.
 
-//     async (firebaseUser = null) => {
+// */
 
-//       const active =
+// }
 
-//         readStudentSession();
+// } finally {
 
+// setLoadingStudent(false);
 
+// }
 
-//       if (!active) {
+// },
 
-//         setLoadingStudent(false);
+// [
 
-//         return;
+// getInstituteId,
 
-//       }
+// readStudentSession,
 
+// ]
 
+// );
 
-//       try {
+// /* =======================================================
 
-//         setLoadingStudent(true);
+// AUTH STATE LISTENER
 
+// ======================================================= */
 
+// useEffect(() => {
 
-//         const auth = getAuth();
+// const auth = getAuth();
 
+// const active =
 
+// readStudentSession();
 
-//         const currentUser =
+// if (!active) {
 
-//           firebaseUser ||
+// setLoadingStudent(false);
 
-//           auth.currentUser;
+// }
 
+// const unsubscribe =
 
+// onAuthStateChanged(
 
-//         /*
+// auth,
 
-//          * Firebase may not be ready immediately.
+// async (firebaseUser) => {
 
-//          * Keep cached student session.
+// const studentActive =
 
-//          */
+// readStudentSession();
 
+// if (
 
+// studentActive &&
 
-//         if (!currentUser) {
+// firebaseUser
 
-//           console.warn(
+// ) {
 
-//             "Student session exists but Firebase user is not ready."
+// await loadStudent(
 
-//           );
+// firebaseUser
 
+// );
 
+// return;
 
-//           setLoadingStudent(false);
+// }
 
-//           return;
+// /*
 
-//         }
+// * If Firebase user temporarily becomes null,
 
+// * keep cached website student session.
 
+// */
 
-//         /* -----------------------------------------------
+// if (
 
-//            INSTITUTE
+// studentActive &&
 
-//         ------------------------------------------------ */
+// !firebaseUser
 
+// ) {
 
+// setStudentLoggedIn(true);
 
-//         const instituteId =
+// return;
 
-//           getInstituteId();
+// }
 
+// /*
 
+// * No student session.
 
-//         if (!instituteId) {
+// */
 
-//           console.warn(
+// setStudentLoggedIn(false);
 
-//             "Student institute ID missing."
+// setStudent(null);
 
-//           );
+// setLoadingStudent(false);
 
+// }
 
+// );
 
-//           setLoadingStudent(false);
+// /* =====================================================
 
-//           return;
+// CUSTOM STUDENT LOGIN EVENT
 
-//         }
+// ===================================================== */
 
+// const handleStudentAuthChanged =
 
+// () => {
 
-//         /* -----------------------------------------------
+// const active =
 
-//            FRESH FIREBASE TOKEN
+// readStudentSession();
 
-//         ------------------------------------------------ */
+// if (active) {
 
+// const currentUser =
 
+// getAuth().currentUser;
 
-//         try {
+// setStudentLoggedIn(true);
 
-//           const token =
+// if (currentUser) {
 
-//             await currentUser.getIdToken(
+// loadStudent(
 
-//               true
+// currentUser
 
-//             );
+// );
 
+// }
 
+// } else {
 
-//           if (token) {
+// setStudentLoggedIn(false);
 
-//             localStorage.setItem(
+// setStudent(null);
 
-//               "studentToken",
-
-//               token
-
-//             );
-
-
-
-//             localStorage.setItem(
-
-//               "token",
-
-//               token
-
-//             );
-
-//           }
-
-//         } catch (tokenError) {
-
-//           console.warn(
-
-//             "Could not refresh Firebase token:",
-
-//             tokenError
-
-//           );
-
-//         }
-
-
-
-//         const stillActive =
-
-//           readStudentSession();
-
-
-
-//         if (!stillActive) {
-
-//           setLoadingStudent(false);
-
-//           return;
-
-//         }
-
-
-
-//         /* -----------------------------------------------
-
-//            GET STUDENT PROFILE
-
-//         ------------------------------------------------ */
-
-
-
-//         try {
-
-//           const response =
-
-//             await API.get(
-
-//               "/students/me",
-
-//               {
-
-//                 params: {
-
-//                   institute_id:
-
-//                     instituteId,
-
-//                 },
-
-//               }
-
-//             );
-
-
-
-//           const profile =
-
-//             response?.data?.data ||
-
-//             response?.data?.student ||
-
-//             null;
-
-
-
-//           if (profile) {
-
-//             setStudent(profile);
-
-
-
-//             localStorage.setItem(
-
-//               "studentProfile",
-
-//               JSON.stringify(profile)
-
-//             );
-
-
-
-//             localStorage.setItem(
-
-//               "studentRole",
-
-//               "STUDENT"
-
-//             );
-
-
-
-//             localStorage.setItem(
-
-//               "studentLoggedIn",
-
-//               "true"
-
-//             );
-
-
-
-//             localStorage.setItem(
-
-//               "studentInstituteId",
-
-//               String(instituteId)
-
-//             );
-
-
-
-//             setStudentLoggedIn(true);
-
-//           }
-
-//         } catch (error) {
-
-//           console.error(
-
-//             "STUDENT PROFILE FETCH ERROR:",
-
-//             error?.response?.status,
-
-//             error?.response?.data ||
-
-//               error
-
-//           );
-
-
-
-//           /*
-
-//            * Do not automatically logout.
-
-//            * Cached student session remains valid.
-
-//            */
-
-//         }
-
-//       } finally {
-
-//         setLoadingStudent(false);
-
-//       }
-
-//     },
-
-//     [
-
-//       getInstituteId,
-
-//       readStudentSession,
-
-//     ]
-
-//   );
-
-
-
-//   /* =======================================================
-
-//      AUTH STATE LISTENER
-
-//   ======================================================= */
-
-
-
-//   useEffect(() => {
-
-//     const auth = getAuth();
-
-
-
-//     const active =
-
-//       readStudentSession();
-
-
-
-//     if (!active) {
-
-//       setLoadingStudent(false);
-
-//     }
-
-
-
-//     const unsubscribe =
-
-//       onAuthStateChanged(
-
-//         auth,
-
-//         async (firebaseUser) => {
-
-//           const studentActive =
-
-//             readStudentSession();
-
-
-
-//           if (
-
-//             studentActive &&
-
-//             firebaseUser
-
-//           ) {
-
-//             await loadStudent(
-
-//               firebaseUser
-
-//             );
-
-
-
-//             return;
-
-//           }
-
-
-
-//           /*
-
-//            * If Firebase user temporarily becomes null,
-
-//            * keep cached website student session.
-
-//            */
-
-
-
-//           if (
-
-//             studentActive &&
-
-//             !firebaseUser
-
-//           ) {
-
-//             setStudentLoggedIn(true);
-
-//             return;
-
-//           }
-
-
-
-//           /*
-
-//            * No student session.
-
-//            */
-
-
-
-//           setStudentLoggedIn(false);
-
-//           setStudent(null);
-
-//           setLoadingStudent(false);
-
-//         }
-
-//       );
-
-
-
-//     /* =====================================================
-
-//        CUSTOM STUDENT LOGIN EVENT
-
-//     ===================================================== */
-
-
-
-//     const handleStudentAuthChanged =
-
-//       () => {
-
-//         const active =
-
-//           readStudentSession();
-
-
-
-//         if (active) {
-
-//           const currentUser =
-
-//             getAuth().currentUser;
-
-
-
-//           setStudentLoggedIn(true);
-
-
-
-//           if (currentUser) {
-
-//             loadStudent(
-
-//               currentUser
-
-//             );
-
-//           }
-
-//         } else {
-
-//           setStudentLoggedIn(false);
-
-//           setStudent(null);
-
-//         }
-
-//       };
-
-
-
-//     window.addEventListener(
-
-//       "studentAuthChanged",
-
-//       handleStudentAuthChanged
-
-//     );
-
-
-
-//     /* =====================================================
-
-//        STORAGE EVENT
-
-//     ===================================================== */
-
-
-
-//     const handleStorage =
-
-//       (event) => {
-
-//         if (
-
-//           event.key ===
-
-//             "studentLoggedIn" ||
-
-//           event.key ===
-
-//             "studentRole" ||
-
-//           event.key ===
-
-//             "studentProfile" ||
-
-//           event.key ===
-
-//             "studentToken" ||
-
-//           event.key ===
-
-//             "studentInstituteId"
-
-//         ) {
-
-//           readStudentSession();
-
-//         }
-
-//       };
-
-
-
-//     window.addEventListener(
-
-//       "storage",
-
-//       handleStorage
-
-//     );
-
-
-
-//     return () => {
-
-//       unsubscribe();
-
-
-
-//       window.removeEventListener(
-
-//         "studentAuthChanged",
-
-//         handleStudentAuthChanged
-
-//       );
-
-
-
-//       window.removeEventListener(
-
-//         "storage",
-
-//         handleStorage
-
-//       );
-
-//     };
-
-//   }, [
-
-//     loadStudent,
-
-//     readStudentSession,
-
-//   ]);
-
-
-
-//   /* =======================================================
-
-//      INSTITUTE NAME
-
-//   ======================================================= */
-
-
-
-//   const finalInstituteName =
-
-//     propInstituteName ||
-
-//     institute?.name ||
-
-//     institute?.institute_name ||
-
-//     website?.website_name ||
-
-//     website?.name ||
-
-//     "Fine Arts";
-
-
-
-//   /* =======================================================
-
-//      LOGO
-
-//   ======================================================= */
-
-
-
-//   const logo =
-
-//     propLogo ||
-
-//     institute?.logo ||
-
-//     institute?.logo_url ||
-
-//     website?.logo ||
-
-//     website?.logo_url ||
-
-//     branding?.logo ||
-
-//     branding?.logo_url ||
-
-//     null;
-
-
-
-//   /* =======================================================
-
-//      BRANDING
-
-//   ======================================================= */
-
-
-
-//   const navbarBranding =
-
-//     useMemo(() => {
-
-//       return {
-
-//         navbarBackgroundColor:
-
-//           "#000000",
-
-
-
-//         navbarTextColor:
-
-//           "#E2E8F0",
-
-
-
-//         navbarActiveColor:
-
-//           "#38D7FF",
-
-
-
-//         navbarButtonColor:
-
-//           "#008CFF",
-
-
-
-//         navbarButtonTextColor:
-
-//           "#FFFFFF",
-
-
-
-//         navbarBorderColor:
-
-//           "#008CFF",
-
-
-
-//         navbarGlowColor:
-
-//           "#38D7FF",
-
-
-
-//         navbarFont:
-
-//           branding?.navbarFont ||
-
-//           branding?.navbar_font ||
-
-//           branding?.fontBody ||
-
-//           branding?.font_body ||
-
-//           "Inter",
-
-
-
-//         navbarFontSize:
-
-//           branding?.navbarFontSize ||
-
-//           branding?.navbar_font_size ||
-
-//           "14px",
-
-
-
-//         navbarFontWeight:
-
-//           branding?.navbarFontWeight ||
-
-//           branding?.navbar_font_weight ||
-
-//           500,
-
-
-
-//         navbarLetterSpacing:
-
-//           branding?.navbarLetterSpacing ??
-
-//           branding?.navbar_letter_spacing ??
-
-//           "0px",
-
-
-
-//         logoRadius:
-
-//           branding?.logoRadius ||
-
-//           branding?.logo_radius ||
-
-//           "10px",
-
-
-
-//         buttonRadius:
-
-//           branding?.buttonRadius ||
-
-//           branding?.button_radius ||
-
-//           "8px",
-
-
-
-//         buttonFontWeight:
-
-//           branding?.buttonFontWeight ||
-
-//           branding?.button_font_weight ||
-
-//           700,
-
-//       };
-
-//     }, [branding]);
-
-
-
-//   /* =======================================================
-
-//      ACTIVE ROUTE
-
-//   ======================================================= */
-
-
-
-//   const isActive = (path) => {
-
-//     if (path === homePath) {
-
-//       return (
-
-//         location.pathname ===
-
-//         homePath
-
-//       );
-
-//     }
-
-
-
-//     return location.pathname.startsWith(
-
-//       path
-
-//     );
-
-//   };
-
-
-
-//   /* =======================================================
-
-//      STUDENT NAME
-
-//   ======================================================= */
-
-
-
-//   const studentName =
-
-//     student?.user?.full_name ||
-
-//     student?.user?.name ||
-
-//     student?.full_name ||
-
-//     student?.name ||
-
-//     student?.student?.full_name ||
-
-//     student?.student?.name ||
-
-//     "Student";
-
-
-
-//   void studentName;
-
-//   void loadingStudent;
-
-
-
-//   /* =======================================================
-
-//      STUDENT LOGOUT
-
-//   ======================================================= */
-
-
-
-//   const handleLogout =
-
-//     async () => {
-
-//       if (loggingOut) {
-
-//         return;
-
-//       }
-
-
-
-//       try {
-
-//         setLoggingOut(true);
-
-
-
-//         clearStudentSession();
-
-
-
-//         try {
-
-//           await signOut(getAuth());
-
-//         } catch (firebaseError) {
-
-//           console.warn(
-
-//             "Firebase student logout error:",
-
-//             firebaseError
-
-//           );
-
-//         }
-
-
-
-//         window.dispatchEvent(
-
-//           new Event(
-
-//             "studentAuthChanged"
-
-//           )
-
-//         );
-
-
-
-//         setMobileMenuOpen(false);
-
-
-
-//         navigate(
-
-//           loginPath,
-
-//           {
-
-//             replace: true,
-
-//           }
-
-//         );
-
-//       } finally {
-
-//         setLoggingOut(false);
-
-//       }
-
-//     };
-
-
-
-//   /* =======================================================
-
-//      BUTTON STYLE
-
-//   ======================================================= */
-
-
-
-//   const buttonStyle = {
-
-//     textDecoration: "none",
-
-
-
-//     display: "inline-flex",
-
-
-
-//     alignItems: "center",
-
-
-
-//     justifyContent: "center",
-
-
-
-//     padding: "8px 16px",
-
-
-
-//     minHeight: "36px",
-
-
-
-//     borderRadius:
-
-//       "8px",
-
-
-
-//     background:
-
-//       `linear-gradient(
-
-//         135deg,
-
-//         ${navbarBranding.navbarButtonColor},
-
-//         #0066FF
-
-//       )`,
-
-
-
-//     color:
-
-//       navbarBranding.navbarButtonTextColor,
-
-
-
-//     fontFamily:
-
-//       `'${navbarBranding.navbarFont}', sans-serif`,
-
-
-
-//     fontSize: "13px",
-
-
-
-//     fontWeight:
-
-//       navbarBranding.buttonFontWeight,
-
-
-
-//     letterSpacing:
-
-//       navbarBranding.navbarLetterSpacing,
-
-
-
-//     lineHeight: "1",
-
-
-
-//     border:
-
-//       "1px solid rgba(56,215,255,0.25)",
-
-
-
-//     cursor: "pointer",
-
-
-
-//     transition:
-
-//       "all 0.25s ease",
-
-
-
-//     whiteSpace: "nowrap",
-
-
-
-//     boxShadow:
-
-//       "0 0 18px rgba(0,140,255,0.22)",
-
-//   };
-
-
-
-//   /* =======================================================
-
-//      STUDENT AUTH UI
-
-//   ======================================================= */
-
-
-
-//   const renderStudentAuth =
-
-//     () => {
-
-//       if (studentLoggedIn) {
-
-//         return (
-
-//           <div className="flex items-center gap-2">
-
-
-
-//             <Link
-
-//               to={
-
-//                 studentDashboardPath
-
-//               }
-
-//               style={
-
-//                 buttonStyle
-
-//               }
-
-//               onClick={() =>
-
-//                 setMobileMenuOpen(false)
-
-//               }
-
-//             >
-
-//               Dashboard
-
-//             </Link>
-
-
-
-//             <button
-
-//               type="button"
-
-//               onClick={
-
-//                 handleLogout
-
-//               }
-
-//               disabled={
-
-//                 loggingOut
-
-//               }
-
-//               style={{
-
-//                 ...buttonStyle,
-
-
-
-//                 background:
-
-//                   "linear-gradient(135deg,#111827,#02050A)",
-
-
-
-//                 border:
-
-//                   "1px solid rgba(56,215,255,0.35)",
-
-
-
-//                 color:
-
-//                   "#CBD5E1",
-
-
-
-//                 opacity:
-
-//                   loggingOut
-
-//                     ? 0.6
-
-//                     : 1,
-
-
-
-//                 cursor:
-
-//                   loggingOut
-
-//                     ? "not-allowed"
-
-//                     : "pointer",
-
-
-
-//                 boxShadow:
-
-//                   "0 0 14px rgba(56,215,255,0.08)",
-
-//               }}
-
-//             >
-
-//               {
-
-//                 loggingOut
-
-//                   ? "Logging out..."
-
-//                   : "Logout"
-
-//               }
-
-//             </button>
-
-
-
-//           </div>
-
-//         );
-
-//       }
-
-
-
-//       return (
-
-//         <Link
-
-//           to={loginPath}
-
-//           style={buttonStyle}
-
-//           onClick={() =>
-
-//             setMobileMenuOpen(false)
-
-//           }
-
-//         >
-
-//           Student Login
-
-//         </Link>
-
-//       );
-
-//     };
-
-
-
-//   /* =======================================================
-
-//      HEADER
-
-//   ======================================================= */
-
-
-
-//   return (
-
-//     <>
-
-//       <header
-
-//         className="website-navbar"
-
-//         style={{
-
-//           position: "relative",
-
-
-
-//           zIndex: 1000,
-
-
-
-//           width: "100%",
-
-
-
-//           background:
-
-//             "#000000",
-
-
-
-//           borderBottom:
-
-//             "1px solid rgba(0,140,255,0.28)",
-
-
-
-//           boxShadow:
-
-//             "0 4px 30px rgba(0,0,0,0.55), 0 1px 20px rgba(0,140,255,0.08)",
-
-
-
-//           fontFamily:
-
-//             `'${navbarBranding.navbarFont}', sans-serif`,
-
-//         }}
-
-//       >
-
-
-
-//         {/* =================================================
-
-//             TOP RADIANT BLUE LINE
-
-//         ================================================= */}
-
-
-
-//         <div
-
-//           style={{
-
-//             position: "absolute",
-
-
-
-//             top: 0,
-
-
-
-//             left: "50%",
-
-
-
-//             transform:
-
-//               "translateX(-50%)",
-
-
-
-//             width: "45%",
-
-
-
-//             height: "2px",
-
-
-
-//             background:
-
-//               "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
-
-
-
-//             boxShadow:
-
-//               "0 0 18px rgba(56,215,255,0.65)",
-
-//           }}
-
-//         />
-
-
-
-//         {/* =================================================
-
-//             DESKTOP / MAIN HEADER
-
-//         ================================================= */}
-
-
-
-//         <div
-
-//           className="website-navbar-container"
-
-//           style={{
-
-//             maxWidth: "1280px",
-
-
-
-//             margin: "0 auto",
-
-
-
-//             padding: "8px 20px",
-
-
-
-//             minHeight: "62px",
-
-
-
-//             display: "flex",
-
-
-
-//             alignItems: "center",
-
-
-
-//             justifyContent:
-
-//               "space-between",
-
-
-
-//             gap: "22px",
-
-
-
-//             boxSizing:
-
-//               "border-box",
-
-//           }}
-
-//         >
-
-
-
-//           {/* =================================================
-
-//               LOGO
-
-//           ================================================= */}
-
-
-
-//           <Link
-
-//             to={homePath}
-
-//             className="website-logo-link"
-
-//             style={{
-
-//               textDecoration: "none",
-
-
-
-//               display: "flex",
-
-
-
-//               alignItems: "center",
-
-
-
-//               gap: "10px",
-
-
-
-//               minWidth: "190px",
-
-
-
-//               flexShrink: 0,
-
-//             }}
-
-//           >
-
-
-
-//             {logo ? (
-
-//               <img
-
-//                 src={logo}
-
-//                 alt={
-
-//                   finalInstituteName
-
-//                 }
-
-//                 style={{
-
-//                   width: "40px",
-
-
-
-//                   height: "40px",
-
-
-
-//                   objectFit: "cover",
-
-
-
-//                   borderRadius:
-
-//                     navbarBranding.logoRadius,
-
-
-
-//                   border:
-
-//                     "1px solid rgba(56,215,255,0.45)",
-
-
-
-//                   boxShadow:
-
-//                     "0 0 18px rgba(0,140,255,0.28)",
-
-//                 }}
-
-//                 onError={(event) => {
-
-//                   event.currentTarget.style.display =
-
-//                     "none";
-
-//                 }}
-
-//               />
-
-//             ) : (
-
-//               <div
-
-//                 style={{
-
-//                   width: "40px",
-
-
-
-//                   height: "40px",
-
-
-
-//                   borderRadius:
-
-//                     navbarBranding.logoRadius,
-
-
-
-//                   display: "flex",
-
-
-
-//                   alignItems: "center",
-
-
-
-//                   justifyContent:
-
-//                     "center",
-
-
-
-//                   background:
-
-//                     "linear-gradient(135deg,#008CFF,#0055FF)",
-
-
-
-//                   color: "#FFFFFF",
-
-
-
-//                   fontSize: "16px",
-
-
-
-//                   fontWeight: "800",
-
-
-
-//                   border:
-
-//                     "1px solid rgba(56,215,255,0.5)",
-
-
-
-//                   boxShadow:
-
-//                     "0 0 22px rgba(0,140,255,0.35)",
-
-//                 }}
-
-//               >
-
-//                 {finalInstituteName
-
-//                   .charAt(0)
-
-//                   .toUpperCase()}
-
-//               </div>
-
-//             )}
-
-
-
-//             <span
-
-//               style={{
-
-//                 fontSize: "17px",
-
-
-
-//                 fontWeight: "800",
-
-
-
-//                 color: "#F8FAFC",
-
-
-
-//                 maxWidth: "175px",
-
-
-
-//                 overflow: "hidden",
-
-
-
-//                 textOverflow:
-
-//                   "ellipsis",
-
-
-
-//                 whiteSpace: "nowrap",
-
-
-
-//                 textShadow:
-
-//                   "0 0 15px rgba(56,215,255,0.15)",
-
-//               }}
-
-//             >
-
-//               {finalInstituteName}
-
-//             </span>
-
-
-
-//           </Link>
-
-
-
-//           {/* =================================================
-
-//               DESKTOP NAVIGATION
-
-
-
-//               Sessions REMOVED
-
-//           ================================================= */}
-
-
-
-//           <nav
-
-//             className="website-desktop-navigation"
-
-//             style={{
-
-//               display: "flex",
-
-
-
-//               alignItems: "center",
-
-
-
-//               justifyContent: "center",
-
-
-
-//               gap: "22px",
-
-
-
-//               flex: 1,
-
-//             }}
-
-//           >
-
-
-
-//             <NavbarLink
-
-//               to={homePath}
-
-//               active={
-
-//                 isActive(homePath)
-
-//               }
-
-//               branding={
-
-//                 navbarBranding
-
-//               }
-
-//             >
-
-//               Home
-
-//             </NavbarLink>
-
-
-
-//             <NavbarLink
-
-//               to={aboutPath}
-
-//               active={
-
-//                 isActive(aboutPath)
-
-//               }
-
-//               branding={
-
-//                 navbarBranding
-
-//               }
-
-//             >
-
-//               About
-
-//             </NavbarLink>
-
-
-
-//             <NavbarLink
-
-//               to={classesPath}
-
-//               active={
-
-//                 isActive(
-
-//                   classesPath
-
-//                 )
-
-//               }
-
-//               branding={
-
-//                 navbarBranding
-
-//               }
-
-//             >
-
-//               Classes
-
-//             </NavbarLink>
-
-
-
-//             <NavbarLink
-
-//               to={trainersPath}
-
-//               active={
-
-//                 isActive(
-
-//                   trainersPath
-
-//                 )
-
-//               }
-
-//               branding={
-
-//                 navbarBranding
-
-//               }
-
-//             >
-
-//               Trainers
-
-//             </NavbarLink>
-
-
-
-//             <NavbarLink
-
-//               to={testimonialsPath}
-
-//               active={
-
-//                 isActive(
-
-//                   testimonialsPath
-
-//                 )
-
-//               }
-
-//               branding={
-
-//                 navbarBranding
-
-//               }
-
-//             >
-
-//               Testimonials
-
-//             </NavbarLink>
-
-
-
-//           </nav>
-
-
-
-//           {/* =================================================
-
-//               DESKTOP STUDENT AUTH
-
-//           ================================================= */}
-
-
-
-//           <div
-
-//             className="website-desktop-auth"
-
-//             style={{
-
-//               display: "flex",
-
-
-
-//               alignItems: "center",
-
-
-
-//               gap: "8px",
-
-
-
-//               minWidth: "190px",
-
-
-
-//               justifyContent:
-
-//                 "flex-end",
-
-//             }}
-
-//           >
-
-//             {renderStudentAuth()}
-
-//           </div>
-
-
-
-//           {/* =================================================
-
-//               MOBILE MENU BUTTON
-
-//           ================================================= */}
-
-
-
-//           <button
-
-//             type="button"
-
-//             className="website-mobile-menu-button"
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 (value) => !value
-
-//               )
-
-//             }
-
-//             aria-label={
-
-//               mobileMenuOpen
-
-//                 ? "Close menu"
-
-//                 : "Open menu"
-
-//             }
-
-//             style={{
-
-//               display: "none",
-
-
-
-//               width: "40px",
-
-
-
-//               height: "40px",
-
-
-
-//               alignItems: "center",
-
-
-
-//               justifyContent: "center",
-
-
-
-//               borderRadius: "8px",
-
-
-
-//               border:
-
-//                 "1px solid rgba(0,140,255,0.35)",
-
-
-
-//               background:
-
-//                 "rgba(0,140,255,0.08)",
-
-
-
-//               color: "#38D7FF",
-
-
-
-//               cursor: "pointer",
-
-
-
-//               fontSize: "20px",
-
-
-
-//               boxShadow:
-
-//                 "0 0 15px rgba(0,140,255,0.12)",
-
-//             }}
-
-//           >
-
-//             {mobileMenuOpen
-
-//               ? "×"
-
-//               : "☰"}
-
-//           </button>
-
-
-
-//         </div>
-
-
-
-//         {/* =================================================
-
-//             MOBILE NAVIGATION
-
-
-
-//             Sessions REMOVED
-
-//         ================================================= */}
-
-
-
-//         <div
-
-//           className={`website-mobile-navigation ${
-
-//             mobileMenuOpen
-
-//               ? "is-open"
-
-//               : ""
-
-//           }`}
-
-//         >
-
-
-
-//           <MobileNavbarLink
-
-//             to={homePath}
-
-//             active={
-
-//               isActive(homePath)
-
-//             }
-
-//             branding={
-
-//               navbarBranding
-
-//             }
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 false
-
-//               )
-
-//             }
-
-//           >
-
-//             Home
-
-//           </MobileNavbarLink>
-
-
-
-//           <MobileNavbarLink
-
-//             to={aboutPath}
-
-//             active={
-
-//               isActive(aboutPath)
-
-//             }
-
-//             branding={
-
-//               navbarBranding
-
-//             }
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 false
-
-//               )
-
-//             }
-
-//           >
-
-//             About
-
-//           </MobileNavbarLink>
-
-
-
-//           <MobileNavbarLink
-
-//             to={classesPath}
-
-//             active={
-
-//               isActive(
-
-//                 classesPath
-
-//               )
-
-//             }
-
-//             branding={
-
-//               navbarBranding
-
-//             }
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 false
-
-//               )
-
-//             }
-
-//           >
-
-//             Classes
-
-//           </MobileNavbarLink>
-
-
-
-//           <MobileNavbarLink
-
-//             to={trainersPath}
-
-//             active={
-
-//               isActive(
-
-//                 trainersPath
-
-//               )
-
-//             }
-
-//             branding={
-
-//               navbarBranding
-
-//             }
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 false
-
-//               )
-
-//             }
-
-//           >
-
-//             Trainers
-
-//           </MobileNavbarLink>
-
-
-
-//           <MobileNavbarLink
-
-//             to={testimonialsPath}
-
-//             active={
-
-//               isActive(
-
-//                 testimonialsPath
-
-//               )
-
-//             }
-
-//             branding={
-
-//               navbarBranding
-
-//             }
-
-//             onClick={() =>
-
-//               setMobileMenuOpen(
-
-//                 false
-
-//               )
-
-//             }
-
-//           >
-
-//             Testimonials
-
-//           </MobileNavbarLink>
-
-
-
-//           {/* MOBILE AUTHENTICATION */}
-
-
-
-//           <div
-
-//             className="mobile-auth-container"
-
-//           >
-
-//             {studentLoggedIn ? (
-
-//               <>
-
-//                 <Link
-
-//                   to={
-
-//                     studentDashboardPath
-
-//                   }
-
-//                   onClick={() =>
-
-//                     setMobileMenuOpen(
-
-//                       false
-
-//                     )
-
-//                   }
-
-//                   style={{
-
-//                     ...buttonStyle,
-
-//                     width: "100%",
-
-//                   }}
-
-//                 >
-
-//                   Dashboard
-
-//                 </Link>
-
-
-
-//                 <button
-
-//                   type="button"
-
-//                   onClick={
-
-//                     handleLogout
-
-//                   }
-
-//                   disabled={
-
-//                     loggingOut
-
-//                   }
-
-//                   style={{
-
-//                     ...buttonStyle,
-
-
-
-//                     width: "100%",
-
-
-
-//                     background:
-
-//                       "linear-gradient(135deg,#111827,#02050A)",
-
-
-
-//                     color:
-
-//                       "#CBD5E1",
-
-
-
-//                     border:
-
-//                       "1px solid rgba(56,215,255,0.35)",
-
-//                   }}
-
-//                 >
-
-//                   {
-
-//                     loggingOut
-
-//                       ? "Logging out..."
-
-//                       : "Logout"
-
-//                   }
-
-//                 </button>
-
-//               </>
-
-//             ) : (
-
-//               <Link
-
-//                 to={loginPath}
-
-//                 onClick={() =>
-
-//                   setMobileMenuOpen(
-
-//                     false
-
-//                   )
-
-//                 }
-
-//                 style={{
-
-//                   ...buttonStyle,
-
-//                   width: "100%",
-
-//                 }}
-
-//               >
-
-//                 Student Login
-
-//               </Link>
-
-//             )}
-
-//           </div>
-
-
-
-//         </div>
-
-
-
-//         {/* =================================================
-
-//             RESPONSIVE CSS
-
-//         ================================================= */}
-
-
-
-//         <style>
-
-//           {`
-
-//             .website-navbar {
-
-//               backdrop-filter: blur(18px);
-
-//               -webkit-backdrop-filter: blur(18px);
-
-//             }
-
-
-
-//             .website-desktop-navigation {
-
-//               display: flex;
-
-//             }
-
-
-
-//             .website-mobile-navigation {
-
-//               display: none;
-
-//             }
-
-
-
-//             .website-mobile-menu-button {
-
-//               display: none;
-
-//             }
-
-
-
-//             .mobile-auth-container {
-
-//               display: none;
-
-//             }
-
-
-
-//             .website-navbar a {
-
-//               -webkit-tap-highlight-color: transparent;
-
-//             }
-
-
-
-//             @media (max-width: 1100px) {
-
-//               .website-desktop-navigation {
-
-//                 gap: 14px !important;
-
-//               }
-
-
-
-//               .website-navbar-container {
-
-//                 gap: 12px !important;
-
-//                 padding-left: 14px !important;
-
-//                 padding-right: 14px !important;
-
-//               }
-
-
-
-//               .website-desktop-auth {
-
-//                 min-width: auto !important;
-
-//               }
-
-//             }
-
-
-
-//             @media (max-width: 900px) {
-
-//               .website-desktop-navigation {
-
-//                 display: none !important;
-
-//               }
-
-
-
-//               .website-desktop-auth {
-
-//                 display: none !important;
-
-//               }
-
-
-
-//               .website-mobile-menu-button {
-
-//                 display: flex !important;
-
-//               }
-
-
-
-//               .website-navbar-container {
-
-//                 min-height: 58px !important;
-
-//                 padding: 8px 14px !important;
-
-//               }
-
-
-
-//               .website-mobile-navigation {
-
-//                 display: flex;
-
-//                 flex-direction: column;
-
-//                 gap: 3px;
-
-//                 max-height: 0;
-
-//                 overflow: hidden;
-
-//                 opacity: 0;
-
-//                 padding: 0 18px;
-
-
-
-//                 background: #000000;
-
-
-
-//                 border-top:
-
-//                   1px solid
-
-//                   rgba(0,140,255,0.08);
-
-
-
-//                 transition:
-
-//                   max-height
-
-//                   0.35s ease,
-
-//                   opacity
-
-//                   0.25s ease,
-
-//                   padding
-
-//                   0.3s ease;
-
-//               }
-
-
-
-//               .website-mobile-navigation.is-open {
-
-//                 max-height: 600px;
-
-//                 opacity: 1;
-
-//                 padding: 14px 18px 18px;
-
-//               }
-
-
-
-//               .mobile-auth-container {
-
-//                 display: flex;
-
-//                 flex-direction: column;
-
-//                 gap: 8px;
-
-//                 padding-top: 12px;
-
-//                 margin-top: 8px;
-
-
-
-//                 border-top:
-
-//                   1px solid
-
-//                   rgba(0,140,255,0.15);
-
-//               }
-
-//             }
-
-
-
-//             @media (max-width: 600px) {
-
-//               .website-navbar-container {
-
-//                 padding: 7px 10px !important;
-
-//                 min-height: 54px !important;
-
-//               }
-
-
-
-//               .website-navbar-container > a {
-
-//                 min-width: auto !important;
-
-//               }
-
-
-
-//               .website-navbar-container > a > span {
-
-//                 max-width: 135px !important;
-
-//                 font-size: 15px !important;
-
-//               }
-
-
-
-//               .website-navbar-container > a > img,
-
-//               .website-navbar-container > a > div {
-
-//                 width: 36px !important;
-
-//                 height: 36px !important;
-
-//               }
-
-
-
-//               .website-mobile-menu-button {
-
-//                 width: 38px !important;
-
-//                 height: 38px !important;
-
-//               }
-
-//             }
-
-//           `}
-
-//         </style>
-
-
-
-//       </header>
-
-//     </>
-
-//   );
+// }
 
 // };
 
+// window.addEventListener(
 
+// "studentAuthChanged",
+
+// handleStudentAuthChanged
+
+// );
+
+// /* =====================================================
+
+// STORAGE EVENT
+
+// ===================================================== */
+
+// const handleStorage =
+
+// (event) => {
+
+// if (
+
+// event.key ===
+
+// "studentLoggedIn" ||
+
+// event.key ===
+
+// "studentRole" ||
+
+// event.key ===
+
+// "studentProfile" ||
+
+// event.key ===
+
+// "studentToken" ||
+
+// event.key ===
+
+// "studentInstituteId"
+
+// ) {
+
+// readStudentSession();
+
+// }
+
+// };
+
+// window.addEventListener(
+
+// "storage",
+
+// handleStorage
+
+// );
+
+// return () => {
+
+// unsubscribe();
+
+// window.removeEventListener(
+
+// "studentAuthChanged",
+
+// handleStudentAuthChanged
+
+// );
+
+// window.removeEventListener(
+
+// "storage",
+
+// handleStorage
+
+// );
+
+// };
+
+// }, [
+
+// loadStudent,
+
+// readStudentSession,
+
+// ]);
+
+// /* =======================================================
+
+// INSTITUTE NAME
+
+// ======================================================= */
+
+// const finalInstituteName =
+
+// propInstituteName ||
+
+// institute?.name ||
+
+// institute?.institute_name ||
+
+// website?.website_name ||
+
+// website?.name ||
+
+// "Fine Arts";
+
+// /* =======================================================
+
+// LOGO
+
+// ======================================================= */
+
+// const logo =
+
+// propLogo ||
+
+// institute?.logo ||
+
+// institute?.logo_url ||
+
+// website?.logo ||
+
+// website?.logo_url ||
+
+// branding?.logo ||
+
+// branding?.logo_url ||
+
+// null;
+
+// /* =======================================================
+
+// BRANDING
+
+// ======================================================= */
+
+// const navbarBranding =
+
+// useMemo(() => {
+
+// return {
+
+// navbarBackgroundColor:
+
+// "#000000",
+
+// navbarTextColor:
+
+// "#E2E8F0",
+
+// navbarActiveColor:
+
+// "#38D7FF",
+
+// navbarButtonColor:
+
+// "#008CFF",
+
+// navbarButtonTextColor:
+
+// "#FFFFFF",
+
+// navbarBorderColor:
+
+// "#008CFF",
+
+// navbarGlowColor:
+
+// "#38D7FF",
+
+// navbarFont:
+
+// branding?.navbarFont ||
+
+// branding?.navbar_font ||
+
+// branding?.fontBody ||
+
+// branding?.font_body ||
+
+// "Inter",
+
+// navbarFontSize:
+
+// branding?.navbarFontSize ||
+
+// branding?.navbar_font_size ||
+
+// "14px",
+
+// navbarFontWeight:
+
+// branding?.navbarFontWeight ||
+
+// branding?.navbar_font_weight ||
+
+// 500,
+
+// navbarLetterSpacing:
+
+// branding?.navbarLetterSpacing ??
+
+// branding?.navbar_letter_spacing ??
+
+// "0px",
+
+// logoRadius:
+
+// branding?.logoRadius ||
+
+// branding?.logo_radius ||
+
+// "10px",
+
+// buttonRadius:
+
+// branding?.buttonRadius ||
+
+// branding?.button_radius ||
+
+// "8px",
+
+// buttonFontWeight:
+
+// branding?.buttonFontWeight ||
+
+// branding?.button_font_weight ||
+
+// 700,
+
+// };
+
+// }, [branding]);
+
+// /* =======================================================
+
+// ACTIVE ROUTE
+
+// ======================================================= */
+
+// const isActive = (path) => {
+
+// if (path === homePath) {
+
+// return (
+
+// location.pathname ===
+
+// homePath
+
+// );
+
+// }
+
+// return location.pathname.startsWith(
+
+// path
+
+// );
+
+// };
+
+// /* =======================================================
+
+// STUDENT NAME
+
+// ======================================================= */
+
+// const studentName =
+
+// student?.user?.full_name ||
+
+// student?.user?.name ||
+
+// student?.full_name ||
+
+// student?.name ||
+
+// student?.student?.full_name ||
+
+// student?.student?.name ||
+
+// "Student";
+
+// void studentName;
+
+// void loadingStudent;
+
+// /* =======================================================
+
+// STUDENT LOGOUT
+
+// ======================================================= */
+
+// const handleLogout =
+
+// async () => {
+
+// if (loggingOut) {
+
+// return;
+
+// }
+
+// try {
+
+// setLoggingOut(true);
+
+// clearStudentSession();
+
+// try {
+
+// await signOut(getAuth());
+
+// } catch (firebaseError) {
+
+// console.warn(
+
+// "Firebase student logout error:",
+
+// firebaseError
+
+// );
+
+// }
+
+// window.dispatchEvent(
+
+// new Event(
+
+// "studentAuthChanged"
+
+// )
+
+// );
+
+// setMobileMenuOpen(false);
+
+// navigate(
+
+// loginPath,
+
+// {
+
+// replace: true,
+
+// }
+
+// );
+
+// } finally {
+
+// setLoggingOut(false);
+
+// }
+
+// };
+
+// /* =======================================================
+
+// BUTTON STYLE
+
+// ======================================================= */
+
+// const buttonStyle = {
+
+// textDecoration: "none",
+
+// display: "inline-flex",
+
+// alignItems: "center",
+
+// justifyContent: "center",
+
+// padding: "8px 16px",
+
+// minHeight: "36px",
+
+// borderRadius:
+
+// "8px",
+
+// background:
+
+// `linear-gradient(
+
+// 135deg,
+
+// ${navbarBranding.navbarButtonColor},
+
+// #0066FF
+
+// )`,
+
+// color:
+
+// navbarBranding.navbarButtonTextColor,
+
+// fontFamily:
+
+// `'${navbarBranding.navbarFont}', sans-serif`,
+
+// fontSize: "13px",
+
+// fontWeight:
+
+// navbarBranding.buttonFontWeight,
+
+// letterSpacing:
+
+// navbarBranding.navbarLetterSpacing,
+
+// lineHeight: "1",
+
+// border:
+
+// "1px solid rgba(56,215,255,0.25)",
+
+// cursor: "pointer",
+
+// transition:
+
+// "all 0.25s ease",
+
+// whiteSpace: "nowrap",
+
+// boxShadow:
+
+// "0 0 18px rgba(0,140,255,0.22)",
+
+// };
+
+// /* =======================================================
+
+// STUDENT AUTH UI
+
+// ======================================================= */
+
+// const renderStudentAuth =
+
+// () => {
+
+// if (studentLoggedIn) {
+
+// return (
+
+// <div className="flex items-center gap-2">
+
+// <Link
+
+// to={
+
+// studentDashboardPath
+
+// }
+
+// style={
+
+// buttonStyle
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(false)
+
+// }
+
+// >
+
+// Dashboard
+
+// </Link>
+
+// <button
+
+// type="button"
+
+// onClick={
+
+// handleLogout
+
+// }
+
+// disabled={
+
+// loggingOut
+
+// }
+
+// style={{
+
+// ...buttonStyle,
+
+// background:
+
+// "linear-gradient(135deg,#111827,#02050A)",
+
+// border:
+
+// "1px solid rgba(56,215,255,0.35)",
+
+// color:
+
+// "#CBD5E1",
+
+// opacity:
+
+// loggingOut
+
+// ? 0.6
+
+// : 1,
+
+// cursor:
+
+// loggingOut
+
+// ? "not-allowed"
+
+// : "pointer",
+
+// boxShadow:
+
+// "0 0 14px rgba(56,215,255,0.08)",
+
+// }}
+
+// >
+
+// {
+
+// loggingOut
+
+// ? "Logging out..."
+
+// : "Logout"
+
+// }
+
+// </button>
+
+// </div>
+
+// );
+
+// }
+
+// return (
+
+// <Link
+
+// to={loginPath}
+
+// style={buttonStyle}
+
+// onClick={() =>
+
+// setMobileMenuOpen(false)
+
+// }
+
+// >
+
+// Student Login
+
+// </Link>
+
+// );
+
+// };
+
+// /* =======================================================
+
+// HEADER
+
+// ======================================================= */
+
+// return (
+
+// <>
+
+// <header
+
+// className="website-navbar"
+
+// style={{
+
+// position: "relative",
+
+// zIndex: 1000,
+
+// width: "100%",
+
+// background:
+
+// "#000000",
+
+// borderBottom:
+
+// "1px solid rgba(0,140,255,0.28)",
+
+// boxShadow:
+
+// "0 4px 30px rgba(0,0,0,0.55), 0 1px 20px rgba(0,140,255,0.08)",
+
+// fontFamily:
+
+// `'${navbarBranding.navbarFont}', sans-serif`,
+
+// }}
+
+// >
+
+// {/* =================================================
+
+// TOP RADIANT BLUE LINE
+
+// ================================================= */}
+
+// <div
+
+// style={{
+
+// position: "absolute",
+
+// top: 0,
+
+// left: "50%",
+
+// transform:
+
+// "translateX(-50%)",
+
+// width: "45%",
+
+// height: "2px",
+
+// background:
+
+// "linear-gradient(90deg,transparent,#008CFF,#38D7FF,#008CFF,transparent)",
+
+// boxShadow:
+
+// "0 0 18px rgba(56,215,255,0.65)",
+
+// }}
+
+// />
+
+// {/* =================================================
+
+// DESKTOP / MAIN HEADER
+
+// ================================================= */}
+
+// <div
+
+// className="website-navbar-container"
+
+// style={{
+
+// maxWidth: "1280px",
+
+// margin: "0 auto",
+
+// padding: "8px 20px",
+
+// minHeight: "62px",
+
+// display: "flex",
+
+// alignItems: "center",
+
+// justifyContent:
+
+// "space-between",
+
+// gap: "22px",
+
+// boxSizing:
+
+// "border-box",
+
+// }}
+
+// >
+
+// {/* =================================================
+
+// LOGO
+
+// ================================================= */}
+
+// <Link
+
+// to={homePath}
+
+// className="website-logo-link"
+
+// style={{
+
+// textDecoration: "none",
+
+// display: "flex",
+
+// alignItems: "center",
+
+// gap: "10px",
+
+// minWidth: "190px",
+
+// flexShrink: 0,
+
+// }}
+
+// >
+
+// {logo ? (
+
+// <img
+
+// src={logo}
+
+// alt={
+
+// finalInstituteName
+
+// }
+
+// style={{
+
+// width: "40px",
+
+// height: "40px",
+
+// objectFit: "cover",
+
+// borderRadius:
+
+// navbarBranding.logoRadius,
+
+// border:
+
+// "1px solid rgba(56,215,255,0.45)",
+
+// boxShadow:
+
+// "0 0 18px rgba(0,140,255,0.28)",
+
+// }}
+
+// onError={(event) => {
+
+// event.currentTarget.style.display =
+
+// "none";
+
+// }}
+
+// />
+
+// ) : (
+
+// <div
+
+// style={{
+
+// width: "40px",
+
+// height: "40px",
+
+// borderRadius:
+
+// navbarBranding.logoRadius,
+
+// display: "flex",
+
+// alignItems: "center",
+
+// justifyContent:
+
+// "center",
+
+// background:
+
+// "linear-gradient(135deg,#008CFF,#0055FF)",
+
+// color: "#FFFFFF",
+
+// fontSize: "16px",
+
+// fontWeight: "800",
+
+// border:
+
+// "1px solid rgba(56,215,255,0.5)",
+
+// boxShadow:
+
+// "0 0 22px rgba(0,140,255,0.35)",
+
+// }}
+
+// >
+
+// {finalInstituteName
+
+// .charAt(0)
+
+// .toUpperCase()}
+
+// </div>
+
+// )}
+
+// <span
+
+// style={{
+
+// fontSize: "17px",
+
+// fontWeight: "800",
+
+// color: "#F8FAFC",
+
+// maxWidth: "175px",
+
+// overflow: "hidden",
+
+// textOverflow:
+
+// "ellipsis",
+
+// whiteSpace: "nowrap",
+
+// textShadow:
+
+// "0 0 15px rgba(56,215,255,0.15)",
+
+// }}
+
+// >
+
+// {finalInstituteName}
+
+// </span>
+
+// </Link>
+
+// {/* =================================================
+
+// DESKTOP NAVIGATION
+
+// Sessions REMOVED
+
+// ================================================= */}
+
+// <nav
+
+// className="website-desktop-navigation"
+
+// style={{
+
+// display: "flex",
+
+// alignItems: "center",
+
+// justifyContent: "center",
+
+// gap: "22px",
+
+// flex: 1,
+
+// }}
+
+// >
+
+// <NavbarLink
+
+// to={homePath}
+
+// active={
+
+// isActive(homePath)
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// >
+
+// Home
+
+// </NavbarLink>
+
+// <NavbarLink
+
+// to={aboutPath}
+
+// active={
+
+// isActive(aboutPath)
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// >
+
+// About
+
+// </NavbarLink>
+
+// <NavbarLink
+
+// to={classesPath}
+
+// active={
+
+// isActive(
+
+// classesPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// >
+
+// Classes
+
+// </NavbarLink>
+
+// <NavbarLink
+
+// to={trainersPath}
+
+// active={
+
+// isActive(
+
+// trainersPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// >
+
+// Trainers
+
+// </NavbarLink>
+
+// <NavbarLink
+
+// to={testimonialsPath}
+
+// active={
+
+// isActive(
+
+// testimonialsPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// >
+
+// Testimonials
+
+// </NavbarLink>
+
+// </nav>
+
+// {/* =================================================
+
+// DESKTOP STUDENT AUTH
+
+// ================================================= */}
+
+// <div
+
+// className="website-desktop-auth"
+
+// style={{
+
+// display: "flex",
+
+// alignItems: "center",
+
+// gap: "8px",
+
+// minWidth: "190px",
+
+// justifyContent:
+
+// "flex-end",
+
+// }}
+
+// >
+
+// {!isPublicSite || studentLoggedIn ? (
+//   renderStudentAuth()
+// ) : (
+//   <Link to={loginPath} style={buttonStyle}>
+//     Student Login
+//   </Link>
+// )}
+
+// </div>
+
+// {/* =================================================
+
+// MOBILE MENU BUTTON
+
+// ================================================= */}
+
+// <button
+
+// type="button"
+
+// className="website-mobile-menu-button"
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// (value) => !value
+
+// )
+
+// }
+
+// aria-label={
+
+// mobileMenuOpen
+
+// ? "Close menu"
+
+// : "Open menu"
+
+// }
+
+// style={{
+
+// display: "none",
+
+// width: "40px",
+
+// height: "40px",
+
+// alignItems: "center",
+
+// justifyContent: "center",
+
+// borderRadius: "8px",
+
+// border:
+
+// "1px solid rgba(0,140,255,0.35)",
+
+// background:
+
+// "rgba(0,140,255,0.08)",
+
+// color: "#38D7FF",
+
+// cursor: "pointer",
+
+// fontSize: "20px",
+
+// boxShadow:
+
+// "0 0 15px rgba(0,140,255,0.12)",
+
+// }}
+
+// >
+
+// {mobileMenuOpen
+
+// ? "×"
+
+// : "☰"}
+
+// </button>
+
+// </div>
+
+// {/* =================================================
+
+// MOBILE NAVIGATION
+
+// Sessions REMOVED
+
+// ================================================= */}
+
+// <div
+
+// className={`website-mobile-navigation ${
+
+// mobileMenuOpen
+
+// ? "is-open"
+
+// : ""
+
+// }`}
+
+// >
+
+// <MobileNavbarLink
+
+// to={homePath}
+
+// active={
+
+// isActive(homePath)
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// >
+
+// Home
+
+// </MobileNavbarLink>
+
+// <MobileNavbarLink
+
+// to={aboutPath}
+
+// active={
+
+// isActive(aboutPath)
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// >
+
+// About
+
+// </MobileNavbarLink>
+
+// <MobileNavbarLink
+
+// to={classesPath}
+
+// active={
+
+// isActive(
+
+// classesPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// >
+
+// Classes
+
+// </MobileNavbarLink>
+
+// <MobileNavbarLink
+
+// to={trainersPath}
+
+// active={
+
+// isActive(
+
+// trainersPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// >
+
+// Trainers
+
+// </MobileNavbarLink>
+
+// <MobileNavbarLink
+
+// to={testimonialsPath}
+
+// active={
+
+// isActive(
+
+// testimonialsPath
+
+// )
+
+// }
+
+// branding={
+
+// navbarBranding
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// >
+
+// Testimonials
+
+// </MobileNavbarLink>
+
+// {/* MOBILE AUTHENTICATION */}
+
+// <div
+
+// className="mobile-auth-container"
+
+// >
+
+// {studentLoggedIn ? (
+
+// <>
+
+// <Link
+
+// to={
+
+// studentDashboardPath
+
+// }
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// style={{
+
+// ...buttonStyle,
+
+// width: "100%",
+
+// }}
+
+// >
+
+// Dashboard
+
+// </Link>
+
+// <button
+
+// type="button"
+
+// onClick={
+
+// handleLogout
+
+// }
+
+// disabled={
+
+// loggingOut
+
+// }
+
+// style={{
+
+// ...buttonStyle,
+
+// width: "100%",
+
+// background:
+
+// "linear-gradient(135deg,#111827,#02050A)",
+
+// color:
+
+// "#CBD5E1",
+
+// border:
+
+// "1px solid rgba(56,215,255,0.35)",
+
+// }}
+
+// >
+
+// {
+
+// loggingOut
+
+// ? "Logging out..."
+
+// : "Logout"
+
+// }
+
+// </button>
+
+// </>
+
+// ) : (
+
+// <Link
+
+// to={loginPath}
+
+// onClick={() =>
+
+// setMobileMenuOpen(
+
+// false
+
+// )
+
+// }
+
+// style={{
+
+// ...buttonStyle,
+
+// width: "100%",
+
+// }}
+
+// >
+
+// Student Login
+
+// </Link>
+
+// )}
+
+// </div>
+
+// </div>
+
+// {/* =================================================
+
+// RESPONSIVE CSS
+
+// ================================================= */}
+
+// <style>
+
+// {`
+
+// .website-navbar {
+
+// backdrop-filter: blur(18px);
+
+// -webkit-backdrop-filter: blur(18px);
+
+// }
+
+// .website-desktop-navigation {
+
+// display: flex;
+
+// }
+
+// .website-mobile-navigation {
+
+// display: none;
+
+// }
+
+// .website-mobile-menu-button {
+
+// display: none;
+
+// }
+
+// .mobile-auth-container {
+
+// display: none;
+
+// }
+
+// .website-navbar a {
+
+// -webkit-tap-highlight-color: transparent;
+
+// }
+
+// @media (max-width: 1100px) {
+
+// .website-desktop-navigation {
+
+// gap: 14px !important;
+
+// }
+
+// .website-navbar-container {
+
+// gap: 12px !important;
+
+// padding-left: 14px !important;
+
+// padding-right: 14px !important;
+
+// }
+
+// .website-desktop-auth {
+
+// min-width: auto !important;
+
+// }
+
+// }
+
+// @media (max-width: 900px) {
+
+// .website-desktop-navigation {
+
+// display: none !important;
+
+// }
+
+// .website-desktop-auth {
+
+// display: none !important;
+
+// }
+
+// .website-mobile-menu-button {
+
+// display: flex !important;
+
+// }
+
+// .website-navbar-container {
+
+// min-height: 58px !important;
+
+// padding: 8px 14px !important;
+
+// }
+
+// .website-mobile-navigation {
+
+// display: flex;
+
+// flex-direction: column;
+
+// gap: 3px;
+
+// max-height: 0;
+
+// overflow: hidden;
+
+// opacity: 0;
+
+// padding: 0 18px;
+
+// background: #000000;
+
+// border-top:
+
+// 1px solid
+
+// rgba(0,140,255,0.08);
+
+// transition:
+
+// max-height
+
+// 0.35s ease,
+
+// opacity
+
+// 0.25s ease,
+
+// padding
+
+// 0.3s ease;
+
+// }
+
+// .website-mobile-navigation.is-open {
+
+// max-height: 600px;
+
+// opacity: 1;
+
+// padding: 14px 18px 18px;
+
+// }
+
+// .mobile-auth-container {
+
+// display: flex;
+
+// flex-direction: column;
+
+// gap: 8px;
+
+// padding-top: 12px;
+
+// margin-top: 8px;
+
+// border-top:
+
+// 1px solid
+
+// rgba(0,140,255,0.15);
+
+// }
+
+// }
+
+// @media (max-width: 600px) {
+
+// .website-navbar-container {
+
+// padding: 7px 10px !important;
+
+// min-height: 54px !important;
+
+// }
+
+// .website-navbar-container > a {
+
+// min-width: auto !important;
+
+// }
+
+// .website-navbar-container > a > span {
+
+// max-width: 135px !important;
+
+// font-size: 15px !important;
+
+// }
+
+// .website-navbar-container > a > img,
+
+// .website-navbar-container > a > div {
+
+// width: 36px !important;
+
+// height: 36px !important;
+
+// }
+
+// .website-mobile-menu-button {
+
+// width: 38px !important;
+
+// height: 38px !important;
+
+// }
+
+// }
+
+// `}
+
+// </style>
+
+// </header>
+
+// </>
+
+// );
+
+// };
 
 // /* =========================================================
 
-//    DESKTOP NAV LINK
+// DESKTOP NAV LINK
 
-// ========================================================= */
-
-
+// \========================================================= */
 
 // function NavbarLink({
 
-//   to,
+// to,
 
-//   active,
+// active,
 
-//   branding,
+// branding,
 
-//   children,
+// children,
 
 // }) {
 
-//   return (
+// return (
 
-//     <Link
+// <Link
 
-//       to={to}
+// to={to}
 
-//       style={{
+// style={{
 
-//         position: "relative",
+// position: "relative",
 
+// textDecoration: "none",
 
+// color: active
 
-//         textDecoration: "none",
+// ? branding.navbarActiveColor
 
+// : branding.navbarTextColor,
 
+// fontFamily:
 
-//         color: active
+// `'${branding.navbarFont}', sans-serif`,
 
-//           ? branding.navbarActiveColor
+// fontSize:
 
-//           : branding.navbarTextColor,
+// branding.navbarFontSize,
 
+// fontWeight: active
 
+// ? 700
 
-//         fontFamily:
+// : branding.navbarFontWeight,
 
-//           `'${branding.navbarFont}', sans-serif`,
+// letterSpacing:
 
+// branding.navbarLetterSpacing,
 
+// lineHeight: "1",
 
-//         fontSize:
+// whiteSpace: "nowrap",
 
-//           branding.navbarFontSize,
+// padding: "12px 0",
 
+// transition:
 
+// "all 0.25s ease",
 
-//         fontWeight: active
+// textShadow: active
 
-//           ? 700
+// ? "0 0 12px rgba(56,215,255,0.55)"
 
-//           : branding.navbarFontWeight,
+// : "none",
 
+// }}
 
+// onMouseEnter={(event) => {
 
-//         letterSpacing:
+// if (!active) {
 
-//           branding.navbarLetterSpacing,
+// event.currentTarget.style.color =
 
+// "#38D7FF";
 
+// event.currentTarget.style.textShadow =
 
-//         lineHeight: "1",
-
-
-
-//         whiteSpace: "nowrap",
-
-
-
-//         padding: "12px 0",
-
-
-
-//         transition:
-
-//           "all 0.25s ease",
-
-
-
-//         textShadow: active
-
-//           ? "0 0 12px rgba(56,215,255,0.55)"
-
-//           : "none",
-
-//       }}
-
-//       onMouseEnter={(event) => {
-
-//         if (!active) {
-
-//           event.currentTarget.style.color =
-
-//             "#38D7FF";
-
-
-
-//           event.currentTarget.style.textShadow =
-
-//             "0 0 12px rgba(56,215,255,0.45)";
-
-//         }
-
-//       }}
-
-//       onMouseLeave={(event) => {
-
-//         if (!active) {
-
-//           event.currentTarget.style.color =
-
-//             branding.navbarTextColor;
-
-
-
-//           event.currentTarget.style.textShadow =
-
-//             "none";
-
-//         }
-
-//       }}
-
-//     >
-
-//       {children}
-
-
-
-//       {active && (
-
-//         <span
-
-//           style={{
-
-//             position: "absolute",
-
-
-
-//             left: "50%",
-
-
-
-//             bottom: "3px",
-
-
-
-//             transform:
-
-//               "translateX(-50%)",
-
-
-
-//             width: "24px",
-
-
-
-//             height: "2px",
-
-
-
-//             borderRadius: "8px",
-
-
-
-//             background:
-
-//               "linear-gradient(90deg,#008CFF,#38D7FF)",
-
-
-
-//             boxShadow:
-
-//               "0 0 10px rgba(56,215,255,0.8)",
-
-//           }}
-
-//         />
-
-//       )}
-
-//     </Link>
-
-//   );
+// "0 0 12px rgba(56,215,255,0.45)";
 
 // }
 
+// }}
 
+// onMouseLeave={(event) => {
+
+// if (!active) {
+
+// event.currentTarget.style.color =
+
+// branding.navbarTextColor;
+
+// event.currentTarget.style.textShadow =
+
+// "none";
+
+// }
+
+// }}
+
+// >
+
+// {children}
+
+// {active && (
+
+// <span
+
+// style={{
+
+// position: "absolute",
+
+// left: "50%",
+
+// bottom: "3px",
+
+// transform:
+
+// "translateX(-50%)",
+
+// width: "24px",
+
+// height: "2px",
+
+// borderRadius: "8px",
+
+// background:
+
+// "linear-gradient(90deg,#008CFF,#38D7FF)",
+
+// boxShadow:
+
+// "0 0 10px rgba(56,215,255,0.8)",
+
+// }}
+
+// />
+
+// )}
+
+// </Link>
+
+// );
+
+// }
 
 // /* =========================================================
 
-//    MOBILE NAV LINK
+// MOBILE NAV LINK
 
-// ========================================================= */
-
-
+// \========================================================= */
 
 // function MobileNavbarLink({
 
-//   to,
+// to,
 
-//   active,
+// active,
 
-//   branding,
+// branding,
 
-//   children,
+// children,
 
-//   onClick,
+// onClick,
 
 // }) {
 
-//   return (
+// return (
 
-//     <Link
+// <Link
 
-//       to={to}
+// to={to}
 
-//       onClick={onClick}
+// onClick={onClick}
 
-//       style={{
+// style={{
 
-//         textDecoration: "none",
+// textDecoration: "none",
 
+// color: active
 
+// ? "#38D7FF"
 
-//         color: active
+// : branding.navbarTextColor,
 
-//           ? "#38D7FF"
+// fontFamily:
 
-//           : branding.navbarTextColor,
+// `'${branding.navbarFont}', sans-serif`,
 
+// fontSize: "14px",
 
+// fontWeight: active
 
-//         fontFamily:
+// ? 700
 
-//           `'${branding.navbarFont}', sans-serif`,
+// : branding.navbarFontWeight,
 
+// letterSpacing:
 
+// branding.navbarLetterSpacing,
 
-//         fontSize: "14px",
+// whiteSpace: "nowrap",
 
+// padding: "12px 8px",
 
+// borderRadius: "8px",
 
-//         fontWeight: active
+// background: active
 
-//           ? 700
+// ? "rgba(0,140,255,0.09)"
 
-//           : branding.navbarFontWeight,
+// : "transparent",
 
+// border: active
 
+// ? "1px solid rgba(0,140,255,0.16)"
 
-//         letterSpacing:
+// : "1px solid transparent",
 
-//           branding.navbarLetterSpacing,
+// boxShadow: active
 
+// ? "0 0 15px rgba(0,140,255,0.08)"
 
+// : "none",
 
-//         whiteSpace: "nowrap",
+// transition:
 
+// "all 0.2s ease",
 
+// textShadow: active
 
-//         padding: "12px 8px",
+// ? "0 0 10px rgba(56,215,255,0.5)"
 
+// : "none",
 
+// }}
 
-//         borderRadius: "8px",
+// >
 
+// {children}
 
+// </Link>
 
-//         background: active
-
-//           ? "rgba(0,140,255,0.09)"
-
-//           : "transparent",
-
-
-
-//         border: active
-
-//           ? "1px solid rgba(0,140,255,0.16)"
-
-//           : "1px solid transparent",
-
-
-
-//         boxShadow: active
-
-//           ? "0 0 15px rgba(0,140,255,0.08)"
-
-//           : "none",
-
-
-
-//         transition:
-
-//           "all 0.2s ease",
-
-
-
-//         textShadow: active
-
-//           ? "0 0 10px rgba(56,215,255,0.5)"
-
-//           : "none",
-
-//       }}
-
-//     >
-
-//       {children}
-
-//     </Link>
-
-//   );
+// );
 
 // }
-
-
 
 // export default WebsiteNavbar;
 
@@ -3486,18 +2779,106 @@ BLACK + RADIANT BLUE THEME
 
 \========================================================= */
 
+
+const normalizeWebsitePageKey = (value = "") => {
+  const key = String(value).trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const aliases = {
+    home: "home",
+    about: "about",
+    aboutus: "about",
+    classes: "classes",
+    class: "classes",
+    courses: "classes",
+    trainers: "trainers",
+    trainer: "trainers",
+    testimonials: "testimonials",
+    testimonial: "testimonials",
+    dashboard: "dashboard",
+    studentdashboard: "dashboard",
+    login: "login",
+    studentlogin: "login",
+  };
+  return aliases[key] || key;
+};
+
+const getWebsitePageSettings = (...candidates) => {
+  // The preview may provide the settings as `pages`, `sections`,
+  // `websiteData`, or inside the `website` object. Use the first
+  // non-empty configuration so the navbar receives the saved values.
+  const findPageList = (value) => {
+    if (Array.isArray(value)) return value;
+    if (!value || typeof value !== "object") return [];
+
+    if (Array.isArray(value.pages)) return value.pages;
+    if (Array.isArray(value.sections)) return value.sections;
+
+    // Also support API responses keyed by page name.
+    const keyedEntries = Object.entries(value).filter(
+      ([key, item]) =>
+        item &&
+        typeof item === "object" &&
+        ["home", "about", "aboutus", "classes", "class", "courses",
+          "trainers", "trainer", "testimonials", "testimonial",
+          "dashboard", "studentdashboard", "login", "studentlogin"].includes(
+          normalizeWebsitePageKey(key)
+        )
+    );
+
+    return keyedEntries.map(([key, item]) => ({
+      ...item,
+      type: item.type || item.key || key,
+    }));
+  };
+
+  for (const candidate of candidates) {
+    const source = findPageList(candidate);
+    if (source.length) {
+      return source.map((page, index) => {
+        const rawEnabled =
+          page?.enabled ??
+          page?.is_active ??
+          page?.isActive ??
+          page?.active ??
+          page?.is_enabled ??
+          page?.status;
+
+        const enabled =
+          typeof rawEnabled === "boolean"
+            ? rawEnabled
+            : typeof rawEnabled === "number"
+              ? rawEnabled !== 0
+              : rawEnabled == null
+                ? true
+                : !["false", "0", "inactive", "disabled", "off"].includes(
+                    String(rawEnabled).trim().toLowerCase()
+                  );
+
+        return {
+          ...page,
+          pageKey: normalizeWebsitePageKey(
+            page?.type || page?.key || page?.slug || page?.id || page?.name
+          ),
+          enabled,
+          order: Number(
+            page?.order ?? page?.display_order ?? page?.position ?? index + 1
+          ),
+        };
+      });
+    }
+  }
+
+  return [];
+};
+
 const WebsiteNavbar = ({
-
-website = {},
-
-institute = {},
-
-branding = {},
-
-instituteName: propInstituteName,
-
-logo: propLogo,
-
+  website = {},
+  websiteData = {},
+  pages: pagesProp,
+  sections: sectionsProp,
+  institute = {},
+  branding = {},
+  instituteName: propInstituteName,
+  logo: propLogo,
 }) => {
 
 const navigate = useNavigate();
@@ -3532,8 +2913,10 @@ useState(false);
    ROUTES — PREVIEW AND PUBLIC WEBSITE
 ======================================================= */
 
-const publicSubdomain = getInstituteSubdomain();
-const isPublicSite = Boolean(publicSubdomain);
+// Detect the public website from its route instead of relying on an
+// undefined getInstituteSubdomain() helper. The institute preview and
+// all institute-admin routes remain in preview/admin mode.
+const isPublicSite = !location.pathname.startsWith("/institute/");
 const previewBase = isPublicSite ? "" : "/institute/website/preview";
 const homePath = previewBase || "/";
 const aboutPath = `${previewBase}/about`;
@@ -3542,6 +2925,42 @@ const trainersPath = `${previewBase}/trainers`;
 const testimonialsPath = `${previewBase}/testimonials`;
 const loginPath = `${previewBase}/login`;
 const studentDashboardPath = `${previewBase}/dashboard`;
+
+/* =======================================================
+   PAGE VISIBILITY + SAVED NAVIGATION ORDER
+======================================================= */
+const pageSettings = getWebsitePageSettings(
+  pagesProp,
+  sectionsProp,
+  websiteData,
+  website
+);
+const getPageSetting = (key) =>
+  pageSettings.find((page) => page.pageKey === key);
+const isPageEnabled = (key) => {
+  const setting = getPageSetting(key);
+  // Preserve legacy behaviour only when no page configuration exists.
+  // If a page record exists, respect its normalized enabled value.
+  return setting ? setting.enabled : true;
+};
+
+const navigationItems = [
+  { key: "home", label: "Home", path: homePath },
+  { key: "about", label: "About", path: aboutPath },
+  { key: "classes", label: "Classes", path: classesPath },
+  { key: "trainers", label: "Trainers", path: trainersPath },
+  { key: "testimonials", label: "Testimonials", path: testimonialsPath },
+]
+  .filter((item) => isPageEnabled(item.key))
+  .sort((a, b) => {
+    const orderA = getPageSetting(a.key)?.order ?? 999;
+    const orderB = getPageSetting(b.key)?.order ?? 999;
+    return orderA - orderB;
+  });
+
+const loginPageEnabled = isPageEnabled("login");
+const dashboardPageEnabled = isPageEnabled("dashboard");
+
 
 /* =======================================================
 
@@ -5131,128 +4550,16 @@ flex: 1,
 
 >
 
-<NavbarLink
-
-to={homePath}
-
-active={
-
-isActive(homePath)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
->
-
-Home
-
-</NavbarLink>
-
-<NavbarLink
-
-to={aboutPath}
-
-active={
-
-isActive(aboutPath)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
->
-
-About
-
-</NavbarLink>
-
-<NavbarLink
-
-to={classesPath}
-
-active={
-
-isActive(
-
-classesPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
->
-
-Classes
-
-</NavbarLink>
-
-<NavbarLink
-
-to={trainersPath}
-
-active={
-
-isActive(
-
-trainersPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
->
-
-Trainers
-
-</NavbarLink>
-
-<NavbarLink
-
-to={testimonialsPath}
-
-active={
-
-isActive(
-
-testimonialsPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
->
-
-Testimonials
-
-</NavbarLink>
-
+{navigationItems.map((item) => (
+  <NavbarLink
+    key={item.key}
+    to={item.path}
+    active={isActive(item.path)}
+    branding={navbarBranding}
+  >
+    {item.label}
+  </NavbarLink>
+))}
 </nav>
 
 {/* =================================================
@@ -5283,13 +4590,15 @@ justifyContent:
 
 >
 
-{!isPublicSite || studentLoggedIn ? (
-  renderStudentAuth()
-) : (
-  <Link to={loginPath} style={buttonStyle}>
-    Student Login
-  </Link>
-)}
+{studentLoggedIn
+  ? (dashboardPageEnabled ? renderStudentAuth() : null)
+  : loginPageEnabled
+    ? (!isPublicSite ? renderStudentAuth() : (
+        <Link to={loginPath} style={buttonStyle}>
+          Student Login
+        </Link>
+      ))
+    : null}
 
 </div>
 
@@ -5393,178 +4702,17 @@ mobileMenuOpen
 
 >
 
-<MobileNavbarLink
-
-to={homePath}
-
-active={
-
-isActive(homePath)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
-onClick={() =>
-
-setMobileMenuOpen(
-
-false
-
-)
-
-}
-
->
-
-Home
-
-</MobileNavbarLink>
-
-<MobileNavbarLink
-
-to={aboutPath}
-
-active={
-
-isActive(aboutPath)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
-onClick={() =>
-
-setMobileMenuOpen(
-
-false
-
-)
-
-}
-
->
-
-About
-
-</MobileNavbarLink>
-
-<MobileNavbarLink
-
-to={classesPath}
-
-active={
-
-isActive(
-
-classesPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
-onClick={() =>
-
-setMobileMenuOpen(
-
-false
-
-)
-
-}
-
->
-
-Classes
-
-</MobileNavbarLink>
-
-<MobileNavbarLink
-
-to={trainersPath}
-
-active={
-
-isActive(
-
-trainersPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
-onClick={() =>
-
-setMobileMenuOpen(
-
-false
-
-)
-
-}
-
->
-
-Trainers
-
-</MobileNavbarLink>
-
-<MobileNavbarLink
-
-to={testimonialsPath}
-
-active={
-
-isActive(
-
-testimonialsPath
-
-)
-
-}
-
-branding={
-
-navbarBranding
-
-}
-
-onClick={() =>
-
-setMobileMenuOpen(
-
-false
-
-)
-
-}
-
->
-
-Testimonials
-
-</MobileNavbarLink>
-
+{navigationItems.map((item) => (
+  <MobileNavbarLink
+    key={item.key}
+    to={item.path}
+    active={isActive(item.path)}
+    branding={navbarBranding}
+    onClick={() => setMobileMenuOpen(false)}
+  >
+    {item.label}
+  </MobileNavbarLink>
+))}
 {/* MOBILE AUTHENTICATION */}
 
 <div
@@ -5573,7 +4721,7 @@ className="mobile-auth-container"
 
 >
 
-{studentLoggedIn ? (
+{studentLoggedIn && dashboardPageEnabled ? (
 
 <>
 
@@ -5661,7 +4809,7 @@ loggingOut
 
 </>
 
-) : (
+) : loginPageEnabled ? (
 
 <Link
 
@@ -5690,8 +4838,7 @@ width: "100%",
 Student Login
 
 </Link>
-
-)}
+) : null}
 
 </div>
 

@@ -1,5 +1,1890 @@
 
 
+// import API from "./api";
+
+
+// /* =========================================================
+//    HELPERS
+// ========================================================= */
+
+// const isValidId = (value) => {
+//   if (
+//     value === undefined ||
+//     value === null
+//   ) {
+//     return false;
+//   }
+
+//   const id = String(value).trim();
+
+//   if (
+//     !id ||
+//     id === "null" ||
+//     id === "undefined"
+//   ) {
+//     return false;
+//   }
+
+//   return true;
+// };
+
+
+// const normalizeId = (value) => {
+//   if (!isValidId(value)) {
+//     return null;
+//   }
+
+//   return String(value).trim();
+// };
+
+
+// /* =========================================================
+//    GET INSTITUTE ID FROM URL
+// ========================================================= */
+
+// const getInstituteIdFromUrl = () => {
+//   try {
+//     if (
+//       typeof window === "undefined"
+//     ) {
+//       return null;
+//     }
+
+//     const params =
+//       new URLSearchParams(
+//         window.location.search
+//       );
+
+//     const urlInstituteId =
+//       params.get("institute_id");
+
+//     if (
+//       isValidId(
+//         urlInstituteId
+//       )
+//     ) {
+//       return normalizeId(
+//         urlInstituteId
+//       );
+//     }
+
+//     const urlInstituteIdCamel =
+//       params.get("instituteId");
+
+//     if (
+//       isValidId(
+//         urlInstituteIdCamel
+//       )
+//     ) {
+//       return normalizeId(
+//         urlInstituteIdCamel
+//       );
+//     }
+
+//     const urlId =
+//       params.get("id");
+
+//     if (
+//       isValidId(urlId)
+//     ) {
+//       return normalizeId(
+//         urlId
+//       );
+//     }
+
+//     return null;
+
+//   } catch (error) {
+
+//     console.error(
+//       "FAILED TO READ INSTITUTE ID FROM URL:",
+//       error
+//     );
+
+//     return null;
+//   }
+// };
+
+
+// /* =========================================================
+//    GET CURRENT INSTITUTE FROM STORAGE
+// ========================================================= */
+
+// const getStoredCurrentInstituteId = () => {
+
+//   /* -------------------------------------------------------
+//      1. Normal institute ID
+//   ------------------------------------------------------- */
+
+//   const instituteId =
+//     normalizeId(
+//       localStorage.getItem(
+//         "instituteId"
+//       )
+//     );
+
+//   if (instituteId) {
+//     return instituteId;
+//   }
+
+
+//   const sessionInstituteId =
+//     normalizeId(
+//       sessionStorage.getItem(
+//         "instituteId"
+//       )
+//     );
+
+//   if (sessionInstituteId) {
+//     return sessionInstituteId;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      2. institute_id
+//   ------------------------------------------------------- */
+
+//   const instituteIdSnake =
+//     normalizeId(
+//       localStorage.getItem(
+//         "institute_id"
+//       )
+//     );
+
+//   if (instituteIdSnake) {
+//     return instituteIdSnake;
+//   }
+
+
+//   const sessionInstituteIdSnake =
+//     normalizeId(
+//       sessionStorage.getItem(
+//         "institute_id"
+//       )
+//     );
+
+//   if (sessionInstituteIdSnake) {
+//     return sessionInstituteIdSnake;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      3. currentInstituteId
+//   ------------------------------------------------------- */
+
+//   const currentInstituteId =
+//     normalizeId(
+//       localStorage.getItem(
+//         "currentInstituteId"
+//       )
+//     );
+
+//   if (currentInstituteId) {
+//     return currentInstituteId;
+//   }
+
+
+//   const sessionCurrentInstituteId =
+//     normalizeId(
+//       sessionStorage.getItem(
+//         "currentInstituteId"
+//       )
+//     );
+
+//   if (sessionCurrentInstituteId) {
+//     return sessionCurrentInstituteId;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      4. current_institute_id
+//   ------------------------------------------------------- */
+
+//   const currentInstituteIdSnake =
+//     normalizeId(
+//       localStorage.getItem(
+//         "current_institute_id"
+//       )
+//     );
+
+//   if (currentInstituteIdSnake) {
+//     return currentInstituteIdSnake;
+//   }
+
+
+//   const sessionCurrentInstituteIdSnake =
+//     normalizeId(
+//       sessionStorage.getItem(
+//         "current_institute_id"
+//       )
+//     );
+
+//   if (sessionCurrentInstituteIdSnake) {
+//     return sessionCurrentInstituteIdSnake;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      5. Stored institute object
+//   ------------------------------------------------------- */
+
+//   const storedInstitute =
+//     localStorage.getItem(
+//       "institute"
+//     );
+
+//   if (
+//     storedInstitute
+//   ) {
+
+//     try {
+
+//       const parsed =
+//         JSON.parse(
+//           storedInstitute
+//         );
+
+
+//       const id =
+//         parsed?.institute?.id ||
+//         parsed?.institute?.institute_id ||
+//         parsed?.institute?.instituteId ||
+//         parsed?.instituteId ||
+//         parsed?.id ||
+//         parsed?.institute_id ||
+//         null;
+
+
+//       if (
+//         isValidId(id)
+//       ) {
+
+//         return normalizeId(
+//           id
+//         );
+//       }
+
+//     } catch (error) {
+
+//       console.error(
+//         "FAILED TO PARSE STORED INSTITUTE:",
+//         error
+//       );
+//     }
+//   }
+
+
+//   return null;
+// };
+
+
+// /* =========================================================
+//    PREVIEW INSTITUTE ID
+
+//    IMPORTANT:
+//    NEVER prefer old previewInstituteId first.
+
+//    Priority:
+//    1. URL
+//    2. current institute
+//    3. preview storage
+// ========================================================= */
+
+// export const getPreviewInstituteId = () => {
+
+//   const urlId =
+//     getInstituteIdFromUrl();
+
+//   if (urlId) {
+
+//     console.log(
+//       "PREVIEW ID FROM URL:",
+//       urlId
+//     );
+
+//     return urlId;
+//   }
+
+
+//   const currentInstituteId =
+//     getStoredCurrentInstituteId();
+
+//   if (currentInstituteId) {
+
+//     console.log(
+//       "PREVIEW ID FROM CURRENT INSTITUTE:",
+//       currentInstituteId
+//     );
+
+//     return currentInstituteId;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      Preview ID is ONLY a fallback.
+//   ------------------------------------------------------- */
+
+//   const previewInstituteId =
+//     normalizeId(
+//       localStorage.getItem(
+//         "previewInstituteId"
+//       )
+//     );
+
+//   if (previewInstituteId) {
+
+//     console.warn(
+//       "USING FALLBACK PREVIEW INSTITUTE ID:",
+//       previewInstituteId
+//     );
+
+//     return previewInstituteId;
+//   }
+
+
+//   const sessionPreviewInstituteId =
+//     normalizeId(
+//       sessionStorage.getItem(
+//         "previewInstituteId"
+//       )
+//     );
+
+//   if (sessionPreviewInstituteId) {
+
+//     console.warn(
+//       "USING FALLBACK SESSION PREVIEW INSTITUTE ID:",
+//       sessionPreviewInstituteId
+//     );
+
+//     return sessionPreviewInstituteId;
+//   }
+
+
+//   return null;
+// };
+
+
+// /* =========================================================
+//    SET PREVIEW INSTITUTE ID
+// ========================================================= */
+
+// export const setPreviewInstituteId = (
+//   instituteId
+// ) => {
+
+//   const id =
+//     normalizeId(
+//       instituteId
+//     );
+
+
+//   if (!id) {
+
+//     console.error(
+//       "Cannot set empty preview institute ID"
+//     );
+
+//     return;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      Preview storage
+//   ------------------------------------------------------- */
+
+//   localStorage.setItem(
+//     "previewInstituteId",
+//     id
+//   );
+
+//   sessionStorage.setItem(
+//     "previewInstituteId",
+//     id
+//   );
+
+
+//   /* -------------------------------------------------------
+//      Current institute storage
+//   ------------------------------------------------------- */
+
+//   localStorage.setItem(
+//     "instituteId",
+//     id
+//   );
+
+//   sessionStorage.setItem(
+//     "instituteId",
+//     id
+//   );
+
+
+//   console.log(
+//     "PREVIEW INSTITUTE ID SAVED:",
+//     id
+//   );
+// };
+
+
+// /* =========================================================
+//    CLEAR PREVIEW INSTITUTE ID
+// ========================================================= */
+
+// export const clearPreviewInstituteId = () => {
+
+//   localStorage.removeItem(
+//     "previewInstituteId"
+//   );
+
+//   sessionStorage.removeItem(
+//     "previewInstituteId"
+//   );
+
+//   console.log(
+//     "PREVIEW INSTITUTE ID CLEARED"
+//   );
+// };
+
+
+// /* =========================================================
+//    CLEAR ALL POSSIBLE OLD INSTITUTE IDS
+
+//    Useful when changing accounts/institutes.
+// ========================================================= */
+
+// export const clearStoredInstituteIds = () => {
+
+//   localStorage.removeItem(
+//     "previewInstituteId"
+//   );
+
+//   sessionStorage.removeItem(
+//     "previewInstituteId"
+//   );
+
+//   localStorage.removeItem(
+//     "instituteId"
+//   );
+
+//   sessionStorage.removeItem(
+//     "instituteId"
+//   );
+
+//   localStorage.removeItem(
+//     "institute_id"
+//   );
+
+//   sessionStorage.removeItem(
+//     "institute_id"
+//   );
+
+//   localStorage.removeItem(
+//     "currentInstituteId"
+//   );
+
+//   sessionStorage.removeItem(
+//     "currentInstituteId"
+//   );
+
+//   localStorage.removeItem(
+//     "current_institute_id"
+//   );
+
+//   sessionStorage.removeItem(
+//     "current_institute_id"
+//   );
+
+//   console.log(
+//     "ALL STORED INSTITUTE IDS CLEARED"
+//   );
+// };
+
+
+// /* =========================================================
+//    WEBSITE
+// ========================================================= */
+
+// export const getWebsiteData = async () => {
+
+//   try {
+
+//     console.log(
+//       "=========================================="
+//     );
+
+//     console.log(
+//       "GETTING INSTITUTE WEBSITE DATA"
+//     );
+
+//     console.log(
+//       "=========================================="
+//     );
+
+
+//     const res =
+//       await API.get(
+//         "/websites"
+//       );
+
+
+//     console.log(
+//       "WEBSITE DATA RESPONSE:",
+//       res.data
+//     );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET WEBSITE DATA ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    WEBSITE STATUS
+// ========================================================= */
+
+// export const getWebsiteStatus = async () => {
+
+//   try {
+
+//     console.log(
+//       "GETTING WEBSITE STATUS"
+//     );
+
+
+//     const res =
+//       await API.get(
+//         "/websites/status"
+//       );
+
+
+//     console.log(
+//       "WEBSITE STATUS RESPONSE:",
+//       res.data
+//     );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET WEBSITE STATUS ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    PUBLIC WEBSITE / PREVIEW
+// ========================================================= */
+
+// export const getPublicWebsiteData = async (
+//   instituteId = null,
+//   isPreview = true
+// ) => {
+
+//   /* -------------------------------------------------------
+//      If caller explicitly gives ID, ALWAYS use it.
+//   ------------------------------------------------------- */
+
+//   let id =
+//     normalizeId(
+//       instituteId
+//     );
+
+
+//   /* -------------------------------------------------------
+//      Otherwise resolve automatically.
+//   ------------------------------------------------------- */
+
+//   if (!id) {
+
+//     id =
+//       getPreviewInstituteId();
+//   }
+
+
+//   /* -------------------------------------------------------
+//      Validate
+//   ------------------------------------------------------- */
+
+//   if (!id) {
+
+//     throw new Error(
+//       "Preview institute ID not found. Please open the preview from the institute dashboard."
+//     );
+//   }
+
+
+//   const parsedId =
+//     normalizeId(id);
+
+
+//   if (!parsedId) {
+
+//     throw new Error(
+//       "Invalid preview institute ID"
+//     );
+//   }
+
+
+//   console.log(
+//     "=========================================="
+//   );
+
+//   console.log(
+//     "PUBLIC WEBSITE REQUEST"
+//   );
+
+//   console.log(
+//     "Institute ID:",
+//     parsedId
+//   );
+
+//   console.log(
+//     "Preview:",
+//     Boolean(isPreview)
+//   );
+
+//   console.log(
+//     "=========================================="
+//   );
+
+
+//   try {
+
+//     const res =
+//       await API.get(
+//         `/websites/public/${parsedId}`,
+//         {
+//           params: {
+//             preview:
+//               Boolean(isPreview),
+//           },
+//         }
+//       );
+
+
+//     console.log(
+//       "PUBLIC WEBSITE RESPONSE:",
+//       res.data
+//     );
+
+
+//     const result =
+//       res.data?.data ??
+//       res.data;
+
+
+//     /* -----------------------------------------------------
+//        If server returns an institute ID,
+//        save that ID as the authoritative ID.
+//     ----------------------------------------------------- */
+
+//     const serverInstituteId =
+//       normalizeId(
+//         result?.instituteId ??
+//         result?.institute_id ??
+//         result?.institute?.id ??
+//         result?.institute?.institute_id
+//       );
+
+
+//     if (
+//       serverInstituteId
+//     ) {
+
+//       localStorage.setItem(
+//         "instituteId",
+//         serverInstituteId
+//       );
+
+//       sessionStorage.setItem(
+//         "instituteId",
+//         serverInstituteId
+//       );
+
+//       localStorage.setItem(
+//         "previewInstituteId",
+//         serverInstituteId
+//       );
+
+//       sessionStorage.setItem(
+//         "previewInstituteId",
+//         serverInstituteId
+//       );
+
+
+//       console.log(
+//         "SERVER INSTITUTE ID:",
+//         serverInstituteId
+//       );
+//     }
+
+
+//     return result;
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET PUBLIC WEBSITE DATA ERROR:",
+//       error?.response?.data ||
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+
+
+// /* =========================================================
+//    GET PUBLISHED WEBSITE BY SLUG
+// ========================================================= */
+
+// /** Load a published institute website by its assigned subdomain. */
+// export const getPublicWebsiteDataBySubdomain = async (subdomain) => {
+//   const normalizedSubdomain = String(subdomain || "").trim().toLowerCase();
+//   if (!normalizedSubdomain) throw new Error("Institute subdomain is required");
+
+//   const response = await API.get(
+//     `/websites/public/subdomain/${encodeURIComponent(normalizedSubdomain)}`
+//   );
+//   return response.data?.data ?? response.data;
+// };
+
+
+// /* =========================================================
+//    TEMPLATES
+// ========================================================= */
+
+// export const getTemplates = async () => {
+
+//   try {
+
+//     const res =
+//       await API.get(
+//         "/websites/templates"
+//       );
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET TEMPLATES ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    GET SINGLE TEMPLATE
+// ========================================================= */
+
+// export const getTemplate = async (
+//   templateId
+// ) => {
+
+//   if (
+//     templateId === undefined ||
+//     templateId === null ||
+//     templateId === ""
+//   ) {
+
+//     throw new Error(
+//       "Template ID is required"
+//     );
+//   }
+
+
+//   try {
+
+//     const res =
+//       await API.get(
+//         `/websites/templates/${templateId}`
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET TEMPLATE ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    UPDATE TEMPLATE
+// ========================================================= */
+
+// export const updateTemplate = async (
+//   templateId
+// ) => {
+
+//   if (
+//     templateId === undefined ||
+//     templateId === null ||
+//     templateId === ""
+//   ) {
+
+//     throw new Error(
+//       "Template ID is required"
+//     );
+//   }
+
+
+//   try {
+
+//     const res =
+//       await API.put(
+//         "/websites/template",
+//         {
+//           templateId,
+//         }
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPDATE TEMPLATE ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    WEBSITE SECTIONS
+// ========================================================= */
+
+// export const updateSections = async (
+//   sections
+// ) => {
+
+//   if (
+//     !Array.isArray(
+//       sections
+//     )
+//   ) {
+
+//     throw new Error(
+//       "Sections must be an array"
+//     );
+//   }
+
+
+//   try {
+
+//     const res =
+//       await API.put(
+//         "/websites/sections",
+//         {
+//           sections,
+//         }
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPDATE SECTIONS ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    GET WEBSITE CONTENT
+// ========================================================= */
+
+// export const getWebsiteContent = async () => {
+
+//   try {
+
+//     console.log(
+//       "GETTING WEBSITE CONTENT"
+//     );
+
+
+//     const res =
+//       await API.get(
+//         "/websites/content"
+//       );
+
+
+//     console.log(
+//       "WEBSITE CONTENT RESPONSE:",
+//       res.data
+//     );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "GET WEBSITE CONTENT ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    UPDATE COMPLETE WEBSITE CONTENT
+// ========================================================= */
+
+// export const updateWebsiteContent = async (
+//   content
+// ) => {
+
+//   if (
+//     !content ||
+//     typeof content !== "object" ||
+//     Array.isArray(content)
+//   ) {
+
+//     throw new Error(
+//       "Website content must be an object"
+//     );
+//   }
+
+
+//   try {
+
+//     console.log(
+//       "=========================================="
+//     );
+
+//     console.log(
+//       "UPDATING COMPLETE WEBSITE CONTENT"
+//     );
+
+//     console.log(
+//       JSON.stringify(
+//         content,
+//         null,
+//         2
+//       )
+//     );
+
+//     console.log(
+//       "=========================================="
+//     );
+
+
+//     const res =
+//       await API.put(
+//         "/websites/content",
+//         {
+//           content,
+//         }
+//       );
+
+
+//     console.log(
+//       "WEBSITE CONTENT UPDATE RESPONSE:",
+//       res.data
+//     );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPDATE WEBSITE CONTENT ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    PAGE KEY NORMALIZER
+// ========================================================= */
+
+// const normalizePageKey = (
+//   pageKey
+// ) => {
+
+//   const value =
+//     String(
+//       pageKey ?? ""
+//     ).trim();
+
+
+//   const map = {
+
+//     Home:
+//       "home",
+
+//     home:
+//       "home",
+
+//     About:
+//       "about",
+
+//     about:
+//       "about",
+
+//     Classes:
+//       "classes",
+
+//     classes:
+//       "classes",
+
+//     Sessions:
+//       "sessions",
+
+//     sessions:
+//       "sessions",
+
+//     Trainers:
+//       "trainers",
+
+//     trainers:
+//       "trainers",
+
+//     Testimonials:
+//       "testimonials",
+
+//     testimonials:
+//       "testimonials",
+
+//     Contact:
+//       "contact",
+
+//     contact:
+//       "contact",
+
+//     Gallery:
+//       "gallery",
+
+//     gallery:
+//       "gallery",
+
+//     Batches:
+//       "batches",
+
+//     batches:
+//       "batches",
+
+//     Categories:
+//       "categories",
+
+//     categories:
+//       "categories",
+
+//     "Student Login":
+//       "studentLogin",
+
+//     studentLogin:
+//       "studentLogin",
+
+//     studentlogin:
+//       "studentLogin",
+//   };
+
+
+//   return (
+//     map[value] ||
+//     value
+//   );
+// };
+
+
+// /* =========================================================
+//    SECTION KEY NORMALIZER
+// ========================================================= */
+
+// const normalizeSectionKey = (
+//   sectionKey
+// ) => {
+
+//   const value =
+//     String(
+//       sectionKey ?? ""
+//     ).trim();
+
+
+//   const map = {
+
+//     Hero:
+//       "hero",
+
+//     hero:
+//       "hero",
+
+//     "Popular Classes":
+//       "popularClasses",
+
+//     "Popular classes":
+//       "popularClasses",
+
+//     "popular classes":
+//       "popularClasses",
+
+//     popular_classes:
+//       "popularClasses",
+
+//     popularClasses:
+//       "popularClasses",
+
+//     Categories:
+//       "categories",
+
+//     categories:
+//       "categories",
+
+//     Trainers:
+//       "trainers",
+
+//     trainers:
+//       "trainers",
+
+//     Testimonials:
+//       "testimonials",
+
+//     testimonials:
+//       "testimonials",
+
+//     About:
+//       "about",
+
+//     about:
+//       "about",
+
+//     Classes:
+//       "classes",
+
+//     classes:
+//       "classes",
+
+//     Sessions:
+//       "sessions",
+
+//     sessions:
+//       "sessions",
+
+//     Contact:
+//       "contact",
+
+//     contact:
+//       "contact",
+
+//     Gallery:
+//       "gallery",
+
+//     gallery:
+//       "gallery",
+
+//     Batches:
+//       "batches",
+
+//     batches:
+//       "batches",
+
+//     "Student Login":
+//       "studentLogin",
+
+//     studentLogin:
+//       "studentLogin",
+
+//     studentlogin:
+//       "studentLogin",
+//   };
+
+
+//   return (
+//     map[value] ||
+//     value
+//   );
+// };
+
+
+// /* =========================================================
+//    DEFAULT SECTION KEY
+// ========================================================= */
+
+// const getDefaultSectionKey = (
+//   pageKey
+// ) => {
+
+//   const page =
+//     normalizePageKey(
+//       pageKey
+//     );
+
+
+//   if (
+//     page === "home"
+//   ) {
+//     return null;
+//   }
+
+
+//   return page;
+// };
+
+
+// /* =========================================================
+//    UPDATE SINGLE SECTION CONTENT
+// ========================================================= */
+
+// export const updateSectionContent = async (
+//   pageKey,
+//   sectionKey,
+//   sectionContent
+// ) => {
+
+//   /* -------------------------------------------------------
+//      OBJECT ARGUMENT
+//   ------------------------------------------------------- */
+
+//   if (
+//     pageKey &&
+//     typeof pageKey === "object" &&
+//     !Array.isArray(pageKey)
+//   ) {
+
+//     const options =
+//       pageKey;
+
+
+//     pageKey =
+//       options.pageKey ??
+//       options.page_key ??
+//       options.page ??
+//       "";
+
+
+//     sectionKey =
+//       options.sectionKey ??
+//       options.section_key ??
+//       options.section ??
+//       null;
+
+
+//     sectionContent =
+//       options.content ??
+//       options.sectionContent ??
+//       options.section_content ??
+//       {};
+//   }
+
+
+//   /* -------------------------------------------------------
+//      TWO ARGUMENT CALL
+//   ------------------------------------------------------- */
+
+//   if (
+//     sectionKey &&
+//     typeof sectionKey === "object" &&
+//     !Array.isArray(sectionKey)
+//   ) {
+
+//     sectionContent =
+//       sectionKey;
+
+//     sectionKey =
+//       null;
+//   }
+
+
+//   /* -------------------------------------------------------
+//      NORMALIZE
+//   ------------------------------------------------------- */
+
+//   const normalizedPageKey =
+//     normalizePageKey(
+//       pageKey
+//     );
+
+
+//   let normalizedSectionKey =
+//     normalizeSectionKey(
+//       sectionKey
+//     );
+
+
+//   if (
+//     !normalizedSectionKey
+//   ) {
+
+//     normalizedSectionKey =
+//       getDefaultSectionKey(
+//         normalizedPageKey
+//       );
+//   }
+
+
+//   /* -------------------------------------------------------
+//      HOME SECTION AUTO-DETECTION
+//   ------------------------------------------------------- */
+
+//   if (
+//     normalizedPageKey === "home" &&
+//     !normalizedSectionKey &&
+//     sectionContent &&
+//     typeof sectionContent === "object"
+//   ) {
+
+//     const possibleKeys = [
+//       "hero",
+//       "popularClasses",
+//       "categories",
+//       "trainers",
+//       "testimonials",
+//     ];
+
+
+//     const found =
+//       possibleKeys.find(
+//         (key) =>
+//           Object.prototype.hasOwnProperty.call(
+//             sectionContent,
+//             key
+//           )
+//       );
+
+
+//     if (found) {
+
+//       normalizedSectionKey =
+//         found;
+
+
+//       sectionContent =
+//         sectionContent[
+//           found
+//         ];
+//     }
+//   }
+
+
+//   /* -------------------------------------------------------
+//      VALIDATION
+//   ------------------------------------------------------- */
+
+//   if (!normalizedPageKey) {
+
+//     throw new Error(
+//       "Page key is required"
+//     );
+//   }
+
+
+//   if (!normalizedSectionKey) {
+
+//     throw new Error(
+//       `Section key is required for page "${normalizedPageKey}".`
+//     );
+//   }
+
+
+//   if (
+//     !sectionContent ||
+//     typeof sectionContent !== "object" ||
+//     Array.isArray(sectionContent)
+//   ) {
+
+//     throw new Error(
+//       "Section content must be an object"
+//     );
+//   }
+
+
+//   console.log(
+//     "=========================================="
+//   );
+
+//   console.log(
+//     "UPDATING WEBSITE SECTION"
+//   );
+
+//   console.log(
+//     "Page:",
+//     normalizedPageKey
+//   );
+
+//   console.log(
+//     "Section:",
+//     normalizedSectionKey
+//   );
+
+//   console.log(
+//     "Content:",
+//     sectionContent
+//   );
+
+//   console.log(
+//     "=========================================="
+//   );
+
+
+//   try {
+
+//     const currentResponse =
+//       await getWebsiteContent();
+
+
+//     let currentContent =
+//       currentResponse?.content ??
+//       currentResponse ??
+//       {};
+
+
+//     let content = {};
+
+
+//     try {
+
+//       content =
+//         JSON.parse(
+//           JSON.stringify(
+//             currentContent
+//           )
+//         );
+
+//     } catch (error) {
+
+//       console.error(
+//         "FAILED TO CLONE WEBSITE CONTENT:",
+//         error
+//       );
+
+//       content = {};
+//     }
+
+
+//     /* -----------------------------------------------------
+//        Ensure page
+//     ----------------------------------------------------- */
+
+//     if (
+//       !content[
+//         normalizedPageKey
+//       ] ||
+//       typeof content[
+//         normalizedPageKey
+//       ] !== "object" ||
+//       Array.isArray(
+//         content[
+//           normalizedPageKey
+//         ]
+//       )
+//     ) {
+
+//       content[
+//         normalizedPageKey
+//       ] = {};
+//     }
+
+
+//     /* -----------------------------------------------------
+//        Home
+//     ----------------------------------------------------- */
+
+//     if (
+//       normalizedPageKey === "home"
+//     ) {
+
+//       if (
+//         !content.home[
+//           normalizedSectionKey
+//         ] ||
+//         typeof content.home[
+//           normalizedSectionKey
+//         ] !== "object" ||
+//         Array.isArray(
+//           content.home[
+//             normalizedSectionKey
+//           ]
+//         )
+//       ) {
+
+//         content.home[
+//           normalizedSectionKey
+//         ] = {};
+//       }
+
+
+//       content.home[
+//         normalizedSectionKey
+//       ] = {
+
+//         ...content.home[
+//           normalizedSectionKey
+//         ],
+
+//         ...sectionContent,
+//       };
+
+//     }
+
+
+//     /* -----------------------------------------------------
+//        Normal page
+//     ----------------------------------------------------- */
+
+//     else {
+
+//       content[
+//         normalizedPageKey
+//       ] = {
+
+//         ...content[
+//           normalizedPageKey
+//         ],
+
+//         ...sectionContent,
+//       };
+//     }
+
+
+//     /* -----------------------------------------------------
+//        SAVE
+//     ----------------------------------------------------- */
+
+//     const result =
+//       await updateWebsiteContent(
+//         content
+//       );
+
+
+//     console.log(
+//       "=========================================="
+//     );
+
+//     console.log(
+//       "WEBSITE SECTION UPDATED SUCCESSFULLY"
+//     );
+
+//     console.log(
+//       "Page:",
+//       normalizedPageKey
+//     );
+
+//     console.log(
+//       "Section:",
+//       normalizedSectionKey
+//     );
+
+//     console.log(
+//       "=========================================="
+//     );
+
+
+//     return result;
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPDATE SINGLE WEBSITE SECTION ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    BRANDING
+// ========================================================= */
+
+// export const updateBranding = async (
+//   branding
+// ) => {
+
+//   if (
+//     !branding ||
+//     typeof branding !== "object" ||
+//     Array.isArray(branding)
+//   ) {
+
+//     throw new Error(
+//       "Branding must be an object"
+//     );
+//   }
+
+
+//   try {
+
+//     console.log(
+//       "UPDATING WEBSITE BRANDING:",
+//       branding
+//     );
+
+
+//     const res =
+//       await API.put(
+//         "/websites/branding",
+//         {
+//           branding,
+//         }
+//       );
+
+
+//     console.log(
+//       "BRANDING UPDATE RESPONSE:",
+//       res.data
+//     );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPDATE BRANDING ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    PUBLISH WEBSITE
+// ========================================================= */
+
+// export const publishWebsite = async () => {
+
+//   try {
+
+//     const res =
+//       await API.post(
+//         "/websites/publish"
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "PUBLISH WEBSITE ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    UNPUBLISH WEBSITE
+// ========================================================= */
+
+// export const unpublishWebsite = async () => {
+
+//   try {
+
+//     const res =
+//       await API.post(
+//         "/websites/unpublish"
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UNPUBLISH WEBSITE ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    MEDIA UPLOAD
+// ========================================================= */
+
+// export const uploadMedia = async (
+//   file,
+//   purpose = "general"
+// ) => {
+
+//   if (!file) {
+
+//     throw new Error(
+//       "File is required"
+//     );
+//   }
+
+
+//   const formData =
+//     new FormData();
+
+
+//   formData.append(
+//     "file",
+//     file
+//   );
+
+
+//   formData.append(
+//     "purpose",
+//     purpose
+//   );
+
+
+//   try {
+
+//     const res =
+//       await API.post(
+//         "/websites/media",
+//         formData,
+//         {
+//           headers: {
+//             "Content-Type":
+//               "multipart/form-data",
+//           },
+//         }
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "UPLOAD WEBSITE MEDIA ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+// /* =========================================================
+//    DELETE MEDIA
+// ========================================================= */
+
+// export const deleteMedia = async (
+//   url
+// ) => {
+
+//   if (!url) {
+
+//     throw new Error(
+//       "Media URL is required"
+//     );
+//   }
+
+
+//   try {
+
+//     const res =
+//       await API.delete(
+//         "/websites/media",
+//         {
+//           data: {
+//             url,
+//           },
+//         }
+//       );
+
+
+//     return (
+//       res.data?.data ??
+//       res.data
+//     );
+
+//   } catch (error) {
+
+//     console.error(
+//       "DELETE WEBSITE MEDIA ERROR:",
+//       error
+//     );
+
+//     throw error;
+//   }
+// };
+
+
+
+
 import API from "./api";
 
 
@@ -550,6 +2435,29 @@ export const getWebsiteData = async () => {
 
 
 /* =========================================================
+   WEBSITE PAGES
+========================================================= */
+
+/**
+ * Page configuration currently uses the existing /websites endpoint.
+ * The backend response may expose the configuration as `pages` or the
+ * legacy `sections` property, so normalize both response shapes here.
+ */
+export const getWebsitePages = async () => {
+  const websiteData = await getWebsiteData();
+
+  return {
+    ...websiteData,
+    pages: Array.isArray(websiteData?.pages)
+      ? websiteData.pages
+      : Array.isArray(websiteData?.sections)
+        ? websiteData.sections
+        : [],
+  };
+};
+
+
+/* =========================================================
    WEBSITE STATUS
 ========================================================= */
 
@@ -943,6 +2851,36 @@ export const updateSections = async (
 };
 
 
+/**
+ * Page configuration is currently persisted through the existing
+ * /websites/sections endpoint for backward compatibility.
+ *
+ * Keep updateSections available because older components still import it.
+ * Use updateWebsitePages from new Website Pages components.
+ */
+export const updateWebsitePages = async (pages) => {
+  if (!Array.isArray(pages)) {
+    throw new Error("Website pages must be an array");
+  }
+
+  const normalizedPages = pages.map((page, index) => ({
+    id: page?.id ?? null,
+    type: String(page?.type ?? page?.page_type ?? "").trim(),
+    enabled: Boolean(page?.enabled ?? page?.is_enabled),
+    order: Number.isFinite(Number(page?.order ?? page?.display_order))
+      ? Number(page?.order ?? page?.display_order)
+      : index,
+  }));
+
+  if (normalizedPages.some((page) => !page.type)) {
+    throw new Error("Every website page must have a page type");
+  }
+
+  // The existing backend accepts { sections: [...] } at this endpoint.
+  return updateSections(normalizedPages);
+};
+
+
 /* =========================================================
    GET WEBSITE CONTENT
 ========================================================= */
@@ -1088,6 +3026,12 @@ const normalizePageKey = (
     about:
       "about",
 
+    "About Us":
+      "about",
+
+    aboutus:
+      "about",
+
     Classes:
       "classes",
 
@@ -1112,6 +3056,27 @@ const normalizePageKey = (
     testimonials:
       "testimonials",
 
+    Testimonial:
+      "testimonials",
+
+    testimonial:
+      "testimonials",
+
+    Dashboard:
+      "dashboard",
+
+    dashboard:
+      "dashboard",
+
+    "Institute Dashboard":
+      "dashboard",
+
+    instituteDashboard:
+      "dashboard",
+
+    institute_dashboard:
+      "dashboard",
+
     Contact:
       "contact",
 
@@ -1135,6 +3100,21 @@ const normalizePageKey = (
 
     categories:
       "categories",
+
+    Login:
+      "login",
+
+    login:
+      "login",
+
+    "Institute Login":
+      "login",
+
+    instituteLogin:
+      "login",
+
+    institute_login:
+      "login",
 
     "Student Login":
       "studentLogin",
