@@ -16299,7 +16299,7 @@ distance:
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
         <div>
-          <h1 className="text-4xl font-bold text-purple-400 leading-tight">
+          <h1 className="text-4xl font-bold text-[#C04FDF] leading-tight">
             {getPageTitle()}
           </h1>
           <p className="text-gray-400 mt-2">

@@ -9,20 +9,8 @@ import {
 /* =========================================================
    API BASE URL
 ========================================================= */
-// const API_BASE_URL = (
-//   import.meta.env.VITE_API_URL || "http://localhost:5000/api"
-// ).replace(/\/+$/, "");
-
-// const API = axios.create({
-//   baseURL: API_BASE_URL,
-//   timeout: 120000,
-//   headers: { "Content-Type": "application/json" },
-// });
-
-
 const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  "https://finearts-backend.onrender.com/api"
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 ).replace(/\/+$/, "");
 
 const API = axios.create({
@@ -30,6 +18,18 @@ const API = axios.create({
   timeout: 120000,
   headers: { "Content-Type": "application/json" },
 });
+
+
+// const API_BASE_URL = (
+//   import.meta.env.VITE_API_URL ||
+//   "https://finearts-backend.onrender.com/api"
+// ).replace(/\/+$/, "");
+
+// const API = axios.create({
+//   baseURL: API_BASE_URL,
+//   timeout: 120000,
+//   headers: { "Content-Type": "application/json" },
+// });
 /* =========================================================
    PATH / ROUTE HELPERS
 ========================================================= */
